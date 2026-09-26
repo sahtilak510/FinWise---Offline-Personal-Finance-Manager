@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <script>
+    /* Early theme paint (no-FOUC). Server pref arrives later via fwScripts;
+       until then follow saved choice, else Light. data-theme is Light|Dark. */
+    (function () {
+      try {
+        var pref = localStorage.getItem('finwise_theme') || 'light';
+        if (pref !== 'light' && pref !== 'dark') pref = 'light';
+        var eff = pref;
+
+        document.documentElement.setAttribute('data-theme', eff);
+        if (document.documentElement.classList) {
+          document.documentElement.classList.toggle('dark', eff === 'dark');
+          document.documentElement.classList.toggle('light', eff === 'light');
+        }
+        try { document.documentElement.style.colorScheme = eff; } catch (e) {}
+        try {
+          var __ts = localStorage.getItem('finwise_textsize') || 'default';
+          document.documentElement.setAttribute('data-fw-textsize', __ts);
+          if (localStorage.getItem('finwise_contrast') === 'on') document.documentElement.classList.add('fw-high-contrast');
+          if (localStorage.getItem('finwise_motion') === 'off') document.documentElement.classList.add('fw-no-motion');
+        } catch (e2) {}
+      } catch (e) {}
+    })();
+  </script>
+    <title>Expenses  Finwise</title>
+    <link rel="stylesheet" href="/css/3d-dynamic.css">
+  <link rel="stylesheet" href="/css/finwise-tokens.css">
+  <link rel="stylesheet" href="/css/finwise-layout.css">
+  <link rel="stylesheet" href="/css/finwise-components.css">
+  <link rel="stylesheet" href="/css/finwise-responsive.css">
+  <link rel="stylesheet" href="/css/chatbot-widget.css">
+  <link rel="stylesheet" href="/css/finwise-bridge.css">
+  <link rel="stylesheet" href="/css/finwise-theme.css">
+</head>
+<body class="fw-body fw-shell">
+    <div class="fw-particles">
+        <div class="fw-particle" style="left:10%;animation-duration:20s;animation-delay:0s;top:30%;background:rgba(99,102,241,0.25);"></div>
+        <div class="fw-particle" style="left:40%;animation-duration:24s;animation-delay:-6s;top:70%;background:rgba(139,92,246,0.2);width:5px;height:5px;"></div>
+        <div class="fw-particle" style="left:70%;animation-duration:18s;animation-delay:-12s;top:40%;background:rgba(16,185,129,0.2);"></div>
+    </div>
+
+    <div th:replace="~{fragments/finwise :: fwSidebar('expenses', ${user})}"></div>
+
+    <div th:replace="~{fragments/finwise :: fwTopbar('Expenses', null, ${user}, ${unreadCount})}"></div>
+<div class="fw-scrim" onclick="fwCloseSidebar()"></div>
+
+    <div class="fw-content"><main class="fw-wrap" id="main">
+        <!-- Page Header -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--sp-8);">
+            <div>
+                <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: var(--sp-2);"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg> Expenses</h1>
+                <p style="color: var(--surface-400);">Track and manage your spending</p>
+            </div>
+            <a href="/expenses/add" class="fw-btn fw-btn-primary fw-btn-lg">+ Add Expense</a>
+        </div>
+
+        <form method="get" th:action="@{/expenses}" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;align-items:end;margin-bottom:20px;padding:16px;background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-xl)">
+            <input type="search" name="q" th:value="${q}" placeholder="Search description, category or payment" class="fw-form-input">
+            <select name="category" class="fw-form-input"><option value="">All categories</option><option th:each="item : ${categories}" th:value="${item}" th:text="${item}" th:selected="${item == selectedCategory}"></option></select>
+            <input type="date" name="startDate" th:value="${startDate}" class="fw-form-input" aria-label="Start date">
+            <input type="date" name="endDate" th:value="${endDate}" class="fw-form-input" aria-label="End date">
+            <input type="number" name="minAmount" th:value="${minAmount}" min="0" step="0.01" placeholder="Min amount" class="fw-form-input">
+            <input type="number" name="maxAmount" th:value="${maxAmount}" min="0" step="0.01" placeholder="Max amount" class="fw-form-input">
+            <select name="recurring" class="fw-form-input"><option value="">All transactions</option><option value="true" th:selected="${recurringFilter != null and recurringFilter}">Recurring only</option><option value="false" th:selected="${recurringFilter != null and !recurringFilter}">Non-recurring only</option></select>
+            <button type="submit" class="fw-btn fw-btn-primary">Apply filters</button>
+            <a href="/expenses" class="fw-btn fw-btn-secondary">Clear</a>
+        </form>
+
+        <!-- Empty State -->
+        <div th:if="${#lists.isEmpty(expenses)}" class="fw-empty">
+            <div class="fw-empty-icon"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg></div>
+            <h3>No expenses recorded</h3>
+            <p>Start tracking your spending to see your financial patterns</p>
+            <a href="/expenses/add" class="fw-btn fw-btn-primary fw-btn-lg">Add Your First Expense</a>
+        </div>
+
+        <!-- Expenses Table -->
+        <div th:if="${not #lists.isEmpty(expenses)}" style="padding: var(--sp-6); background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-xl); overflow-x: auto;">
+            <table class="fw-table">
+                <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th>Category</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                        <th>Payment Method</th>
+                        <th>Schedule</th>
+                        <th>Receipt</th>
+                        <th style="text-align: right;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="expense : ${expenses}">
+                        <td>
+                            <div style="display: flex; align-items: center; gap: var(--sp-3);">
+                                <span style="font-size: 1.25rem;">
+                                    <th:block th:switch="${expense.category}">
+                                        <svg th:case="'Food'" class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h16"/><path d="M12 4v16"/><circle cx="12" cy="12" r="8"/></svg>
+                                        <svg th:case="'Transportation'" class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h16"/><path d="M12 4v16"/><circle cx="12" cy="12" r="8"/></svg>
+                                        <svg th:case="'Entertainment'" class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h16"/><path d="M12 4v16"/><circle cx="12" cy="12" r="8"/></svg>
+                                        <svg th:case="'Healthcare'" class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h16"/><path d="M12 4v16"/><circle cx="12" cy="12" r="8"/></svg>
+                                        <svg th:case="*" class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h16"/><path d="M12 4v16"/><circle cx="12" cy="12" r="8"/></svg>
+                                    </th:block>
+                                </span>
+                                <span th:text="${expense.description}">Description</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="fw-badge" th:classappend="${expense.category == 'Food' ? 'fw-badge-success' : expense.category == 'Transportation' ? 'fw-badge-info' : expense.category == 'Entertainment' ? 'fw-badge-warning' : 'fw-badge-info'}" th:text="${expense.category}">Category</span>
+                        </td>
+                        <td style="color: var(--danger-400); font-weight: 600;" th:text="'-$' + ${#numbers.formatDecimal(expense.amount, 1, 2)}">-$0.00</td>
+                        <td style="color: var(--surface-400);" th:text="${#temporals.format(expense.expenseDate, 'MMM d, yyyy')}">Date</td>
+                        <td style="color: var(--surface-400);" th:text="${expense.paymentMethod}">Method</td>
+                        <td><span th:if="${expense.recurring}" class="fw-badge" th:text="${expense.recurrenceFrequency}">MONTHLY</span><span th:unless="${expense.recurring}">—</span></td>
+                        <td><a th:if="${expense.receiptImage != null}" th:href="@{/expenses/receipt/{id}(id=${expense.id})}" target="_blank">View</a><span th:unless="${expense.receiptImage != null}">—</span></td>
+                        <td style="text-align: right;">
+                            <div class="fw-table-actions">
+                                <a th:href="@{/expenses/edit/{id}(id=${expense.id})}" class="fw-table-btn">Edit</a>
+                                <form method="post" th:action="@{/expenses/delete/{id}(id=${expense.id})}" style="display:inline"><button type="submit" class="fw-table-btn" onclick="return confirm('Are you sure?')" style="color:var(--danger-400);background:none;border:none;cursor:pointer">Delete</button></form>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main></div>
+
+    <div th:replace="~{fragments/finwise :: fwFooter}"></div>
+
+    <div th:replace="~{fragments/finwise :: fwScripts}"></div>
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <script>
+    /* Early theme paint (no-FOUC). Server pref arrives later via fwScripts;
+       until then follow saved choice, else Light. data-theme is Light|Dark. */
+    (function () {
+      try {
+        var pref = localStorage.getItem('finwise_theme') || 'light';
+        if (pref !== 'light' && pref !== 'dark') pref = 'light';
+        var eff = pref;
+
+        document.documentElement.setAttribute('data-theme', eff);
+        if (document.documentElement.classList) {
+          document.documentElement.classList.toggle('dark', eff === 'dark');
+          document.documentElement.classList.toggle('light', eff === 'light');
+        }
+        try { document.documentElement.style.colorScheme = eff; } catch (e) {}
+        try {
+          var __ts = localStorage.getItem('finwise_textsize') || 'default';
+          document.documentElement.setAttribute('data-fw-textsize', __ts);
+          if (localStorage.getItem('finwise_contrast') === 'on') document.documentElement.classList.add('fw-high-contrast');
+          if (localStorage.getItem('finwise_motion') === 'off') document.documentElement.classList.add('fw-no-motion');
+        } catch (e2) {}
+      } catch (e) {}
+    })();
+  </script>
+    <title>Account & Settings  Finwise</title>
+    <link rel="stylesheet" href="/css/3d-dynamic.css">
+  <link rel="stylesheet" href="/css/finwise-tokens.css">
+  <link rel="stylesheet" href="/css/finwise-layout.css">
+  <link rel="stylesheet" href="/css/finwise-components.css">
+  <link rel="stylesheet" href="/css/finwise-responsive.css">
+  <link rel="stylesheet" href="/css/chatbot-widget.css">
+  <link rel="stylesheet" href="/css/finwise-bridge.css">
+  <link rel="stylesheet" href="/css/finwise-theme.css">
+</head>
+<body class="fw-body fw-shell">
+    <div class="fw-particles">
+        <div class="fw-particle" style="left:15%;animation-duration:20s;animation-delay:0s;top:25%;background:rgba(16,185,129,0.2);"></div>
+        <div class="fw-particle" style="left:50%;animation-duration:25s;animation-delay:-8s;top:65%;background:rgba(99,102,241,0.18);width:4px;height:4px;"></div>
+        <div class="fw-particle" style="left:75%;animation-duration:18s;animation-delay:-15s;top:35%;background:rgba(139,92,246,0.18);"></div>
+        <div class="fw-currency" style="left:30%;animation-duration:24s;animation-delay:-6s;">$</div>
+    </div>
+
+    <div th:replace="~{fragments/finwise :: fwSidebar('account', ${user})}"></div>
+
+    <div th:replace="~{fragments/finwise :: fwTopbar('Account', null, ${user}, ${unreadCount})}"></div>
+<div class="fw-scrim" onclick="fwCloseSidebar()"></div>
+
+    <div class="fw-content"><main class="fw-wrap" id="main">
+        <!-- Profile Hero -->
+        <div style="padding: var(--sp-8); background: linear-gradient(135deg, var(--primary-900), var(--navy-800)); border: 1px solid var(--glass-border); border-radius: var(--radius-xl); margin-bottom: var(--sp-8); text-align: center;">
+            <div style="display: flex; justify-content: center; margin-bottom: var(--sp-5);">
+                <div id="profile-image-preview-wrapper" style="position: relative; width: 96px; height: 96px; border-radius: 50%; overflow: hidden; border: 3px solid rgba(255,255,255,0.2); background: rgba(15,23,42,0.7); display: flex; align-items: center; justify-content: center;">
+                    <img id="profile-image-preview" th:src="${user.profileImage != null ? user.profileImage : ''}" alt="Profile image" style="width: 100%; height: 100%; object-fit: cover; display: block;" th:style="${user.profileImage == null ? 'display: none;' : 'display: block;'}" />
+                    <div id="profile-image-fallback" th:if="${user.profileImage == null}" style="font-size: 2rem; font-weight: 700; color: var(--surface-50);">A</div>
+                </div>
+            </div>
+            <div style="display: flex; gap: var(--sp-3); justify-content: center; margin-bottom: var(--sp-4); flex-wrap: wrap;">
+                <label class="fw-btn fw-btn-primary fw-btn-sm" for="profile-image-input" style="cursor: pointer;">
+                    <span data-i18n="uploadPhoto">Upload photo</span>
+                </label>
+                <input id="profile-image-input" type="file" accept="image/*" style="display: none;" />
+                <button type="button" id="remove-profile-image" class="fw-btn fw-btn-secondary fw-btn-sm" data-i18n="removePhoto" th:if="${user.profileImage != null}">Remove photo</button>
+            </div>
+            <h1 style="font-size: 1.75rem; font-weight: 700; margin-bottom: var(--sp-2);" th:text="${user.fullName}">User Name</h1>
+            <p style="color: var(--surface-400); margin-bottom: var(--sp-6);" th:text="${user.email}">user@mail.com</p>
+             
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: var(--sp-4);">
+                <div style="padding: var(--sp-4); background: rgba(99,102,241,.1); border: 1px solid rgba(99,102,241,.2); border-radius: var(--radius-lg);">
+                    <div data-i18n="totalIncome" style="font-size: .85rem; color: var(--surface-400); margin-bottom: var(--sp-1);">Total Income</div>
+                    <div style="font-size: 1.5rem; font-weight: 700;" th:text="'$' + ${#numbers.formatDecimal(totalIncome, 1, 2)}">$0.00</div>
+                </div>
+                <div style="padding: var(--sp-4); background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.2); border-radius: var(--radius-lg);">
+                    <div data-i18n="totalExpenses" style="font-size: .85rem; color: var(--surface-400); margin-bottom: var(--sp-1);">Total Expenses</div>
+                    <div style="font-size: 1.5rem; font-weight: 700;" th:text="'$' + ${#numbers.formatDecimal(totalExpenses, 1, 2)}">$0.00</div>
+                </div>
+                <div style="padding: var(--sp-4); background: rgba(16,185,129,.1); border: 1px solid rgba(16,185,129,.2); border-radius: var(--radius-lg);">
+                    <div data-i18n="netBalance" style="font-size: .85rem; color: var(--surface-400); margin-bottom: var(--sp-1);">Net Balance</div>
+                    <div style="font-size: 1.5rem; font-weight: 700;" th:text="'$' + ${#numbers.formatDecimal(totalIncome - totalExpenses, 1, 2)}">$0.00</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Information Section -->
+        <div style="padding: var(--sp-6); background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-xl); margin-bottom: var(--sp-6);">
+            <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: var(--sp-6);"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg><span data-i18n="profileInformation">Profile Information</span></h2>
+            
+            <div style="display: flex; flex-direction: column; gap: var(--sp-4);">
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--sp-4); background: rgba(0,0,0,.2); border-radius: var(--radius-lg); border: 1px solid var(--glass-border);">
+                    <div>
+                        <div style="font-size: .85rem; color: var(--surface-400); margin-bottom: var(--sp-1);">Full Name</div>
+                        <div style="font-weight: 600;" th:text="${user.fullName}">Name</div>
+                    </div>
+                    <button class="fw-btn fw-btn-secondary fw-btn-sm" data-i18n="edit" data-profile-field="fullName" onclick="openEditModal('Full Name', this.parentElement.querySelector('div:nth-child(2)') ? this.parentElement.querySelector('div:nth-child(2)').textContent : '', 'fullName')">Edit</button>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--sp-4); background: rgba(0,0,0,.2); border-radius: var(--radius-lg); border: 1px solid var(--glass-border);">
+                    <div>
+                        <div style="font-size: .85rem; color: var(--surface-400); margin-bottom: var(--sp-1);">Username</div>
+                        <div style="font-weight: 600;" th:text="${user.username}">username</div>
+                    </div>
+                    <button class="fw-btn fw-btn-secondary fw-btn-sm" data-i18n="edit" data-profile-field="username" onclick="openEditModal('Username', this.parentElement.querySelector('div:nth-child(2)') ? this.parentElement.querySelector('div:nth-child(2)').textContent : '', 'username')">Edit</button>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--sp-4); background: rgba(0,0,0,.2); border-radius: var(--radius-lg); border: 1px solid var(--glass-border);">
+                    <div>
+                        <div style="font-size: .85rem; color: var(--surface-400); margin-bottom: var(--sp-1);">Email</div>
+                        <div style="font-weight: 600;" th:text="${user.email}">email@mail.com</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Settings -->
+        <div style="padding: var(--sp-6); background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-xl);">
+            <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: var(--sp-6);"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg><span data-i18n="accountSettings">Account Settings</span></h2>
+            
+            <div style="display: flex; flex-direction: column; gap: var(--sp-3);">
+                <div style="display: flex; align-items: center; gap: var(--sp-4); padding: var(--sp-4); background: rgba(0,0,0,.2); border-radius: var(--radius-lg); border: 1px solid var(--glass-border);">
+                    <div style="font-size: 1.5rem;"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg></div>
+                    <div style="flex: 1;">
+                        <h4 data-i18n="notifications" style="font-weight: 600; margin-bottom: var(--sp-1);">Notifications</h4>
+                        <p data-i18n="budgetAlertsDescription" style="font-size: .85rem; color: var(--surface-500);">Budget alerts and spending updates</p>
+                    </div>
+                    <button class="fw-btn fw-btn-secondary fw-btn-sm" data-i18n="configure" onclick="openNotificationsModal()">Configure</button>
+                </div>
+                
+                <div style="display: flex; align-items: center; gap: var(--sp-4); padding: var(--sp-4); background: rgba(0,0,0,.2); border-radius: var(--radius-lg); border: 1px solid var(--glass-border);">
+                    <div style="font-size: 1.5rem;"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg></div>
+                    <div style="flex: 1;">
+                        <h4 data-i18n="appearance" style="font-weight: 600; margin-bottom: var(--sp-1);">Appearance</h4>
+                        <p data-i18n="appearanceDescription" style="font-size: .85rem; color: var(--surface-500);">Theme and display preferences</p>
+                    </div>
+                    <button class="fw-btn fw-btn-secondary fw-btn-sm" data-i18n="customize" onclick="openAppearanceModal()">Customize</button>
+                </div>
+                
+                <div style="display: flex; align-items: center; gap: var(--sp-4); padding: var(--sp-4); background: rgba(0,0,0,.2); border-radius: var(--radius-lg); border: 1px solid var(--glass-border);">
+                    <div style="font-size: 1.5rem;"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg></div>
+                    <div style="flex: 1;">
+                        <h4 data-i18n="exportData" style="font-weight: 600; margin-bottom: var(--sp-1);">Export Data</h4>
+                        <p data-i18n="downloadFinancialData" style="font-size: .85rem; color: var(--surface-500);">Download your financial data</p>
+                    </div>
+                    <button class="fw-btn fw-btn-secondary fw-btn-sm" data-i18n="export" onclick="exportData()">Export</button>
+                </div>
+                
+                <div style="display: flex; align-items: center; gap: var(--sp-4); padding: var(--sp-4); background: rgba(0,0,0,.2); border-radius: var(--radius-lg); border: 1px solid var(--glass-border);">
+                    <div style="font-size: 1.5rem;"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg></div>
+                    <div style="flex: 1;">
+                        <h4 data-i18n="changePassword" style="font-weight: 600; margin-bottom: var(--sp-1);">Change Password</h4>
+                        <p data-i18n="passwordSecurityDescription" style="font-size: .85rem; color: var(--surface-500);">Update your password for security</p>
+                    </div>
+                    <button class="fw-btn fw-btn-secondary fw-btn-sm" data-i18n="change" onclick="openChangePasswordModal()">Change</button>
+                </div>
+                
+                <div style="display: flex; align-items: center; gap: var(--sp-4); padding: var(--sp-4); background: rgba(239,68,68,.08); border: 1px solid rgba(239,68,68,.2); border-radius: var(--radius-lg);">
+                    <div style="font-size: 1.5rem;"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg></div>
+                    <div style="flex: 1;">
+                        <h4 data-i18n="deleteAccount" style="font-weight: 600; margin-bottom: var(--sp-1); color: var(--danger-400);">Delete Account</h4>
+                        <p data-i18n="permanentDeleteDescription" style="font-size: .85rem; color: var(--surface-500);">Permanently delete your account and all data</p>
+                    </div>
+                    <button class="fw-btn fw-btn-danger fw-btn-sm" data-i18n="delete" onclick="openDeleteAccountModal()">Delete</button>
+                </div>
+            </div>
+        </div>
+    </main></div>
+
+    <div th:replace="~{fragments/finwise :: fwFooter}"></div>
+
+    <script src="/js/script.js?v=2"></script>
+</body>
+</html>

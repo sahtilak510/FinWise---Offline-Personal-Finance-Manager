@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <script>
+    /* Early theme paint (no-FOUC). Server pref arrives later via fwScripts;
+       until then follow saved choice, else Light. data-theme is Light|Dark. */
+    (function () {
+      try {
+        var pref = localStorage.getItem('finwise_theme') || 'light';
+        if (pref !== 'light' && pref !== 'dark') pref = 'light';
+        var eff = pref;
+
+        document.documentElement.setAttribute('data-theme', eff);
+        if (document.documentElement.classList) {
+          document.documentElement.classList.toggle('dark', eff === 'dark');
+          document.documentElement.classList.toggle('light', eff === 'light');
+        }
+        try { document.documentElement.style.colorScheme = eff; } catch (e) {}
+        try {
+          var __ts = localStorage.getItem('finwise_textsize') || 'default';
+          document.documentElement.setAttribute('data-fw-textsize', __ts);
+          if (localStorage.getItem('finwise_contrast') === 'on') document.documentElement.classList.add('fw-high-contrast');
+          if (localStorage.getItem('finwise_motion') === 'off') document.documentElement.classList.add('fw-no-motion');
+        } catch (e2) {}
+      } catch (e) {}
+    })();
+  </script>
+    <title>Audit Log - Finwise</title>
+    <link rel="stylesheet" href="/css/3d-dynamic.css">
+  <link rel="stylesheet" href="/css/finwise-tokens.css">
+  <link rel="stylesheet" href="/css/finwise-layout.css">
+  <link rel="stylesheet" href="/css/finwise-components.css">
+  <link rel="stylesheet" href="/css/finwise-responsive.css">
+  <link rel="stylesheet" href="/css/chatbot-widget.css">
+  <link rel="stylesheet" href="/css/finwise-bridge.css">
+  <link rel="stylesheet" href="/css/finwise-theme.css">
+</head>
+<body class="fw-body fw-shell">
+    <div class="fw-particles">
+        <div class="fw-particle" style="left:10%;animation-duration:20s;animation-delay:0s;top:30%;background:rgba(99,102,241,0.25);"></div>
+        <div class="fw-particle" style="left:40%;animation-duration:24s;animation-delay:-6s;top:70%;background:rgba(139,92,246,0.2);width:5px;height:5px;"></div>
+        <div class="fw-particle" style="left:70%;animation-duration:18s;animation-delay:-12s;top:40%;background:rgba(16,185,129,0.2);"></div>
+    </div>
+
+    <div th:replace="~{fragments/finwise :: fwSidebar('settings', ${user})}"></div>
+
+    <div th:replace="~{fragments/finwise :: fwTopbar('Settings', null, ${user}, ${unreadCount})}"></div>
+<div class="fw-scrim" onclick="fwCloseSidebar()"></div>
+
+    <div class="fw-content"><main class="fw-wrap" id="main">
+        <div style="margin-bottom: var(--sp-8);">
+            <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: var(--sp-2);"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Audit Log</h1>
+            <p style="color: var(--surface-400);">Track all system activities for compliance and security</p>
+        </div>
+
+        <div style="padding: var(--sp-5); background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-xl); margin-bottom: var(--sp-6);">
+            <form method="get" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--sp-4); align-items: end;">
+                <div>
+                    <label class="fw-label">Action</label>
+                    <select name="action" class="fw-input">
+                        <option value="">All Actions</option>
+                        <option th:each="act : ${actionTypes}" th:value="${act}" th:selected="${selectedAction == act}" th:text="${act}"></option>
+                    </select>
+                </div>
+                <div>
+                    <label class="fw-label">Entity</label>
+                    <select name="entity" class="fw-input">
+                        <option value="">All Entities</option>
+                        <option th:each="ent : ${entityTypes}" th:value="${ent}" th:selected="${selectedEntity == ent}" th:text="${ent}"></option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: var(--sp-2);">
+                    <button type="submit" class="fw-btn fw-btn-primary">Filter</button>
+                    <a href="/audit" class="fw-btn fw-btn-secondary">Reset</a>
+                </div>
+            </form>
+        </div>
+
+        <div style="padding: var(--sp-5); background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-xl);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--sp-4);">
+                <h3 style="font-size: 1.1rem; font-weight: 700;">Recent Activity (<span th:text="${#lists.size(entries)}">0</span>)</h3>
+            </div>
+
+            <div th:if="${#lists.isEmpty(entries)}" class="fw-empty">
+                <div class="fw-empty-icon"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+                <h3>No audit entries found</h3>
+                <p>Activity log is empty for the selected filters</p>
+            </div>
+
+            <div th:if="${not #lists.isEmpty(entries)}" style="overflow-x: auto;">
+                <table class="fw-table">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Action</th>
+                            <th>Entity</th>
+                            <th>Record ID</th>
+                            <th>Details</th>
+                            <th>IP Address</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="entry : ${entries}">
+                            <td style="white-space: nowrap; font-size: .85rem;" th:text="${entry.timestamp != null ? #temporals.format(entry.timestamp, 'yyyy-MM-dd HH:mm:ss') : '-'}">-</td>
+                            <td>
+                                <span class="fw-badge" th:classappend="${entry.action == 'CREATE' ? 'fw-badge-success' : entry.action == 'DELETE' ? 'fw-badge-danger' : entry.action == 'UPDATE' ? 'fw-badge-warning' : 'fw-badge-info'}" th:text="${entry.action}">Action</span>
+                            </td>
+                            <td th:text="${entry.entity}">Entity</td>
+                            <td style="font-family: monospace; font-size: .8rem;" th:text="${entry.recordId}">-</td>
+                            <td th:text="${entry.details}">Details</td>
+                            <td th:text="${entry.ipAddress}">-</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main></div>
+
+    <div th:replace="~{fragments/finwise :: fwFooter}"></div>
+
+    <div th:replace="~{fragments/finwise :: fwScripts}"></div>
+</body>
+</html>

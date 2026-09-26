@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <script>
+    /* Early theme paint (no-FOUC). Server pref arrives later via fwScripts;
+       until then follow saved choice, else Light. data-theme is Light|Dark. */
+    (function () {
+      try {
+        var pref = localStorage.getItem('finwise_theme') || 'light';
+        if (pref !== 'light' && pref !== 'dark') pref = 'light';
+        var eff = pref;
+
+        document.documentElement.setAttribute('data-theme', eff);
+        if (document.documentElement.classList) {
+          document.documentElement.classList.toggle('dark', eff === 'dark');
+          document.documentElement.classList.toggle('light', eff === 'light');
+        }
+        try { document.documentElement.style.colorScheme = eff; } catch (e) {}
+        try {
+          var __ts = localStorage.getItem('finwise_textsize') || 'default';
+          document.documentElement.setAttribute('data-fw-textsize', __ts);
+          if (localStorage.getItem('finwise_contrast') === 'on') document.documentElement.classList.add('fw-high-contrast');
+          if (localStorage.getItem('finwise_motion') === 'off') document.documentElement.classList.add('fw-no-motion');
+        } catch (e2) {}
+      } catch (e) {}
+    })();
+  </script>
+    <title>Edit Income - Finwise</title>
+    <link rel="stylesheet" href="/css/3d-dynamic.css">
+  <link rel="stylesheet" href="/css/finwise-tokens.css">
+  <link rel="stylesheet" href="/css/finwise-layout.css">
+  <link rel="stylesheet" href="/css/finwise-components.css">
+  <link rel="stylesheet" href="/css/finwise-responsive.css">
+  <link rel="stylesheet" href="/css/chatbot-widget.css">
+  <link rel="stylesheet" href="/css/finwise-bridge.css">
+  <link rel="stylesheet" href="/css/finwise-theme.css">
+</head>
+<body class="fw-body fw-shell">
+    <div th:replace="~{fragments/finwise :: fwSidebar('income', ${user})}"></div>
+    <div th:replace="~{fragments/finwise :: fwTopbar('Income', null, ${user}, ${unreadCount})}"></div>
+<div class="fw-scrim" onclick="fwCloseSidebar()"></div>
+
+    <div class="fw-content"><main class="fw-wrap" id="main">
+        <div class="fw-form-wrapper">
+            <div class="fw-form-card fw-animate">
+                <div class="fw-form-header">
+                    <div class="fw-form-icon"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg></div>
+                    <h1>Edit Income</h1>
+                    <p>Update your income details</p>
+                </div>
+
+                <form method="POST" th:action="@{/income/update/{id}(id=${income.id})}">
+                    <div class="fw-form-group">
+                        <label for="description">Description</label>
+                        <input type="text" id="description" name="description" th:value="${income.description}" placeholder="What is this income for?" required class="fw-form-input">
+                    </div>
+                    <div class="fw-form-row">
+                        <div class="fw-form-group">
+                            <label for="amount">Amount ($)</label>
+                            <input type="number" id="amount" name="amount" th:value="${#numbers.formatDecimal(income.amount, 1, 2)}" step="0.01" min="0.01" placeholder="0.00" required class="fw-form-input">
+                        </div>
+                        <div class="fw-form-group">
+                            <label for="incomeDate">Date</label>
+                            <input type="date" id="incomeDate" name="incomeDate" th:value="${#temporals.format(income.incomeDate, 'yyyy-MM-dd')}" required class="fw-form-input">
+                        </div>
+                    </div>
+                    <div class="fw-form-row">
+                        <div class="fw-form-group">
+                            <label for="category">Category</label>
+                            <select id="category" name="category" required class="fw-form-input">
+                                <option value="Salary" th:selected="${income.category == 'Salary'}"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg> Salary</option>
+                                <option value="Freelance" th:selected="${income.category == 'Freelance'}"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg> Freelance</option>
+                                <option value="Investments" th:selected="${income.category == 'Investments'}"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg> Investments</option>
+                                <option value="Business" th:selected="${income.category == 'Business'}"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg> Business</option>
+                                <option value="Gifts" th:selected="${income.category == 'Gifts'}"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg> Gifts</option>
+                                <option value="Other" th:selected="${income.category == 'Other'}"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg> Other</option>
+                            </select>
+                        </div>
+                        <div class="fw-form-group">
+                            <label for="incomeSource">Source</label>
+                            <input type="text" id="incomeSource" name="incomeSource" th:value="${income.incomeSource}" placeholder="Employer, Client, etc." class="fw-form-input">
+                        </div>
+                    </div>
+                    <div class="fw-form-group">
+                        <label for="notes">Notes</label>
+                        <textarea id="notes" name="notes" rows="3" th:text="${income.notes}" placeholder="Add any additional notes..." class="fw-form-input"></textarea>
+                    </div>
+                    <div class="fw-form-row">
+                        <div class="fw-form-group">
+                            <label for="recurring">Recurring income</label>
+                            <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="recurring" name="recurring" value="true" th:checked="${income.recurring}"> Repeat this income</label>
+                        </div>
+                        <div class="fw-form-group">
+                            <label for="recurrenceFrequency">Frequency</label>
+                            <select id="recurrenceFrequency" name="recurrenceFrequency" class="fw-form-input">
+                                <option value="MONTHLY" th:selected="${income.recurrenceFrequency == 'MONTHLY'}">Monthly</option>
+                                <option value="WEEKLY" th:selected="${income.recurrenceFrequency == 'WEEKLY'}">Weekly</option>
+                                <option value="QUARTERLY" th:selected="${income.recurrenceFrequency == 'QUARTERLY'}">Quarterly</option>
+                                <option value="YEARLY" th:selected="${income.recurrenceFrequency == 'YEARLY'}">Yearly</option>
+                                <option value="DAILY" th:selected="${income.recurrenceFrequency == 'DAILY'}">Daily</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="fw-btn-group">
+                        <button type="submit" class="fw-btn fw-btn-primary fw-btn-full"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg> Update Income</button>
+                        <a href="/income" class="fw-btn fw-btn-secondary fw-btn-full">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main></div>
+
+    <div th:replace="~{fragments/finwise :: fwFooter}"></div>
+
+    <div th:replace="~{fragments/finwise :: fwScripts}"></div>
+</body>
+</html>

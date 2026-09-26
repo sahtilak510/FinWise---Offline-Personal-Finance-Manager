@@ -1,0 +1,886 @@
+================================================================================
+FinWise - Offline Personal Finance Manager
+EVERY SINGLE FILE, EXPLAINED IN SIMPLE WORDS
+Main program (src/main) and tests (src/test) listed separately, then the rest
+of the project files.
+Plain-English companion to PROJECT_FILE_MAP.txt / PROJECT_PLAIN_LANGUAGE.txt
+================================================================================
+
+HOW TO READ THIS
+----------------
+PART 1  Main program - Java files (src/main/java)   = the working parts
+PART 2  Main program - settings files (src/main/resources)
+PART 3  Main program - web pages you see (templates)
+PART 4  Main program - how pages look and behave (static)
+PART 5  Tests (src/test) - automatic checks
+PART 6  The rest of the project (root, data, logs, img, target, editor files)
+
+Each line = one file + what it is for, in simple words.
+
+
+================================================================================
+PART 1 - MAIN PROGRAM: THE JAVA FILES (src/main/java/com/finance)
+================================================================================
+
+--- 1.1 app - the starting point ---------------------------------------------
+
+app/OfflineFinanceApplication.java
+    The "on" switch. Starts the whole program and turns on the automatic timers
+    (nightly backup, daily repeat transactions).
+
+--- 1.2 config - the rules of the house --------------------------------------
+
+config/SecurityConfig.java
+    Decides who may enter. Scrambles passwords safely, leaves the sign-in and
+    sign-up pages open, locks everything else behind a signed-in user.
+
+config/WebConfig.java
+    Tells the web server where the pages, styles, scripts and images live.
+
+config/WebMvcConfig.java
+    Extra web settings, including which checks run before each page opens.
+
+config/AppLockInterceptor.java
+    The extra padlock: after signing in, it keeps asking for the app PIN until
+    the PIN is typed in the same session.
+
+config/GlobalExceptionHandler.java
+    Catches any crash and shows the friendly error page instead of a blank
+    screen or a wall of technical text.
+
+config/ChatbotExceptionHandler.java
+    Same job, but only for the chatbot, and it answers in a format the web page
+    can read.
+
+--- 1.3 controller - the pages (each file controls one screen) ---------------
+
+controller/AuthController.java
+    The front door: sign up, sign in, sign out.
+
+controller/HomeController.java
+    The main dashboard, and your profile page (change password, colours, language,
+    alerts, download all your data, delete the account).
+
+controller/AccountController.java
+    Your bank and cash accounts: add, edit, delete, see balances.
+
+controller/IncomeController.java
+    Money coming in: list it, search it, filter it, add, edit, delete.
+
+controller/ExpenseController.java
+    Money going out: list, search, filter, add, edit, delete, attach and view
+    receipt photos.
+
+controller/BudgetController.java
+    Spending limits for each category and how close you are to each one.
+
+controller/FinancialGoalController.java
+    Savings goals: how much you need, when you want it, how important, done or not.
+
+controller/CategoriesController.java
+    Your own categories (like Groceries or Rent). The built-in ones cannot be
+    deleted by accident, and you can only change your own.
+
+controller/AnalyticsController.java
+    The study page: charts, trends, health score, cash-flow forecast, tips.
+
+controller/ReportController.java
+    Makes reports and lets you download them as CSV or Excel.
+
+controller/ImportController.java
+    Brings in a bank statement: upload a file, see what was found, fix mistakes,
+    then save the records into the app.
+
+controller/ScanController.java
+    Scan & Fill: you upload a receipt photo, the app reads it and fills the form
+    for you.
+
+controller/NotificationsController.java
+    The alerts page: show alerts, mark one read, mark all read, dismiss.
+
+controller/AuditLogController.java
+    A diary of what you did: signed in, added, changed, deleted, imported.
+
+controller/SettingsController.java
+    Settings page: colours, language, alerts, and the Data & Backup area.
+
+controller/AppLockController.java
+    Set, remove or check the app PIN.
+
+controller/ProfileController.java
+    A small internal address the pages use to read and update your profile and
+    profile photo.
+
+controller/ControllerExceptionHandler.java
+    Turns problems on pages into clear messages instead of crashes.
+
+--- 1.4 service - the brains that do the work --------------------------------
+
+-- 1.4a Rule books (these say what a job must do, nothing else) --
+
+service/TransactionService.java
+    Rule book: how records (income/expense) are added, changed, found.
+
+service/AnalyticsEngine.java
+    Rule book: how totals, trends and charts are worked out.
+
+service/ForecastEngine.java
+    Rule book: how next month's income and spending are guessed.
+
+service/CategoryEngine.java
+    Rule book: how a purchase is given a category automatically.
+
+service/ReportEngine.java
+    Rule book: how a report is put together.
+
+service/DocumentProcessor.java
+    Rule book: how an uploaded file becomes a list of records.
+
+service/DocumentScanService.java
+    Rule book: how a document is read to get its text.
+
+service/DocumentUploadService.java
+    Rule book: how uploaded files are stored and found again.
+
+service/DuplicateDetectionService.java
+    Rule book: how repeated records are spotted.
+
+service/OpenCVPreprocessor.java
+    Rule book: how a photo is cleaned up before the text is read.
+
+service/Tess4JOcrService.java
+    Rule book: how text is read out of a picture.
+
+service/PDFBoxService.java
+    Rule book: how text is read out of a PDF.
+
+service/ApachePoiService.java
+    Rule book: how Excel files are read and written.
+
+-- 1.4b The real workers (all run on your own computer) --
+
+service/LocalTransactionService.java
+    Actually adds, edits, searches and filters your records, only for the
+    signed-in user.
+
+service/LocalAnalyticsEngine.java
+    Actually works out monthly totals, category shares and trends.
+
+service/LocalForecastEngine.java
+    Actually looks at recent months and projects the next ones.
+
+service/LocalCategoryEngine.java
+    Actually matches keywords (like "Uber" or "Grocery") to pick a category.
+
+service/LocalReportEngine.java
+    Actually collects everything a report or export needs.
+
+service/DefaultDocumentProcessor.java
+    Actually sends each file type to the right reader (PDF, picture, CSV, Excel).
+
+service/LocalDocumentScanService.java
+    Actually reads PDFs with PDFBox and pictures with text reading, and falls
+    back when a file has no readable text.
+
+service/LocalDocumentUploadService.java
+    Actually saves uploads outside the web folder with safe made-up names.
+
+service/LocalDuplicateDetectionService.java
+    Actually compares amount + date + description to warn "you already have this".
+
+service/LocalOpenCVPreprocessor.java
+    Actually makes photos greyer, sharper and straight so the reading works better.
+
+service/LocalTess4JOcrService.java
+    Actually runs the text reader and reports the text plus how sure it is.
+
+service/LocalPDFBoxService.java
+    Actually pulls the words out of a PDF, page by page.
+
+service/LocalApachePoiService.java
+    Actually reads Excel cells into rows and writes Excel files back.
+
+-- 1.4c Day-to-day services --
+
+service/UserService.java
+    Creates users, scrambles passwords, updates profiles, changes passwords,
+    deletes an account and everything in it, and creates the first admin user.
+
+service/AccountService.java
+    The rules for bank and cash accounts and how balances are worked out.
+
+service/IncomeService.java
+    The rules for income records, including the search and summary numbers.
+
+service/ExpenseService.java
+    The rules for expense records, including receipt photos.
+
+service/BudgetService.java
+    Works out how much of each budget is used and warns when you are close.
+
+service/FinancialGoalService.java
+    Works out how far along each savings goal is and whether it is done.
+
+service/AppLockService.java
+    Stores the app PIN scrambled and checks it when you type it.
+
+service/ChatHistoryService.java
+    Remembers what you asked the chatbot, so the chat can continue later.
+
+service/CashFlowForecastService.java
+    Builds the "what is coming" view: upcoming bills, likely balance, alerts.
+
+service/TransactionExtractor.java
+    Turns the raw text from a file or photo into clean, tidy records.
+
+service/ScanTransactionParser.java
+    The clever reader that finds amounts, dates, shop names and categories
+    inside messy text.
+
+service/ImportFileService.java
+    Checks an uploaded file is the right type and size before reading it.
+
+service/ImportCommitService.java
+    Saves the rows you approved, records the import, and marks what was
+    rejected or duplicated.
+
+service/UserDataExportService.java
+    Packs all your data into one file you can keep or move elsewhere.
+
+service/RecurringTransactionScheduler.java
+    Every morning adds the repeat bills and repeat income that are due today,
+    and never adds the same one twice.
+
+--- 1.5 service/excel - the Excel copy, alerts, score and backups -------------
+
+service/excel/LocalExcelStorageService.java
+    Owns the Excel file Finwise_Data.xlsx: makes it, reads it, writes it.
+
+service/excel/ExcelWorkbookInitializer.java
+    Creates that Excel file and all its sheets the very first time you run the app.
+
+service/excel/ExpenseExcelService.java
+    Copies your spending into the "Expenses" sheet.
+
+service/excel/IncomeExcelService.java
+    Copies your income into the "Income" sheet.
+
+service/excel/BudgetExcelService.java
+    Copies your budgets into the "Budgets" sheet.
+
+service/excel/GoalExcelService.java
+    Copies your savings goals into the "Goals" sheet.
+
+service/excel/CategoryExcelService.java
+    Copies your categories into the "Categories" sheet.
+
+service/excel/NotificationService.java
+    Creates the alerts: bill due soon, big purchase, weekly and monthly summaries.
+
+service/excel/FinancialHealthScoreService.java
+    Gives your finances a score out of 100 based on your real records: saving
+    rate, budget sticking, steadiness of spending, goal progress.
+
+service/excel/SmartInsightsService.java
+    Writes helpful tips in plain words, e.g. "food spending is up 18%".
+
+service/excel/BackupRestoreService.java
+    Makes a locked (AES-256-GCM) backup file of the database plus the Excel,
+    lists old backups, and restores them. Checks file names so nobody can sneak
+    a path into a backup, and makes a safety backup before restoring.
+
+service/excel/BackupScheduler.java
+    Runs the backup automatically every night at 2:00 and deletes backups older
+    than the number of days you chose.
+
+--- 1.6 model - what a record looks like -------------------------------------
+
+model/entity/User.java
+    Your account: username, scrambled password, email, name, colour theme,
+    language, alert preferences, and when it was created.
+
+model/entity/Account.java
+    A bank or cash account: name, type, opening balance, current balance, owner.
+
+model/entity/Income.java
+    Money in: amount, date, category, source, description, notes, account,
+    receipt, repeat rule, owner.
+
+model/entity/Expense.java
+    Money out: same details as income plus payment method and the receipt photo.
+
+model/entity/Budget.java
+    A spending limit for one category in one month, with an on/off switch.
+
+model/entity/FinancialGoal.java
+    A savings goal: name, target amount, saved so far, target date, status,
+    priority.
+
+model/entity/ImportedTransaction.java
+    A row waiting for your OK after an import, with the reason if it was
+    rejected or flagged as a duplicate.
+
+model/entity/ChatMessage.java
+    One message in the chatbot: who said it, what they said, when.
+
+model/dto/UserDTO.java
+    A safe copy of your details for display - never includes the password.
+
+model/dto/ExtractedTransactionDTO.java
+    One record that was found inside a file or photo, passed along the pipeline.
+
+--- 1.7 repository - questions asked of the database -------------------------
+
+repository/UserRepository.java
+    Finds a user by username or email.
+
+repository/AccountRepository.java
+    Lists your accounts and helps work out balances.
+
+repository/IncomeRepository.java
+    Lists and filters your income.
+
+repository/ExpenseRepository.java
+    Lists and filters your spending.
+
+repository/BudgetRepository.java
+    Finds budgets for a given month.
+
+repository/FinancialGoalRepository.java
+    Finds savings goals by their status.
+
+repository/ImportedTransactionRepository.java
+    Finds past imports and checks for duplicates.
+
+repository/ChatMessageRepository.java
+    Finds your chatbot messages.
+
+--- 1.8 security - who is signed in -------------------------------------------
+
+security/UserDetailsServiceImpl.java
+    Looks up your details when you sign in.
+
+security/UserPrincipal.java
+    The signed-in user's details, carrying their ID so every page can only ever
+    show that person's own records.
+
+--- 1.9 chatbot - the offline assistant ---------------------------------------
+
+chatbot/ChatbotController.java
+    Receives your questions, keeps the history, and offers a help list.
+
+chatbot/service/ChatbotService.java
+    Understands what you asked and answers from your own records (for example
+    "how much did I spend on food?").
+
+chatbot/model/ChatRequest.java
+    Your question, as it arrives from the page.
+
+chatbot/model/ChatResponse.java
+    The reply, with any extra numbers or suggested questions.
+
+chatbot/model/ConversationContext.java
+    Remembers the current conversation while you chat.
+
+--- 1.10 habits - spending pattern checks ------------------------------------
+
+habits/SpendingRule.java
+    The promise each check must keep.
+
+habits/AbstractSpendingRule.java
+    Shared code that all the checks reuse.
+
+habits/RuleResult.java
+    One result from a check: a label, how serious it is, and a tip.
+
+habits/NeedWantRule.java
+    Works out how much was needs versus wants.
+
+habits/HostelFoodRule.java
+    Spots repeated eating out or food spending.
+
+habits/StreakRule.java
+    Finds patterns like spending every day for a week.
+
+habits/HabitService.java
+    Runs all the checks and puts their results together.
+
+habits/HabitController.java
+    Shows the results on the habits page.
+
+--- 1.11 financeplus - the second, PIN-protected workspace -------------------
+
+financeplus/web/FinancePlusController.java
+    Everything the FinancePlus pages can do: lock and unlock, settings, repeat
+    rules, alerts, files, import, export, the locked vault, and backup
+    list / download / restore / delete.
+
+financeplus/web/FinancePlusAccessInterceptor.java
+    Stops the FinancePlus pages from opening until the workspace PIN is entered.
+
+financeplus/model/FinancePlusSettings.java
+    Your settings for this workspace (alert choices, vault state, and so on).
+
+financeplus/model/FinancePlusRecurring.java
+    A repeat rule you define inside FinancePlus.
+
+financeplus/model/FinancePlusNotification.java
+    An alert raised inside FinancePlus.
+
+financeplus/model/FinancePlusAttachment.java
+    The stored details of a file kept in the vault.
+
+financeplus/model/FinancePlusBackup.java
+    One entry in the FinancePlus backup history.
+
+financeplus/repository/FinancePlusSettingsRepository.java
+    Saves and reads the workspace settings.
+
+financeplus/repository/FinancePlusRecurringRepository.java
+    Saves and reads the repeat rules.
+
+financeplus/repository/FinancePlusNotificationRepository.java
+    Saves and reads the workspace alerts.
+
+financeplus/repository/FinancePlusAttachmentRepository.java
+    Saves and reads the vault file details.
+
+financeplus/repository/FinancePlusBackupRepository.java
+    Saves and reads the backup history.
+
+financeplus/service/FinancePlusSettingsService.java
+    Applies the settings and preferences you choose.
+
+financeplus/service/FinancePlusRecurringService.java
+    Creates repeat rules and works out which ones are due.
+
+financeplus/service/FinancePlusAutomation.java
+    The timer that runs the repeat rules for you.
+
+financeplus/service/FinancePlusNotificationService.java
+    Creates the workspace alerts.
+
+financeplus/service/FinancePlusAttachmentService.java
+    Stores files and opens them only when the vault is unlocked.
+
+financeplus/service/FinancePlusBackupService.java
+    Backs up, restores and deletes workspace backups.
+
+financeplus/service/FinancePlusImportService.java
+    Brings workspace data in from a file.
+
+financeplus/service/FinancePlusExportService.java
+    Takes workspace data out to a file.
+
+--- 1.12 util - small helpers -------------------------------------------------
+
+util/FinanceValidation.java
+    The one place that checks values are sensible: amounts positive, dates
+    valid, names filled in, file names safe.
+
+
+================================================================================
+PART 2 - MAIN PROGRAM: THE SETTINGS FILES (src/main/resources)
+================================================================================
+
+application.properties
+    The main settings file: port 8080, where the database is, how tables are
+    created, how big uploads may be, the first admin login, where files are
+    stored, when backups run and how long they are kept, where the log goes.
+
+application-e2e.properties
+    The settings used only while testing: it points the database and all files
+    into the build folder (target) so tests can never touch your real data.
+
+
+================================================================================
+PART 3 - MAIN PROGRAM: THE WEB PAGES (src/main/resources/templates)
+================================================================================
+
+templates/index.html
+    The first page you see.
+
+templates/login.html
+    The sign-in form.
+
+templates/register.html
+    The sign-up form.
+
+templates/dashboard.html
+    The main overview: totals, charts, forecast, tips and alerts.
+
+templates/accounts.html
+    The list of your bank and cash accounts.
+
+templates/account.html
+    Your profile and personal settings.
+
+templates/add-account.html
+    The form for adding an account.
+
+templates/expenses.html
+    Your spending list with search and filters.
+
+templates/add-expense.html
+    The form for adding spending, including the receipt upload.
+
+templates/edit-expense.html
+    The form for changing spending.
+
+templates/income.html
+    Your income list with search and filters.
+
+templates/add-income.html
+    The form for adding income.
+
+templates/edit-income.html
+    The form for changing income.
+
+templates/budgets.html
+    Your budgets and how much of each is used.
+
+templates/add-budget.html
+    The form for adding a budget.
+
+templates/edit-budget.html
+    The form for changing a budget.
+
+templates/goals.html
+    Your savings goals.
+
+templates/add-goal.html
+    The form for adding a goal.
+
+templates/edit-goal.html
+    The form for changing a goal.
+
+templates/categories.html
+    Managing your categories.
+
+templates/analytics.html
+    Charts, trends, health score and forecast.
+
+templates/reports.html
+    Reports and downloads.
+
+templates/import.html
+    The page where you upload a statement or receipt file.
+
+templates/import-preview.html
+    Shows what was found, what looks wrong, and lets you save it.
+
+templates/import-edit.html
+    Lets you fix one imported line.
+
+templates/import-history.html
+    Shows your past imports.
+
+templates/scan-fill.html
+    Scan & Fill: photo in, filled-in form out.
+
+templates/notifications.html
+    Your alerts.
+
+templates/habits.html
+    The results of the spending habit checks.
+
+templates/chatbot.html
+    The assistant chat screen.
+
+templates/audit.html
+    Your activity diary.
+
+templates/finance-plus.html
+    The FinancePlus workspace.
+
+templates/finance-plus-locked.html
+    Asks for the FinancePlus PIN.
+
+templates/settings.html
+    Settings, plus Data & Backup.
+
+templates/app-lock.html
+    Asks for the app PIN.
+
+templates/error/error.html
+    Shown when something goes wrong.
+
+templates/fragments/finwise.html
+    The shared frame used by every page: menu, sidebar, footer, pop-up messages.
+
+templates/fragments/chatbot-widget.html
+    The little chat bubble that follows you around every page.
+
+
+================================================================================
+PART 4 - MAIN PROGRAM: HOW PAGES LOOK AND BEHAVE (src/main/resources/static)
+================================================================================
+
+--- 4a Stylesheets (CSS) ---
+
+static/css/finwise-tokens.css
+    The design values: colours, spacing, corner sizes, text sizes.
+
+static/css/finwise-theme.css
+    The light theme, the dark theme and the accent colours.
+
+static/css/finwise-layout.css
+    The page frame: menu, sidebar and columns.
+
+static/css/finwise-components.css
+    Buttons, cards, tables, forms, pop-ups and labels.
+
+static/css/finwise-responsive.css
+    Makes the layout fit phones and small screens.
+
+static/css/finwise-bridge.css
+    Helps older style rules work with the newer design values.
+
+static/css/3d-dynamic.css
+    3D card and visual effects.
+
+static/css/auth.css
+    The sign-in and sign-up pages.
+
+static/css/settings.css
+    The settings and backup screens.
+
+static/css/scan-fill.css
+    The Scan & Fill screen.
+
+static/css/finance-plus.css
+    The FinancePlus screens.
+
+static/css/chatbot-widget.css
+    The chat bubble and chat window.
+
+--- 4b Scripts (JavaScript) ---
+
+static/js/script.js
+    Older page behaviour that is still in use.
+
+static/js/finwise-ui.js
+    Shared behaviour: switching theme, pop-up messages, dialog boxes, and
+    switching language.
+
+static/js/scan-fill.js
+    Uploads the receipt photo, shows the reading progress, fills the form.
+
+static/js/finance-plus.js
+    The FinancePlus screens: vault, repeat rules, backups.
+
+--- 4c A library kept on your computer (no internet needed) ---
+
+static/vendor/chart.js/chart.umd.min.js
+    The chart-drawing library used by every chart in the app.
+
+--- 4d Languages (locales) - 25 files ---
+
+static/locales/en.json   English
+static/locales/es.json   Spanish
+static/locales/fr.json   French
+static/locales/de.json   German
+static/locales/it.json   Italian
+static/locales/pt.json   Portuguese
+static/locales/ru.json   Russian
+static/locales/tr.json   Turkish
+static/locales/ar.json   Arabic
+static/locales/fa.json   Persian
+static/locales/he.json   Hebrew
+static/locales/ur.json   Urdu
+static/locales/hi.json   Hindi
+static/locales/mr.json   Marathi
+static/locales/ne.json   Nepali
+static/locales/pa.json   Punjabi
+static/locales/gu.json   Gujarati
+static/locales/ta.json   Tamil
+static/locales/te.json   Telugu
+static/locales/kn.json   Kannada
+static/locales/ml.json   Malayalam
+static/locales/ja.json   Japanese
+static/locales/ko.json   Korean
+static/locales/zh.json   Chinese
+    Each file holds the same set of screen labels in that language. The
+    language you pick is remembered with your account.
+
+--- 4e Empty placeholder folders (safe to keep or delete) ---
+
+static/images/           Empty. A place to drop your own pictures.
+static/vendor/fonts/     Empty. A place to drop your own font files.
+static/vendor/icons/     Empty. A place to drop your own icon files.
+
+--- 4f The text-reading language file that ships with the program ---
+
+src/main/resources/tessdata/eng.traineddata
+    The English language model the receipt/PDF reader needs. At startup the app
+    uses the copy in data/tessdata, so make sure data/tessdata/eng.traineddata
+    exists on every machine you run it on.
+
+
+================================================================================
+PART 5 - TESTS (src/test) - AUTOMATIC CHECKS
+================================================================================
+These run with the e2e settings, so they only write into the build folder and
+can never damage your real data. Start them with:  mvn test
+
+service/UserRegistrationLoginTest.java
+    Checks that signing up, signing in and signing out work.
+
+service/FinanceFeatureIntegrationTest.java
+    Checks the main money features working together, like adding a record and
+    seeing it on the dashboard.
+
+service/FeatureRegressionTest.java
+    Checks that features which already worked have not broken.
+
+service/OfflineFeatureTest.java
+    Checks the offline parts: file import checks, reading files and photos,
+    finding duplicates, receipts and exports.
+
+financeplus/service/FinancePlusRecurringServiceTest.java
+    Checks the repeat-rule logic, including what is due and when.
+
+financeplus/web/FinancePlusControllerTest.java
+    Checks the FinancePlus screens, including the PIN lock.
+
+
+================================================================================
+PART 6 - THE REST OF THE PROJECT
+================================================================================
+
+--- 6a Files in the main folder ---
+
+pom.xml
+    The build tool's shopping list: every library and the Java version.
+
+README.md
+    The project's instruction booklet.
+
+PROJECT_FILE_MAP.txt
+    The detailed technical list of every file.
+
+PROJECT_PLAIN_LANGUAGE.txt
+    The simple explanation of every area of the project.
+
+PROJECT_FILES_SIMPLE.txt
+    This file: one simple line for every single file, main program and tests
+    listed separately.
+
+run.bat   - Windows launcher: checks Java and Maven, builds, starts, opens the browser.
+run.sh    - The same launcher for Mac and Linux.
+fix_mojibake.py
+         - Repair tool for text files whose characters got saved in a broken
+           encoding; it fixes the garbled letters.
+.gitignore
+         - Tells Git which files never to upload: build output, data, logs.
+
+--- 6b data - what the app saves ---
+
+data/finance.db
+    The database: users, accounts, records, budgets, goals, categories, alerts,
+    settings.
+
+data/finance-e2e.db
+    A throwaway database used only by the tests.
+
+data/Finwise_Data.xlsx
+    The Excel copy of your financial data.
+
+data/import-images/
+    Receipt and statement files you uploaded. Kept outside the web folder so
+    nobody can reach them by guessing a web address.
+
+data/uploads/profile/
+    Your profile photo.
+
+data/finance-plus/            Files for the FinancePlus workspace.
+data/finance-plus/backups/    FinancePlus backups.
+data/backups/                 Your locked backup files (.finwise).
+data/backups/.backup.key      The key that locks them. Keep a separate copy, or
+                              old backups cannot be opened.
+data/tessdata/eng.traineddata The language file the text reader needs. Without
+                              it, reading pictures and PDFs will not work.
+
+--- 6c logs - what the app wrote down ---
+
+logs/finance.log                The main record of what the app did.
+logs/finance.log.<date>.gz      An older log, compressed to save space.
+logs/finance-e2e.log            The record from a test run.
+logs/finance-live.out.log       Normal output from a live preview run.
+logs/finance-live.err.log       Errors from a live preview run.
+logs/live-preview.out.log       Normal output from an earlier live preview.
+logs/live-preview.err.log       Errors from an earlier live preview.
+logs/app-stdout.log             Normal output from running the packaged app.
+logs/app-stderr.log             Errors from running the packaged app.
+
+--- 6d img - example files for trying the import feature ---
+
+img/finwise-import-sample.csv     A sample list to import.
+img/finwise-import-sample.xlsx    A sample Excel list to import.
+img/finwise-import-sample.xls     A sample older Excel list to import.
+img/finwise-import-sample.pdf     A sample PDF to import.
+img/finwise-import-sample.png     A sample receipt picture to read.
+img/finwise-import-sample.jpg     Another sample receipt picture.
+img/finwise-import-sample.jpeg    Another sample receipt picture.
+img/handwritten-note.png          A handwriting sample, to see the reading limits.
+img/handwritten-note.jpg          The same sample as a JPEG.
+img/imgg/expense-01.png .. expense-10.png    Ten made-up spending receipts.
+img/imgg/income-01.png .. income-10.png      Ten made-up income receipts.
+
+--- 6e target - what the build produced (safe to delete) ---
+
+target/classes/                 The compiled program.
+target/test-classes/            The compiled tests.
+target/generated-sources/       Files made while compiling (from Lombok).
+target/generated-test-sources/  Files made while compiling the tests.
+target/maven-status/            Notes that make the next build faster.
+target/surefire-reports/        The test results in text and XML.
+target/finance-test.db          Database made by the tests.
+target/finance-test.log         Log made by the tests.
+target/Finwise_Data-test.xlsx   Excel file made by the tests.
+target/live-review.db           Database from a manual review run.
+target/Finwise-live-review.xlsx Excel file from a manual review run.
+target/backups/                 Backups made during a review run.
+target/offline-finance-manager-1.0.0.jar
+                                The finished program you can run with java -jar.
+
+--- 6f Editor and automation folders ---
+
+.vscode/settings.json
+    VS Code settings for Java (keep the build file up to date automatically).
+
+.vscode/extensions.json
+    Which editor extensions are recommended.
+
+.github/modernize/java-upgrade/hooks/scripts/recordToolUse.ps1
+    GitHub helper: records tool use on Windows while upgrading Java code.
+
+.github/modernize/java-upgrade/hooks/scripts/recordToolUse.sh
+    The same helper for Mac and Linux.
+
+.github/modernize/java-upgrade/.gitignore
+    Keeps the helper's temporary recordings out of the repository.
+
+C/tmp_pom.bat
+    An old scratch file from debugging. Not used. Safe to delete.
+
+C/tmp_pom2.bat
+    Another old scratch file. Not used. Safe to delete.
+
+
+================================================================================
+PART 7 - QUICK ANSWERS
+================================================================================
+
+Start the app:              run.bat (Windows) or ./run.sh (Mac/Linux)
+Build and check everything: mvn clean verify
+Run straight from the code: mvn spring-boot:run
+Run the finished program:   java -jar target/offline-finance-manager-1.0.0.jar
+Open in your browser:       http://localhost:8080
+First sign-in:              admin / admin123  (change it straight away)
+Where the data is:          data/finance.db
+Where the settings are:     src/main/resources/application.properties
+Where the tests write:      target/ (never your data folder)
+Where the log is:           logs/finance.log
+Where the backups are:      data/backups/
+Keep this safe somewhere:   data/backups/.backup.key

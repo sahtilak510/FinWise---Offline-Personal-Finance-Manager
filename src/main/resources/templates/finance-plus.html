@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <title>Finance Plus - FinWise</title>
+  <link rel="stylesheet" href="/webjars/bootstrap/5.3.3/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/webjars/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="/css/3d-dynamic.css">
+  <link rel="stylesheet" href="/css/finwise-tokens.css">
+  <link rel="stylesheet" href="/css/finwise-layout.css">
+  <link rel="stylesheet" href="/css/finwise-components.css">
+  <link rel="stylesheet" href="/css/finwise-responsive.css">
+  <link rel="stylesheet" href="/css/finwise-bridge.css">
+  <link rel="stylesheet" href="/css/finwise-theme.css">
+  <link rel="stylesheet" href="/css/finance-plus.css">
+  <script>
+    (function () {
+      try {
+        var pref = localStorage.getItem('finwise_theme') || 'light';
+        document.documentElement.setAttribute('data-theme', pref);
+        document.documentElement.classList.toggle('dark', pref === 'dark');
+        document.documentElement.classList.toggle('light', pref !== 'dark');
+        document.documentElement.style.colorScheme = pref;
+      } catch (e) {}
+    })();
+  </script>
+</head>
+<body class="fw-body fw-shell fp-body">
+  <div th:if="${successMessage}" class="alert alert-success fp-alert"><i class="fa-solid fa-circle-check"></i><span th:text="${successMessage}">Saved</span></div>
+  <div th:if="${errorMessage}" class="alert alert-danger fp-alert"><i class="fa-solid fa-triangle-exclamation"></i><span th:text="${errorMessage}">Error</span></div>
+
+  <div th:replace="~{fragments/finwise :: fwSidebar('finance-plus', ${user})}"></div>
+  <div th:replace="~{fragments/finwise :: fwTopbar('Finance Plus', 'Advanced planning, alerts and local data protection', ${user}, ${unreadCount})}"></div>
+  <div class="fw-scrim" onclick="fwCloseSidebar()"></div>
+
+  <main class="fw-content fp-main">
+    <section class="fp-hero p-4 p-xl-5">
+      <div>
+        <span class="fp-eyebrow"><i class="fa-solid fa-layer-group"></i> FINANCE PLUS</span>
+        <h1>Plan ahead. Stay protected.</h1>
+        <p>Recurring finances, forecasts, alerts, receipts and encrypted backups in one isolated workspace.</p>
+      </div>
+      <div class="fp-hero-actions">
+        <a href="#backups" class="btn btn-light"><i class="fa-solid fa-shield-halved"></i> Backups</a>
+        <a href="#recurring" class="btn btn-primary"><i class="fa-solid fa-repeat"></i> Add recurring</a>
+      </div>
+    </section>
+
+    <div class="fp-metrics row g-3">
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="fp-metric h-100"><span class="fp-icon fp-icon-purple"><i class="fa-solid fa-heart-pulse"></i></span><div><small>Financial health</small><strong th:text="${healthScore.score} + ' / 100'">0 / 100</strong><span th:text="'Grade ' + ${healthScore.grade}">Grade N/A</span></div></div>
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="fp-metric h-100"><span class="fp-icon fp-icon-green"><i class="fa-solid fa-arrow-trend-up"></i></span><div><small>Next month forecast</small><strong th:text="${forecast.predictedNet}">0</strong><span th:text="${forecast.trend}">Positive</span></div></div>
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="fp-metric h-100"><span class="fp-icon fp-icon-orange"><i class="fa-solid fa-calendar-day"></i></span><div><small>Upcoming bills</small><strong th:text="${#lists.size(upcomingBills)}">0</strong><span>Next 30 days</span></div></div>
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="fp-metric h-100"><span class="fp-icon fp-icon-blue"><i class="fa-solid fa-repeat"></i></span><div><small>Recurring rules</small><strong th:text="${#lists.size(recurringRules)}">0</strong><span>Income and expenses</span></div></div>
+      </div>
+    </div>
+
+    <div class="fp-tabs-wrap">
+      <ul class="nav nav-pills fp-tabs" role="tablist">
+        <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#overview"><i class="fa-solid fa-gauge-high"></i><span>Overview</span></button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#recurring"><i class="fa-solid fa-repeat"></i><span>Recurring</span></button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#search"><i class="fa-solid fa-magnifying-glass"></i><span>Search</span></button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#notifications"><i class="fa-solid fa-bell"></i><span>Alerts</span></button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#attachments"><i class="fa-solid fa-paperclip"></i><span>Attachments</span></button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#import-export"><i class="fa-solid fa-file-arrow-import"></i><span>Import & export</span></button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#backups"><i class="fa-solid fa-shield-halved"></i><span>Backups</span></button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#settings"><i class="fa-solid fa-sliders"></i><span>Settings</span></button></li>
+      </ul>
+    </div>
+
+    <div class="tab-content">
+      <section class="tab-pane fade show active" id="overview">
+        <div class="row g-4">
+          <div class="col-12 col-xl-7">
+            <div class="fp-card h-100">
+              <div class="fp-card-head"><div><span class="fp-kicker">FORECAST</span><h2 th:text="${forecast.month} + ' cash flow'">Next month</h2></div><span class="fp-confidence" th:text="${forecast.confidence} + '% confidence'">45% confidence</span></div>
+              <div class="fp-forecast-grid">
+                <div><small>Predicted income</small><strong class="text-success" th:text="${forecast.predictedIncome}">0</strong></div>
+                <div><small>Predicted expenses</small><strong class="text-danger" th:text="${forecast.predictedExpense}">0</strong></div>
+                <div><small>Predicted net</small><strong th:text="${forecast.predictedNet}">0</strong></div>
+              </div>
+              <div class="progress fp-progress"><div class="progress-bar" role="progressbar" th:style="'width:' + ${forecast.confidence} + '%'">0%</div></div>
+              <p class="fp-muted mb-0">Calculated locally from the last three active months of your JPA records.</p>
+            </div>
+          </div>
+          <div class="col-12 col-xl-5">
+            <div class="fp-card h-100">
+              <div class="fp-card-head"><div><span class="fp-kicker">HEALTH SCORE</span><h2>Financial health</h2></div><span class="fp-score" th:text="${healthScore.grade}">N/A</span></div>
+              <div class="fp-score-ring" th:style="'--score:' + ${healthScore.score}"><strong th:text="${healthScore.score}">0</strong><span>out of 100</span></div>
+              <ul class="fp-factor-list"><li th:each="factor : ${healthScore.factors}"><i class="fa-solid fa-check"></i><span th:text="${factor}">Factor</span></li></ul>
+            </div>
+          </div>
+          <div class="col-12">
+            <div class="fp-card">
+              <div class="fp-card-head"><div><span class="fp-kicker">CALENDAR</span><h2>Upcoming bills</h2></div><i class="fa-solid fa-calendar-days fp-head-icon"></i></div>
+              <div class="fp-empty" th:if="${#lists.isEmpty(upcomingBills)}"><i class="fa-regular fa-calendar-xmark"></i><p>No recurring expense is due in the next 30 days.</p></div>
+              <div class="fp-bill-grid" th:unless="${#lists.isEmpty(upcomingBills)}">
+                <article class="fp-bill" th:each="bill : ${upcomingBills}"><div class="fp-date"><strong th:text="${#temporals.format(bill.dueDate, 'dd')}">01</strong><span th:text="${#temporals.format(bill.dueDate, 'MMM')}">JAN</span></div><div><h3 th:text="${bill.description}">Bill</h3><p th:text="${bill.frequency}">MONTHLY</p></div><strong th:text="${bill.amount}">0</strong></article>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="tab-pane fade" id="recurring">
+        <div class="row g-4">
+          <div class="col-12 col-xl-4">
+            <form class="fp-card fp-form" method="post" th:action="@{/finance-plus/recurring}">
+              <div class="fp-card-head"><div><span class="fp-kicker">NEW RULE</span><h2>Recurring transaction</h2></div><i class="fa-solid fa-calendar-plus fp-head-icon"></i></div>
+              <input type="hidden" name="active" value="true">
+              <div class="mb-3"><label class="form-label">Type</label><select class="form-select" name="transactionType"><option value="EXPENSE">Expense</option><option value="INCOME">Income</option></select></div>
+              <div class="mb-3"><label class="form-label">Description</label><input class="form-control" name="description" maxlength="200" required></div>
+              <div class="row g-3"><div class="col-sm-6 mb-3"><label class="form-label">Amount</label><input class="form-control" type="number" min="0.01" step="0.01" name="amount" required></div><div class="col-sm-6 mb-3"><label class="form-label">Next due date</label><input class="form-control" type="date" name="nextDueDate" required></div></div>
+              <div class="mb-3"><label class="form-label">Category</label><input class="form-control" name="category" list="expenseCategories" required><datalist id="expenseCategories"><option th:each="item : ${expenseCategories}" th:value="${item}"></option><option th:each="item : ${incomeCategories}" th:value="${item}"></option></datalist></div>
+              <div class="mb-3"><label class="form-label">Payment method</label><input class="form-control" name="paymentMethod" value="Other"></div>
+              <div class="mb-3"><label class="form-label">Frequency</label><select class="form-select" name="frequency"><option>MONTHLY</option><option>WEEKLY</option><option>QUARTERLY</option><option>YEARLY</option><option>DAILY</option></select></div>
+              <div class="form-check form-switch mb-4"><input class="form-check-input" type="checkbox" name="autoPost" value="true" checked><label class="form-check-label">Create due transactions automatically</label></div>
+              <button class="btn btn-primary w-100"><i class="fa-solid fa-plus"></i> Add recurring rule</button>
+            </form>
+          </div>
+          <div class="col-12 col-xl-8">
+            <div class="fp-card">
+              <div class="fp-card-head"><div><span class="fp-kicker">ACTIVE PLAN</span><h2>Recurring rules</h2></div><span class="fp-chip" th:text="${#lists.size(recurringRules)} + ' rules'">0 rules</span></div>
+              <div class="fp-empty" th:if="${#lists.isEmpty(recurringRules)}"><i class="fa-solid fa-repeat"></i><p>Add your first recurring income or expense.</p></div>
+              <div class="table-responsive" th:unless="${#lists.isEmpty(recurringRules)}"><table class="table fp-table align-middle"><thead><tr><th>Transaction</th><th>Frequency</th><th>Next due</th><th>Amount</th><th>Status</th><th></th></tr></thead><tbody><tr th:each="rule : ${recurringRules}"><td><strong th:text="${rule.description}">Rule</strong><small th:text="${rule.transactionType} + ' · ' + ${rule.category}">EXPENSE</small></td><td th:text="${rule.frequency}">MONTHLY</td><td th:text="${rule.nextDueDate}">2026-01-01</td><td th:text="${rule.amount}">0</td><td><span class="fp-status" th:classappend="${rule.active} ? ' active' : ''" th:text="${rule.active} ? 'Active' : 'Paused'">Active</span></td><td><form method="post" th:action="@{/finance-plus/recurring/delete/{id}(id=${rule.id})}"><button class="fp-icon-button danger" title="Delete"><i class="fa-solid fa-trash"></i></button></form></td></tr></tbody></table></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="tab-pane fade" id="search">
+        <div class="fp-card">
+          <div class="fp-card-head"><div><span class="fp-kicker">TRANSACTION FINDER</span><h2>Search and filter</h2></div><i class="fa-solid fa-filter fp-head-icon"></i></div>
+          <form class="row g-3 fp-form mb-4" method="get" th:action="@{/finance-plus}">
+            <input type="hidden" name="search" value="true">
+            <div class="col-12 col-lg-3"><label class="form-label">Keyword</label><input class="form-control" name="q" th:value="${q}" placeholder="Description or notes"></div>
+            <div class="col-6 col-lg-2"><label class="form-label">Type</label><select class="form-select" name="type"><option value="">All</option><option value="EXPENSE" th:selected="${selectedType == 'EXPENSE'}">Expense</option><option value="INCOME" th:selected="${selectedType == 'INCOME'}">Income</option><option value="IMPORT" th:selected="${selectedType == 'IMPORT'}">Imported</option></select></div>
+            <div class="col-6 col-lg-2"><label class="form-label">Category</label><input class="form-control" name="category" th:value="${selectedCategory}"></div>
+            <div class="col-6 col-lg-2"><label class="form-label">From</label><input class="form-control" type="date" name="startDate" th:value="${startDate}"></div>
+            <div class="col-6 col-lg-2"><label class="form-label">To</label><input class="form-control" type="date" name="endDate" th:value="${endDate}"></div>
+            <div class="col-6 col-lg-2"><label class="form-label">Min amount</label><input class="form-control" type="number" step="0.01" name="minAmount" th:value="${minAmount}"></div>
+            <div class="col-6 col-lg-2"><label class="form-label">Max amount</label><input class="form-control" type="number" step="0.01" name="maxAmount" th:value="${maxAmount}"></div>
+            <div class="col-12 col-lg-2 d-flex align-items-end"><button class="btn btn-primary w-100"><i class="fa-solid fa-magnifying-glass"></i> Search</button></div>
+          </form>
+          <div class="fp-empty" th:if="${#lists.isEmpty(searchResults)}"><i class="fa-solid fa-magnifying-glass"></i><p>No transactions match these filters.</p></div>
+          <div class="table-responsive" th:unless="${#lists.isEmpty(searchResults)}"><table class="table fp-table align-middle"><thead><tr><th>Date</th><th>Type</th><th>Description</th><th>Category</th><th>Status</th><th class="text-end">Amount</th></tr></thead><tbody><tr th:each="item : ${searchResults}"><td th:text="${item.date}">2026-01-01</td><td><span class="fp-type" th:text="${item.type}">EXPENSE</span></td><td><strong th:text="${item.description}">Description</strong><small th:text="'ID ' + ${item.id}">ID 1</small></td><td th:text="${item.category}">Other</td><td><span class="fp-status" th:text="${item.status}">RECORDED</span></td><td class="text-end fw-bold" th:text="${item.amount}">0</td></tr></tbody></table></div>
+        </div>
+      </section>
+
+      <section class="tab-pane fade" id="notifications">
+        <div class="fp-card">
+          <div class="fp-card-head"><div><span class="fp-kicker">IN-APP ALERTS</span><h2>Notifications</h2></div><form method="post" th:action="@{/finance-plus/notifications/read-all}"><button class="btn btn-sm btn-outline-light"><i class="fa-solid fa-check-double"></i> Mark all read</button></form></div>
+          <div class="fp-empty" th:if="${#lists.isEmpty(notifications)}"><i class="fa-regular fa-bell-slash"></i><p>No Finance Plus notifications yet.</p></div>
+          <div class="fp-notification-list" th:unless="${#lists.isEmpty(notifications)}"><article class="fp-notification" th:classappend="${!notification.read} ? ' unread' : ''" th:each="notification : ${notifications}"><span class="fp-notification-icon" th:classappend="${notification.priority == 'HIGH'} ? ' high' : ''"><i class="fa-solid fa-bell"></i></span><div><div class="d-flex gap-2 align-items-center"><h3 th:text="${notification.title}">Alert</h3><span class="fp-priority" th:text="${notification.priority}">LOW</span></div><p th:text="${notification.message}">Message</p><small th:text="${#temporals.format(notification.createdAt, 'MMM d, yyyy HH:mm')}">Date</small></div><form th:if="${!notification.read}" method="post" th:action="@{/finance-plus/notifications/read/{id}(id=${notification.id})}"><button class="fp-icon-button" title="Mark read"><i class="fa-solid fa-check"></i></button></form></article></div>
+        </div>
+      </section>
+
+      <section class="tab-pane fade" id="attachments">
+        <div class="row g-4">
+          <div class="col-12 col-xl-4">
+            <form class="fp-card fp-form h-100" method="post" enctype="multipart/form-data" th:action="@{/finance-plus/attachments}">
+              <div class="fp-card-head"><div><span class="fp-kicker">RECEIPTS & FILES</span><h2>Add attachment</h2></div><i class="fa-solid fa-cloud-arrow-up fp-head-icon"></i></div>
+              <div class="mb-3"><label class="form-label">Transaction type</label><select class="form-select" name="transactionType"><option>EXPENSE</option><option>INCOME</option><option>IMPORT</option><option>RECURRING</option></select></div>
+              <div class="mb-3"><label class="form-label">Transaction ID</label><input class="form-control" type="number" min="1" name="transactionId" required></div>
+              <div class="mb-4"><label class="form-label">Image or PDF</label><input class="form-control" type="file" name="file" accept="image/*,application/pdf" required><div class="form-text">Maximum 5 MB. Files remain on this device.</div></div>
+              <button class="btn btn-primary w-100"><i class="fa-solid fa-paperclip"></i> Upload attachment</button>
+            </form>
+          </div>
+          <div class="col-12 col-xl-8">
+            <div class="fp-card h-100"><div class="fp-card-head"><div><span class="fp-kicker">LOCAL FILES</span><h2>Recent attachments</h2></div><span class="fp-chip" th:text="${#lists.size(attachments)} + ' files'">0 files</span></div><div class="fp-empty" th:if="${#lists.isEmpty(attachments)}"><i class="fa-regular fa-folder-open"></i><p>No Finance Plus attachments uploaded.</p></div><div class="fp-attachment-list" th:unless="${#lists.isEmpty(attachments)}"><article th:each="file : ${attachments}"><span class="fp-file-icon"><i class="fa-solid fa-file-lines"></i></span><div><strong th:text="${file.originalFilename}">file</strong><small th:text="${file.transactionType} + ' #' + ${file.transactionId} + ' · ' + ${file.contentLength / 1024} + ' KB'">Attachment</small></div><a class="fp-icon-button" th:href="@{/finance-plus/attachments/{id}(id=${file.id})}" title="Download"><i class="fa-solid fa-download"></i></a><form method="post" th:action="@{/finance-plus/attachments/delete/{id}(id=${file.id})}"><button class="fp-icon-button danger" title="Delete"><i class="fa-solid fa-trash"></i></button></form></article></div></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="tab-pane fade" id="import-export">
+        <div class="row g-4">
+          <div class="col-12 col-xl-6"><div class="fp-card h-100"><div class="fp-card-head"><div><span class="fp-kicker">VALIDATED IMPORT</span><h2>Import transactions</h2></div><i class="fa-solid fa-file-import fp-head-icon"></i></div><form class="fp-form" method="post" enctype="multipart/form-data" th:action="@{/finance-plus/import}"><label class="fp-dropzone"><i class="fa-solid fa-arrow-up-from-bracket"></i><strong>Choose CSV, Excel, PDF or image</strong><span>Rows are cleaned, validated and checked against existing JPA records.</span><input type="file" name="file" accept=".csv,.xls,.xlsx,.pdf,image/*" required></label><button class="btn btn-primary mt-3 w-100"><i class="fa-solid fa-wand-magic-sparkles"></i> Validate and import</button></form></div></div>
+          <div class="col-12 col-xl-6"><div class="fp-card h-100"><div class="fp-card-head"><div><span class="fp-kicker">PORTABLE DATA</span><h2>Export your records</h2></div><i class="fa-solid fa-file-export fp-head-icon"></i></div><p class="fp-muted">Exports are generated locally and include only your authenticated JPA records.</p><div class="d-grid gap-3"><a class="btn btn-primary" th:href="@{/finance-plus/export(format='csv')}"><i class="fa-solid fa-file-csv"></i> Download CSV</a><a class="btn btn-outline-light" th:href="@{/finance-plus/export(format='xlsx')}"><i class="fa-solid fa-file-excel"></i> Download Excel workbook</a></div></div></div>
+        </div>
+      </section>
+
+      <section class="tab-pane fade" id="backups">
+        <div class="row g-4 mb-4">
+          <div class="col-12 col-xl-6"><form class="fp-card fp-form h-100" method="post" th:action="@{/finance-plus/backups}"><div class="fp-card-head"><div><span class="fp-kicker">AES-256-GCM</span><h2>Create encrypted backup</h2></div><i class="fa-solid fa-shield-halved fp-head-icon"></i></div><div class="mb-3"><label class="form-label">Backup passphrase</label><input class="form-control" type="password" minlength="8" maxlength="128" name="passphrase" autocomplete="new-password" required><div class="form-text">The passphrase is never stored. Automatic backups pause after 30 minutes or restart.</div></div><button class="btn btn-primary"><i class="fa-solid fa-lock"></i> Create backup</button></form></div>
+          <div class="col-12 col-xl-6"><form class="fp-card fp-form h-100" method="post" th:action="@{/finance-plus/backup-preferences}"><div class="fp-card-head"><div><span class="fp-kicker">AUTOMATION</span><h2>Automatic backup</h2></div><i class="fa-solid fa-clock fp-head-icon"></i></div><div class="form-check form-switch mb-3"><input class="form-check-input" type="checkbox" name="autoBackupEnabled" value="true" th:checked="${settings.autoBackupEnabled}"><label class="form-check-label">Enabled while vault is unlocked</label></div><div class="mb-4"><label class="form-label">Hour of day</label><select class="form-select" name="automaticBackupHour"><option th:each="hour : ${#numbers.sequence(0, 23)}" th:value="${hour}" th:text="${hour < 10 ? '0' + hour + ':00' : hour + ':00'}" th:selected="${settings.automaticBackupHour == hour}">02:00</option></select></div><button class="btn btn-outline-light"><i class="fa-solid fa-floppy-disk"></i> Save schedule</button></form></div>
+        </div>
+        <div class="fp-card">
+          <div class="fp-card-head"><div><span class="fp-kicker">VAULT</span><h2>Backup history</h2></div><form method="post" th:action="@{/finance-plus/vault/unlock}" class="d-flex gap-2"><input class="form-control form-control-sm" type="password" minlength="8" maxlength="128" name="passphrase" placeholder="Vault passphrase" autocomplete="off" required><button class="btn btn-sm btn-outline-light" th:disabled="${vaultUnlocked}"><i class="fa-solid fa-lock-open"></i> Unlock</button></form><form method="post" th:action="@{/finance-plus/vault/lock}"><button class="btn btn-sm btn-outline-light" th:disabled="${!vaultUnlocked}"><i class="fa-solid fa-lock"></i> Lock</button></form></div>
+          <div class="fp-empty" th:if="${#lists.isEmpty(backups)}"><i class="fa-solid fa-shield-halved"></i><p>No encrypted Finance Plus backups yet.</p></div>
+          <div class="table-responsive" th:unless="${#lists.isEmpty(backups)}"><table class="table fp-table align-middle"><thead><tr><th>Created</th><th>Type</th><th>Status</th><th>Size</th><th></th></tr></thead><tbody><tr th:each="backup : ${backups}"><td th:text="${#temporals.format(backup.createdAt, 'MMM d, yyyy HH:mm:ss')}">Date</td><td th:text="${backup.backupType}">MANUAL</td><td><span class="fp-status active" th:text="${backup.status}">AVAILABLE</span></td><td th:text="${backup.fileSize / 1024} + ' KB'">0 KB</td><td><div class="d-flex justify-content-end gap-2"><a class="fp-icon-button" th:href="@{/finance-plus/backups/{id}/download(id=${backup.id})}" title="Download"><i class="fa-solid fa-download"></i></a><form method="post" th:action="@{/finance-plus/backups/{id}/restore(id=${backup.id})}" class="fp-restore-form"><input class="form-control form-control-sm" type="password" minlength="8" maxlength="128" name="passphrase" placeholder="Passphrase" autocomplete="off" required><button class="btn btn-sm btn-outline-light" onclick="return confirm('Restore this backup for your account?')"><i class="fa-solid fa-rotate-left"></i> Restore</button></form><form method="post" th:action="@{/finance-plus/backups/{id}/delete(id=${backup.id})}"><button class="fp-icon-button danger" title="Delete"><i class="fa-solid fa-trash"></i></button></form></div></td></tr></tbody></table></div>
+        </div>
+      </section>
+
+      <section class="tab-pane fade" id="settings">
+        <div class="row g-4">
+          <div class="col-12 col-xl-7"><form class="fp-card fp-form" id="preferences" method="post" th:action="@{/finance-plus/preferences}"><div class="fp-card-head"><div><span class="fp-kicker">ALERT RULES</span><h2>Finance Plus preferences</h2></div><i class="fa-solid fa-sliders fp-head-icon"></i></div><div class="fp-setting"><div><strong>Bill reminders</strong><span>Notify before a Finance Plus recurring rule is due.</span></div><input class="form-check-input" type="checkbox" name="billRemindersEnabled" value="true" th:checked="${settings.billRemindersEnabled}"></div><div class="row g-3 mt-1"><div class="col-sm-6"><label class="form-label">Reminder days before</label><input class="form-control" type="number" min="1" max="30" name="billReminderDays" th:value="${settings.billReminderDays}"></div><div class="col-sm-6"><label class="form-label">Large expense threshold</label><input class="form-control" type="number" min="0.01" step="0.01" name="largeExpenseThreshold" th:value="${settings.largeExpenseThreshold}"></div></div><div class="fp-setting mt-3"><div><strong>Large expense alerts</strong><span>Flag same-day expenses above your threshold.</span></div><input class="form-check-input" type="checkbox" name="largeExpenseAlertsEnabled" value="true" th:checked="${settings.largeExpenseAlertsEnabled}"></div><div class="fp-setting"><div><strong>Weekly summary</strong><span>Create one weekly income and expense digest.</span></div><input class="form-check-input" type="checkbox" name="weeklySummaryEnabled" value="true" th:checked="${settings.weeklySummaryEnabled}"></div><div class="fp-setting"><div><strong>Monthly summary</strong><span>Create one monthly income and expense digest.</span></div><input class="form-check-input" type="checkbox" name="monthlySummaryEnabled" value="true" th:checked="${settings.monthlySummaryEnabled}"></div><button class="btn btn-primary mt-4"><i class="fa-solid fa-floppy-disk"></i> Save preferences</button></form></div>
+          <div class="col-12 col-xl-5" id="security"><div class="fp-card fp-form h-100"><div class="fp-card-head"><div><span class="fp-kicker">PASSCODE</span><h2>Section lock</h2></div><i class="fa-solid fa-user-lock fp-head-icon"></i></div><div class="fp-lock-state"><i class="fa-solid fa-shield-halved"></i><div><strong th:text="${settings.passcodeEnabled} ? 'Passcode enabled' : 'Passcode disabled'">Passcode disabled</strong><span>Stored as a BCrypt hash in the Finance Plus JPA settings table.</span></div></div><form method="post" th:action="@{/finance-plus/passcode}" data-confirm="Save this passcode? Existing sessions will be locked out."><div class="row g-3"><div class="col-12 col-sm-4"><label class="form-label" for="fp-current-passcode">Current passcode</label><input id="fp-current-passcode" class="form-control" type="password" inputmode="numeric" pattern="[0-9]{4,8}" maxlength="8" name="currentPasscode" autocomplete="current-password"></div><div class="col-6 col-sm-4"><label class="form-label" for="fp-new-passcode">New passcode</label><input id="fp-new-passcode" class="form-control" type="password" inputmode="numeric" pattern="[0-9]{4,8}" maxlength="8" name="passcode" autocomplete="new-password" required></div><div class="col-6 col-sm-4"><label class="form-label" for="fp-confirm-passcode">Confirm</label><input id="fp-confirm-passcode" class="form-control" type="password" inputmode="numeric" pattern="[0-9]{4,8}" maxlength="8" name="confirmPasscode" autocomplete="new-password" required></div></div><button class="btn btn-primary mt-3"><i class="fa-solid fa-key"></i> Save passcode</button></form><form method="post" th:action="@{/finance-plus/passcode/disable}" class="mt-3" data-confirm="Disable the Finance Plus passcode? Existing sessions will be locked out."><input class="form-control mt-2" type="password" inputmode="numeric" pattern="[0-9]{4,8}" maxlength="8" name="currentPasscode" id="fp-disable-current-passcode" placeholder="Current passcode" autocomplete="current-password" required><button class="btn btn-outline-danger" th:disabled="${!settings.passcodeEnabled}"><i class="fa-solid fa-lock-open"></i> Disable passcode</button></form><form method="post" th:action="@{/finance-plus/lock}" class="mt-3"><button class="btn btn-outline-light w-100"><i class="fa-solid fa-lock"></i> Lock Finance Plus now</button></form></div></div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div th:replace="~{fragments/finwise :: fwFooter}"></div>
+  <script th:replace="~{fragments/finwise :: fwScripts}"></script>
+  <script src="/webjars/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/finance-plus.js"></script>
+</body>
+</html>

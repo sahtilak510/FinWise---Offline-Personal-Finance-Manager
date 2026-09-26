@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en" th:attr="data-theme=${user != null and user.theme != null ? user.theme : 'light'}">
+<head th:replace="~{fragments/finwise :: fwHead('Scan & Fill')}">
+  <meta charset="UTF-8"><title>Scan &amp; Fill — FinWise</title>
+  <link rel="stylesheet" href="/css/chatbot-widget.css">
+  <link rel="stylesheet" href="/css/finwise-theme.css">
+</head>
+<body class="fw-body fw-shell">
+<div th:replace="~{fragments/finwise :: fwSidebar('scan', ${user})}"></div>
+<div th:replace="~{fragments/finwise :: fwTopbar('Scan & Fill', 'Upload a receipt — we extract, you confirm', ${user}, null)}"></div>
+<div class="fw-scrim" onclick="fwCloseSidebar()"></div>
+
+<div class="fw-content">
+<main class="fw-wrap">
+    <div class="fw-pagehead">
+      <div><h1>Scan &amp; Fill</h1><p>Drop a receipt or statement · PDF, JPG, PNG · 100% offline OCR</p></div>
+    </div>
+
+  <div th:if="${successMessage}" data-fw-flash data-fw-kind="ok" th:text="${successMessage}" style="display:none"></div>
+  <div th:if="${errorMessage}" data-fw-flash data-fw-kind="bad" th:text="${errorMessage}" style="display:none"></div>
+  <div th:if="${successMessage}" class="fw-alert ok" th:text="${successMessage}"></div>
+  <div th:if="${errorMessage}" class="fw-alert bad" th:text="${errorMessage}"></div>
+
+  <section class="fw-grid2">
+    <article class="fw-card fw-card-pad">
+      <div class="fw-card-h"><div><h2>Upload document</h2><p>Drag &amp; drop or browse — processing stays on your device</p></div></div>
+      <div class="fw-drop" id="fwDrop" role="button" tabindex="0" aria-label="Upload receipt">
+        <div class="fw-drop-ic">📄</div>
+        <b>Drop your receipt or statement here</b>
+        <p class="fw-hint">PDF • JPG • PNG &nbsp;·&nbsp; max ~10MB</p>
+        <div style="margin-top:12px"><button type="button" class="fw-btn fw-btn-sec" id="fwBrowse">Choose File</button></div>
+        <input type="file" id="fwFile" accept=".pdf,.jpg,.jpeg,.png" hidden>
+        <div id="fwFileName" class="fw-hint" style="margin-top:8px"></div>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
+        <button class="fw-btn fw-btn-pri fw-btn-lg" id="fwScanBtn" disabled>⚙ Scan &amp; Extract</button>
+        <button class="fw-btn fw-btn-sec" id="fwClearBtn" type="button">Clear</button>
+      </div>
+      <div class="fw-scanbar" id="fwScanbar" aria-live="polite">
+        <div class="fw-spin" style="margin:0"></div>
+        <div><b>Processing document…</b><div class="fw-hint">Running local OCR — no uploads, no cloud.</div></div>
+      </div>
+      <div id="fwScanMsg" style="margin-top:10px"></div>
+    </article>
+
+    <article class="fw-card fw-card-pad">
+      <div class="fw-card-h"><div><h2>Extracted transaction</h2><p>Review, edit, then save — nothing is stored until you confirm</p></div><span class="fw-badge mut" id="fwDupBadge" style="display:none">Possible duplicate</span></div>
+      <div id="fwTransactions" style="display:none;margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px"><h3 style="margin:0;font-size:1rem">Extracted transactions (<span id="fwTransactionCount">0</span>)</h3><span class="fw-hint">Select a row to review it</span></div>
+        <div style="overflow-x:auto"><table class="fw-table"><thead><tr><th>Description</th><th>Type</th><th>Amount</th><th>Date</th><th>Action</th></tr></thead><tbody id="fwTransactionRows"></tbody></table></div>
+        <p class="fw-hint" style="margin:8px 0 0">Nothing is saved automatically. Review and save each transaction when ready.</p>
+      </div>
+      <form method="post" th:action="@{/scan/save}" id="fwSaveForm">
+        <div class="fw-formgrid">
+          <div><label class="fw-label" for="fMerchant">Merchant</label><input class="fw-input" id="fMerchant" name="merchant" required maxlength="150" placeholder="e.g. Amazon"></div>
+          <div><label class="fw-label" for="fAmount">Amount (₹)</label><input class="fw-input fw-num" id="fAmount" name="amount" required inputmode="decimal" placeholder="1299.00"></div>
+          <div><label class="fw-label" for="fDate">Date</label><input class="fw-input" id="fDate" name="date" type="date" required th:value="${today}"></div>
+          <div><label class="fw-label" for="fPay">Payment method</label>
+            <select class="fw-select" id="fPay" name="paymentMethod">
+              <option th:each="p : ${paymentMethods}" th:value="${p}" th:text="${p}">UPI</option>
+            </select></div>
+          <div><label class="fw-label" for="fCat">Category</label>
+            <select class="fw-select" id="fCat" name="category">
+              <option th:each="c : ${categories}" th:value="${c}" th:text="${c}">Shopping</option>
+            </select></div>
+          <div><label class="fw-label" for="fType">Type</label>
+            <select class="fw-select" id="fType" name="transactionType">
+              <option value="EXPENSE" selected>Expense</option><option value="INCOME">Income</option>
+            </select></div>
+        </div>
+        <div id="fwWarn" style="margin-top:10px"></div>
+        <dl class="fw-kv" id="fwPreview" style="margin-top:12px;display:none">
+          <dt>Merchant</dt><dd id="pvMerchant">—</dd><dt>Amount</dt><dd id="pvAmount">—</dd>
+          <dt>Date</dt><dd id="pvDate">—</dd><dt>Payment</dt><dd id="pvPay">—</dd>
+          <dt>Category</dt><dd id="pvCat">—</dd><dt>Type</dt><dd id="pvType">—</dd>
+        </dl>
+        <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
+          <button type="button" class="fw-btn fw-btn-sec" id="fwEditBtn">Edit fields</button>
+          <button type="submit" class="fw-btn fw-btn-pri fw-btn-lg">✓ Save Transaction</button>
+        </div>
+      </form>
+    </article>
+  </section>
+
+  <section class="fw-card fw-card-pad" style="margin-top:14px">
+    <div class="fw-card-h"><div><h2>How it works</h2><p>Private by design</p></div></div>
+    <div class="fw-grid3">
+      <div><b>1 · Upload</b><p class="fw-hint">Receipt image or statement PDF never leaves this machine.</p></div>
+      <div><b>2 · Extract</b><p class="fw-hint">OpenCV + Tesseract read merchant, amount and date locally.</p></div>
+      <div><b>3 · Confirm</b><p class="fw-hint">You review every field before it becomes an expense or income.</p></div>
+    </div>
+  </section>
+</main>
+</div>
+<div th:replace="~{fragments/finwise :: fwFooter}"></div>
+<div th:replace="~{fragments/finwise :: fwScripts}"></div>
+<script src="/js/scan-fill.js"></script>
+</body>
+</html>

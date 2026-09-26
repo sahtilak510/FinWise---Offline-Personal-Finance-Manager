@@ -1,0 +1,392 @@
+/* ============================================================
+   FinWise — Theme polish + text-visibility guarantees
+   Loaded LAST so it wins over legacy dark-only rules.
+   data-theme is always the EFFECTIVE value (light|dark).
+   Preference (light|dark|auto) lives in JS/localStorage + DB.
+   ============================================================ */
+
+/* ---------- Theme toggle + segmented control ---------- */
+.fw-theme-toggle {
+  display: inline-grid;
+  place-items: center;
+  gap: 2px;
+  font-size: 1.02rem;
+  line-height: 1;
+}
+.fw-theme-toggle [data-fw-theme-icon] { font-size: 1.02rem; line-height: 1; display: inline-flex; align-items: center; justify-content: center; }
+.fw-theme-toggle [data-fw-theme-icon] svg { width: 18px; height: 18px; display: block; }
+.fw-theme-toggle [data-fw-theme-label] { display: none !important; }
+/* Topbar toggle is icon-only, circular, with hover + focus */
+.fw-top-actions .fw-theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  min-width: 38px;
+  height: 38px;
+  padding: 0;
+  font-size: .95rem;
+  border-radius: 50%;
+}
+.fw-top-actions .fw-theme-toggle:hover { background: var(--fw-hover); color: var(--fw-text); }
+.fw-top-actions .fw-theme-toggle:focus-visible { outline: 2px solid var(--fw-primary); outline-offset: 2px; }
+.fw-top-actions .fw-theme-toggle [data-fw-theme-label] { display: none !important; }
+@media (max-width: 520px) {
+  .fw-top-actions .fw-theme-toggle { padding: 0; width: 38px; }
+}
+
+/* Segmented Light / Dark / Auto switch (settings + modals) */
+[data-fw-theme-seg] {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+[data-fw-theme-opt] {
+  flex: 1 1 120px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 1.5px solid var(--fw-border);
+  background: var(--fw-surface);
+  color: var(--fw-text-2);
+  font: 650 .87rem var(--fw-font);
+  cursor: pointer;
+  transition: border-color var(--fw-dur) var(--fw-ease), background var(--fw-dur) var(--fw-ease), color var(--fw-dur) var(--fw-ease);
+}
+[data-fw-theme-opt]:hover { border-color: var(--fw-primary); color: var(--fw-text); }
+[data-fw-theme-opt].on {
+  border-color: var(--fw-primary);
+  background: var(--fw-primary-soft);
+  color: var(--fw-primary);
+}
+[data-theme="dark"] [data-fw-theme-opt].on { color: #c7d2fe; }
+[data-fw-theme-opt] small { font-weight: 500; opacity: .75; }
+
+/* Sidebar "New" badge (translated via data-i18n, no emoji) */
+.fw-sb-badge {
+  margin-left: auto;
+  font-size: .62rem;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 99px;
+  background: var(--fw-primary-soft);
+  color: var(--fw-primary);
+  border: 1px solid var(--fw-primary-border);
+  flex: none;
+}
+[data-theme="dark"] .fw-sb-badge { color: #c7d2fe; }
+
+/* ---------- Accessibility prefs (global, applied from Settings) ---------- */
+html[data-fw-textsize="large"] { font-size: 112.5%; }
+html[data-fw-textsize="xlarge"] { font-size: 125%; }
+
+html.fw-high-contrast[data-theme="light"], html.fw-high-contrast:not([data-theme="dark"]):not(.dark) {
+  --fw-text-2: #0f172a;
+  --fw-text-3: #334155;
+  --fw-border: #94a3b8;
+  --fw-border-strong: #64748b;
+  --text-secondary: #0f172a;
+  --text-muted: #334155;
+  --border: #94a3b8;
+}
+html.fw-high-contrast[data-theme="dark"], html.fw-high-contrast.dark {
+  --fw-text-2: #e2e8f0;
+  --fw-text-3: #cbd5e1;
+  --fw-border: #64748b;
+  --fw-border-strong: #94a3b8;
+  --text-secondary: #e2e8f0;
+  --text-muted: #cbd5e1;
+  --border: #64748b;
+}
+html.fw-high-contrast .fw-input::placeholder,
+html.fw-high-contrast .fw-area::placeholder,
+html.fw-high-contrast .fw-top-search input::placeholder { opacity: 1; }
+.fw-theme-preview {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 14px;
+  border: 1px solid var(--fw-border);
+  border-radius: 12px;
+  background: var(--fw-surface-2);
+  font-size: .84rem;
+}
+.fw-theme-preview .row { display: flex; align-items: center; gap: 10px; }
+.fw-theme-preview .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+
+/* ---------- Base text visibility ---------- */
+body.fw-body { color: var(--fw-text); background: var(--fw-bg); }
+/* Subtle app-wide theme cross-fade: background + text + border only.
+   Layout, spacing, typography, animations and functionality untouched. */
+.fw-nav--landing, .landing-main section, .feature-card, .fw-footer,
+.fw-input, .fw-select, .fw-area, .fw-form-input, .fw-form-select,
+.fw-form-textarea, .fw-textarea, .fw-modal, .fw-dropdown__menu,
+.fw-chatbot-panel, .fw-chatbot-msg-bubble, .fw-chatbot-input,
+.fw-msg-b, .fw-tablewrap, .fw-btn, .fw-account-menu-panel {
+  transition: background-color var(--fw-dur) var(--fw-ease), color var(--fw-dur) var(--fw-ease), border-color var(--fw-dur) var(--fw-ease);
+}
+body.fw-body h1, body.fw-body h2, body.fw-body h3,
+body.fw-body h4, body.fw-body h5, body.fw-body h6 { color: var(--fw-text); }
+body.fw-body p, body.fw-body li, body.fw-body dd, body.fw-body td { color: inherit; }
+.fw-pagehead h1, .fw-card-h h2, .fw-card-h h3 { color: var(--fw-text); }
+.fw-pagehead p, .fw-card-h p { color: var(--fw-text-2); }
+.fw-hint { color: var(--fw-text-2); }
+.fw-empty p { color: var(--fw-text-2); }
+.fw-tx span { color: var(--fw-text-2); }
+::placeholder { opacity: .65; }
+
+/* Muted text must stay readable in both themes (was #94a3b8-only) */
+[data-theme="dark"] .muted, [data-theme="dark"] .text-muted { color: var(--fw-text-2) !important; }
+
+/* Native controls follow the theme */
+select.fw-input option, select.fw-select option, select.fw-input, select.fw-select {
+  color-scheme: light;
+}
+[data-theme="dark"] select.fw-input option,
+[data-theme="dark"] select.fw-select option {
+  color-scheme: dark;
+  background: #151D2D;
+  color: #eef2ff;
+}
+input[type="date"], input[type="month"], input[type="time"] { color-scheme: light; }
+[data-theme="dark"] input[type="date"],
+[data-theme="dark"] input[type="month"],
+[data-theme="dark"] input[type="time"] { color-scheme: dark; }
+
+/* ---------- Light-theme repairs for hardcoded dark leftovers ---------- */
+[data-theme="light"] body.fw-body { background: var(--fw-bg); color: var(--fw-text); }
+
+/* account.html / settings rows that used rgba(0,0,0,.2) stay readable */
+[data-theme="light"] [style*="rgba(0,0,0,.2)"],
+[data-theme="light"] [style*="rgba(0, 0, 0, .2)"],
+[data-theme="light"] [style*="rgba(0,0,0,0.2)"] {
+  background-color: var(--fw-surface-2) !important;
+  border-color: var(--fw-border) !important;
+  color: var(--fw-text) !important;
+}
+
+/* Profile hero gradient ends light in light-mode — keep text dark & visible */
+[data-theme="light"] [style*="linear-gradient(135deg, var(--primary-900)"] {
+  background: linear-gradient(135deg, #eef2ff, #ffffff) !important;
+  color: var(--fw-text) !important;
+}
+[data-theme="light"] [style*="linear-gradient(135deg, var(--primary-900)"] p,
+[data-theme="light"] [style*="linear-gradient(135deg, var(--primary-900)"] div { color: var(--fw-text-2); }
+[data-theme="light"] [style*="linear-gradient(135deg, var(--primary-900)"] h1 { color: var(--fw-text) !important; }
+
+/* Generic glass rows using --glass-bg already adapt via bridge; make sure
+   translucent black pills/cards from legacy markup don't go invisible */
+[data-theme="light"] .fw-balance-hero { color: var(--fw-text); }
+
+/* Auth brand panel is intentionally always dark — keep its text white */
+.fw-auth-brand, .fw-auth-brand h1, .fw-auth-brand p,
+.fw-auth-brand b, .fw-auth-brand span { color: #e2e8f0; }
+.fw-auth-brand .fw-feat span { color: #e2e8f0; opacity: .7; }
+
+/* Account number cards are intentionally dark gradients — keep white text */
+.fw-acct, .fw-acct b, .fw-acct small, .fw-acct code,
+.fw-acct span, .fw-acct div { color: #fff; }
+.fw-acct small, .fw-acct code { opacity: .8; }
+
+/* Chat bubbles: user bubble is always brand-on-white-text (visible both) */
+.fw-msg.user .fw-msg-b { color: #fff; }
+
+/* ---------- Dark-theme text brightening for legacy surfaces ---------- */
+[data-theme="dark"] .fw-table th { color: #8ea0bb; }
+[data-theme="dark"] .fw-table td { color: #dbe4f3; }
+[data-theme="dark"] .fw-label { color: #b6c2d6; }
+[data-theme="dark"] .fw-hint { color: #8ea0bb; }
+[data-theme="dark"] .fw-top-title small { color: #8ea0bb; }
+[data-theme="dark"] .fw-sb-group > p { color: #7d8aa3; }
+[data-theme="dark"] .fw-stat-sub { color: #8ea0bb; }
+[data-theme="dark"] a.fw-link { color: #a5b4fc; }
+[data-theme="dark"] .fw-btn-ghost { color: #a5b4fc; }
+[data-theme="dark"] .fw-rowbtn { color: #b6c2d6; }
+
+/* Legacy .fw-btn-secondary used --surface-300 (mid grey) — lift in dark */
+[data-theme="dark"] .fw-btn-secondary,
+[data-theme="dark"] .fw-btn--secondary { color: #dbe4f3; }
+
+/* Danger text on tinted backgrounds */
+[data-theme="dark"] .fw-btn-bad { color: #fca5a5; }
+[data-theme="dark"] .fw-sb-logout:hover { color: #fca5a5; }
+
+/* Code / mono stays visible */
+code, .fw-acct code { font-family: var(--fw-mono); }
+[data-theme="light"] code:not(.fw-acct code) { color: var(--fw-text-2); }
+[data-theme="dark"] code:not(.fw-acct code) { color: #b6c2d6; }
+
+/* Toast text */
+.fw-toast b { color: var(--fw-text); }
+.fw-toast span { color: var(--fw-text-2); }
+
+/* ============================================================
+   PART 2 — Dual-API theme enforcement
+   Every dark rule below matches [data-theme="dark"] (runtime
+   attribute, painted pre-CSS via the <head> bootstrap) AND the
+   .dark / html.dark class API. finwise-ui.js keeps both in sync
+   on every toggle, persist (localStorage), and OS-preference change.
+   Spec tokens (--bg-*, --text-*, --border, --input-bg, --nav-bg)
+   are the single source of truth and equal the fw-* values.
+   ============================================================ */
+
+/* ---------- Spec-token wiring for the app shell ---------- */
+body.fw-body { background: var(--bg-primary); color: var(--text-primary); }
+body.fw-body h1, body.fw-body h2, body.fw-body h3,
+body.fw-body h4, body.fw-body h5, body.fw-body h6 { color: var(--text-primary); }
+.fw-pagehead p, .fw-card-h p { color: var(--text-secondary); }
+.fw-card { background: var(--bg-card); border-color: var(--border); }
+.fw-input, .fw-select, .fw-area { background: var(--input-bg); color: var(--text-primary); border-color: var(--border); }
+.fw-tablewrap { background: var(--bg-card); border-color: var(--border); }
+.fw-modal { background: var(--bg-card); border-color: var(--border); }
+
+/* ---------- .dark mirrors of the Part-1 dark rules ---------- */
+.dark .muted, .dark .text-muted,
+html.dark .muted, html.dark .text-muted { color: var(--fw-text-2) !important; }
+.dark select.fw-input option, .dark select.fw-select option,
+html.dark select.fw-input option, html.dark select.fw-select option {
+  color-scheme: dark; background: #151D2D; color: #eef2ff;
+}
+.dark input[type="date"], .dark input[type="month"], .dark input[type="time"],
+html.dark input[type="date"], html.dark input[type="month"], html.dark input[type="time"] { color-scheme: dark; }
+.dark .fw-table th, html.dark .fw-table th { color: #8ea0bb; }
+.dark .fw-table td, html.dark .fw-table td { color: #dbe4f3; }
+.dark .fw-label, html.dark .fw-label { color: #b6c2d6; }
+.dark .fw-hint, html.dark .fw-hint { color: #8ea0bb; }
+.dark .fw-top-title small, html.dark .fw-top-title small { color: #8ea0bb; }
+.dark .fw-sb-group > p, html.dark .fw-sb-group > p { color: #7d8aa3; }
+.dark .fw-stat-sub, html.dark .fw-stat-sub { color: #8ea0bb; }
+.dark a.fw-link, html.dark a.fw-link { color: #a5b4fc; }
+.dark .fw-btn-ghost, html.dark .fw-btn-ghost { color: #a5b4fc; }
+.dark .fw-rowbtn, html.dark .fw-rowbtn { color: #b6c2d6; }
+.dark .fw-btn-secondary, .dark .fw-btn--secondary,
+html.dark .fw-btn-secondary, html.dark .fw-btn--secondary { color: #dbe4f3; }
+.dark .fw-btn-bad, html.dark .fw-btn-bad { color: #fca5a5; }
+.dark .fw-sb-logout:hover, html.dark .fw-sb-logout:hover { color: #fca5a5; }
+.dark code:not(.fw-acct code), html.dark code:not(.fw-acct code) { color: #b6c2d6; }
+.dark .fw-badge, html.dark .fw-badge { color: #a5b4fc; }
+.dark .fw-sb-link.active, html.dark .fw-sb-link.active { color: #a5b4fc; }
+.dark .fw-sb-link.active .fw-sb-count, html.dark .fw-sb-link.active .fw-sb-count {
+  background: rgba(129,140,248,.16); color: #c7d2fe;
+}
+.dark [data-fw-theme-opt].on, html.dark [data-fw-theme-opt].on { color: #c7d2fe; }
+/* Chatbot widget is dark-by-default: keep .dark mirrors for its surfaces */
+.dark .fw-chatbot-panel, html.dark .fw-chatbot-panel {
+  background: rgba(6, 8, 32, 0.92); border-color: rgba(99, 102, 241, 0.15);
+}
+.dark .fw-chatbot-title, html.dark .fw-chatbot-title { color: #e2e8f0; }
+.dark .fw-chatbot-input, html.dark .fw-chatbot-input { background: rgba(255,255,255,.04); color: #e2e8f0; }
+.dark .fw-chatbot-msg-row.bot .fw-chatbot-msg-bubble, html.dark .fw-chatbot-msg-row.bot .fw-chatbot-msg-bubble,
+.dark .fw-chatbot-msg-row:not(.user):not(.system) .fw-chatbot-msg-bubble,
+html.dark .fw-chatbot-msg-row:not(.user):not(.system) .fw-chatbot-msg-bubble {
+  background: rgba(255, 255, 255, 0.04); border-color: rgba(255,255,255,.06); color: #e2e8f0;
+}
+
+/* ---------- Footer / legacy surfaces ---------- */
+[data-theme="dark"] .fw-footer, .dark .fw-footer, html.dark .fw-footer { color: #8ea0bb; }
+[data-theme="dark"] body.fw-shell .fw-footer, .dark body.fw-shell .fw-footer { color: #8ea0bb; }
+
+/* ---------- Placeholders: WCAG-readable in BOTH themes ---------- */
+[data-theme="light"] .fw-input::placeholder, [data-theme="light"] .fw-select::placeholder,
+[data-theme="light"] .fw-area::placeholder, [data-theme="light"] .fw-form-input::placeholder,
+[data-theme="light"] .fw-textarea::placeholder, [data-theme="light"] .fw-top-search input::placeholder,
+[data-theme="light"] .fw-search__input::placeholder {
+  color: #64748b !important; opacity: 1;
+}
+[data-theme="dark"] .fw-input::placeholder, .dark .fw-input::placeholder,
+[data-theme="dark"] .fw-area::placeholder, .dark .fw-area::placeholder,
+[data-theme="dark"] .fw-form-input::placeholder, .dark .fw-form-input::placeholder,
+[data-theme="dark"] .fw-textarea::placeholder, .dark .fw-textarea::placeholder,
+[data-theme="dark"] .fw-top-search input::placeholder, .dark .fw-top-search input::placeholder {
+  color: #8ea0bb !important; opacity: 1;
+}
+::placeholder { opacity: 1; }
+
+/* ---------- Selects / dropdowns / date controls ---------- */
+[data-theme="light"] select.fw-input, [data-theme="light"] select.fw-select { color-scheme: light; }
+[data-theme="light"] input[type="color"] { color-scheme: light; }
+[data-theme="dark"] input[type="color"], .dark input[type="color"] { color-scheme: dark; }
+/* Disabled + readonly stay visibly distinct in both themes */
+.fw-input:disabled, .fw-select:disabled, .fw-area:disabled,
+.fw-input[readonly], .fw-select[readonly] { opacity: .62; }
+[data-theme="light"] .fw-input:disabled, [data-theme="light"] .fw-select:disabled,
+[data-theme="light"] .fw-area:disabled { background: #eef2f7; color: #52627A; }
+/* Focus rings stay brand-visible on light AND dark */
+.fw-input:focus-visible, .fw-select:focus-visible, .fw-area:focus-visible,
+.fw-top-search input:focus-visible {
+  outline: 2px solid var(--fw-primary); outline-offset: 1px;
+}
+
+/* ---------- Transactions page: light-mode contrast repairs ----------
+   (dark styling is the file default and already correct) */
+[data-theme="light"] .tx-page-subtitle { color: #52627A; }
+[data-theme="light"] .tx-kpi-meta { color: #52627A; }
+[data-theme="light"] .tx-filter-summary { color: #52627A; }
+[data-theme="light"] .tx-loading { color: #52627A; }
+[data-theme="light"] .tx-pagination-info { color: #52627A; }
+[data-theme="light"] .tx-page-size-label { color: #52627A; }
+[data-theme="light"] .tx-page-indicator { color: #475569; }
+[data-theme="light"] .tx-detail-label { color: #52627A; }
+[data-theme="light"] .tx-detail-value { color: #172033; }
+[data-theme="light"] .tx-detail-notes { color: #52627A; }
+[data-theme="light"] #confirm-modal-message { color: #475569; }
+[data-theme="light"] .fw-form-toggle { color: #475569; }
+[data-theme="light"] .tx-type-btn { color: #52627A; }
+[data-theme="light"] .tx-type-btn:hover { color: #172033; background: rgba(79,70,229,.08); }
+[data-theme="light"] .fw-form-error { color: #b91c1c; }
+
+/* ---------- Scan & Fill: theme-aware notice ---------- */
+.scan-notice { border-color: rgba(245,158,11,.4); background: rgba(245,158,11,.08); color: #fcd34d; }
+[data-theme="light"] .scan-hint { color: #52627A; }
+[data-theme="light"] .scan-loading { color: #52627A; }
+[data-theme="light"] .scan-notice { background: rgba(217,119,6,.10); border-color: rgba(217,119,6,.35); color: #92400e; }
+
+/* ---------- Habits page: replace dark-only hardcodes ---------- */
+[data-theme="light"] .fw-habit-badge {
+  background: rgba(79,70,229,.08) !important; color: #4338ca !important;
+}
+[data-theme="light"] .fw-habit-track { background: rgba(15,23,42,.10) !important; }
+
+/* ---------- Modals / dropdowns / tooltips ---------- */
+.fw-backdrop { background: rgba(2,6,23,.5); }
+[data-theme="light"] .fw-backdrop { background: rgba(15,23,42,.45); }
+.fw-modal-h h2, .fw-modal-b { color: inherit; }
+[data-theme="dark"] .fw-modal-h h2, .dark .fw-modal-h h2 { color: #F8FAFC; }
+/* Native tooltip + title attributes follow theme */
+[data-theme="dark"] .fw-top-search input::-webkit-calendar-picker-indicator,
+.dark .fw-top-search input::-webkit-calendar-picker-indicator { opacity: .7; }
+
+/* ---------- Chart + legend readability ---------- */
+.fw-chartbox { color: var(--text-secondary); }
+[data-theme="dark"] .fw-chartbox, .dark .fw-chartbox { color: #CBD5E1; }
+.fw-filters .fw-pill b { color: inherit; }
+/* Chart.js tooltip inherits theme via JS defaults; keep containers clean */
+canvas { max-width: 100%; }
+
+/* ---------- Green accent: visible + readable in both themes ---------- */
+.fw-amt.in, .fw-pill.up, .fw-badge.ok { color: var(--fw-success-text); }
+[data-theme="dark"] .fw-amt.in, .dark .fw-amt.in { color: #34d399; }
+.fw-stat.g-green .fw-stat-val { color: var(--text-primary); }
+
+/* ---------- AI Assistant (chat page) bubbles ---------- */
+[data-theme="light"] .fw-msg-b { background: #f1f5f9; border-color: rgba(15,23,42,.08); color: #172033; }
+[data-theme="light"] .fw-chat-side { background: #f1f5f9; }
+[data-theme="dark"] .fw-msg-b, .dark .fw-msg-b { color: #dbe4f3; }
+[data-theme="light"] .fw-chip { background: #fff; color: #52627A; }
+[data-theme="light"] .fw-chat-in { background: #fff; }
+
+/* ---------- Dark-mode glow tuning: intentional, not light-on-dark ---------- */
+[data-theme="dark"] body::before, .dark body::before, html.dark body::before {
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 20%, rgba(99,102,241,.20), transparent 60%),
+    radial-gradient(ellipse 70% 50% at 80% 80%, rgba(139,92,246,.15), transparent 55%),
+    radial-gradient(ellipse 60% 40% at 50% 50%, rgba(16,185,129,.09), transparent 50%);
+}
+[data-theme="dark"] body.fw-body::before, .dark body.fw-body::before { content: none !important; }
+[data-theme="dark"] .fw-auth-form, .dark .fw-auth-form { background: var(--bg-primary); }

@@ -1,0 +1,205 @@
+/* ============================================================
+   FinWise Premium Design System — Tokens
+   Single source of truth for color, type, spacing, radius.
+   Works offline, no external fonts. Supports light + dark.
+   ============================================================ */
+:root {
+  color-scheme: light dark;
+  /* Brand */
+  --fw-primary: #4f46e5;
+  --fw-primary-600: #4338ca;
+  --fw-primary-700: #3730a3;
+  --fw-primary-soft: rgba(79, 70, 229, .10);
+  --fw-primary-border: rgba(79, 70, 229, .22);
+  --fw-accent: #059669;
+  --fw-accent-soft: rgba(5, 150, 105, .10);
+
+  /* Semantic — fill colors (keep white text readable on buttons) */
+  --fw-success: #059669;
+  --fw-success-soft: rgba(5, 150, 105, .12);
+  --fw-warning: #d97706;
+  --fw-warning-soft: rgba(217, 119, 6, .12);
+  --fw-danger: #dc2626;
+  --fw-danger-soft: rgba(220, 38, 38, .10);
+  --fw-info: #0284c7;
+  --fw-info-soft: rgba(2, 132, 199, .12);
+
+  /* Semantic — TEXT colors, tuned per theme for WCAG AA on surfaces.
+     Light: darkened for contrast on white. Dark: brightened for
+     contrast on slate. Always use these for text/icons on surfaces. */
+  --fw-success-text: #047857;
+  --fw-warning-text: #b45309;
+  --fw-danger-text: #b91c1c;
+  --fw-info-text: #0369a1;
+
+  /* Light theme (default) */
+  --fw-bg: #F8FAFC;
+  --fw-bg-2: #eef1f7;
+  --fw-surface: #ffffff;
+  --fw-surface-2: #f8fafc;
+  --fw-surface-3: #eef2f7;
+  --fw-border: #E2E8F0;
+  --fw-border-strong: #cbd5e1;
+  --fw-text: #0f172a;
+  --fw-text-2: #475569;
+  --fw-text-3: #94a3b8;
+  --fw-topbar-bg: rgba(255, 255, 255, .86);
+  --fw-sidebar-bg: #ffffff;
+  --fw-sidebar-text: #475569;
+  --fw-input-bg: #ffffff;
+  --fw-hover: #f1f5f9;
+  --fw-chart-grid: rgba(15, 23, 42, .08);
+  --fw-chart-tick: #64748b;
+
+  /* ---- Spec theme tokens (light): generic aliases used across the app ----
+     Light = bright, clean premium finance UI. */
+  --bg-primary: #F8FAFC;
+  --bg-secondary: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-tertiary: #EEF1F7;
+  --text-primary: #0F172A;
+  --text-secondary: #64748B;
+  --text-muted: #7C8AA0;
+  --border: #E2E8F0;
+  --border-strong: #CBD5E1;
+  --input-bg: #FFFFFF;
+  --nav-bg: #FFFFFF;
+  --accent-green: #059669;
+  --accent-green-text: #047857;
+  --btn-gradient: linear-gradient(135deg, #4f46e5, #6366f1);
+  --glow-primary: rgba(99, 102, 241, .12);
+  --glow-accent: rgba(16, 185, 129, .08);
+
+  /* Shape + elevation (restrained, premium) */
+  --fw-r-sm: 8px;
+  --fw-r-md: 12px;
+  --fw-r-lg: 16px;
+  --fw-r-xl: 20px;
+  --fw-shadow-sm: 0 1px 2px rgba(15, 23, 42, .06);
+  --fw-shadow-md: 0 4px 14px -4px rgba(15, 23, 42, .12);
+  --fw-shadow-lg: 0 12px 32px -12px rgba(15, 23, 42, .18);
+
+  /* Type */
+  --fw-font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  --fw-mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --fw-page-title: clamp(1.5rem, 2vw, 1.9rem);
+  --fw-section-title: 1.02rem;
+  --fw-num: var(--fw-font);
+
+  /* Layout */
+  --fw-sidebar-w: 264px;
+  --fw-sidebar-collapsed-w: 78px;
+  --fw-topbar-h: 64px;
+  --fw-content-max: 1240px;
+
+  /* Motion */
+  --fw-ease: cubic-bezier(.2, .7, .3, 1);
+  --fw-dur: 180ms;
+}
+
+/* Dark theme — premium slate, not pure black.
+   Matches [data-theme="dark"] (runtime attribute) AND .dark / html.dark
+   (spec class API). JS keeps both in sync, so either selector works. */
+[data-theme="dark"], .dark, html.dark {
+  color-scheme: dark;
+  --fw-bg: #070B14;
+  --fw-bg-2: #0A1120;
+  --fw-surface: #111827;
+  --fw-surface-2: #151D2D;
+  --fw-surface-3: #1A2438;
+  --fw-border: #263247;
+  --fw-border-strong: rgba(148, 163, 184, .28);
+  --fw-text: #F8FAFC;
+  --fw-text-2: #94A3B8;
+  --fw-text-3: #7d8aa3;
+  --fw-topbar-bg: rgba(7, 11, 20, .82);
+  --fw-sidebar-bg: #0A1120;
+  --fw-sidebar-text: #aab7cf;
+  --fw-input-bg: #0C1322;
+  --fw-hover: rgba(148, 163, 184, .10);
+  --fw-chart-grid: rgba(148, 163, 184, .14);
+  --fw-chart-tick: #8ea0bb;
+  --fw-shadow-sm: 0 1px 2px rgba(0, 0, 0, .4);
+  --fw-shadow-md: 0 8px 22px -8px rgba(0, 0, 0, .5);
+  --fw-shadow-lg: 0 18px 44px -16px rgba(0, 0, 0, .6);
+  --fw-primary-soft: rgba(129, 140, 248, .14);
+  /* Brightened text variants — verified ≥ 4.5:1 on #121a30 surfaces */
+  --fw-success-text: #34d399;
+  --fw-warning-text: #fbbf24;
+  --fw-danger-text: #f87171;
+  --fw-info-text: #38bdf8;
+  --fw-success-soft: rgba(52, 211, 153, .14);
+  --fw-warning-soft: rgba(251, 191, 36, .14);
+  --fw-danger-soft: rgba(248, 113, 113, .14);
+  --fw-info-soft: rgba(56, 189, 248, .14);
+
+  /* ---- Spec theme tokens (dark): genuinely dark premium finance UI ---- */
+  --bg-primary: #070B14;
+  --bg-secondary: #111827;
+  --bg-card: #111827;
+  --bg-tertiary: #151D2D;
+  --text-primary: #F8FAFC;
+  --text-secondary: #94A3B8;
+  --text-muted: #94A3B8;
+  --border: #263247;
+  --border-strong: rgba(148, 163, 184, .28);
+  --input-bg: #0C1322;
+  --nav-bg: #0B1220;
+  --accent-green: #34d399;
+  --accent-green-text: #34d399;
+  --btn-gradient: linear-gradient(135deg, #4f46e5, #6366f1);
+  --glow-primary: rgba(99, 102, 241, .22);
+  --glow-accent: rgba(16, 185, 129, .14);
+}
+
+/* Explicit light theme — also the no-JS / fallback default.
+   NOTE: kept separate from :root so it can never override dark's
+   color-scheme (previous combined selector forced light always). */
+:root { color-scheme: light; }
+[data-theme="light"], html.light, html:not([data-theme="dark"]):not(.dark) { color-scheme: light; }
+[data-theme="dark"], .dark, html.dark { color-scheme: dark; }
+/* Re-affirm light token values when light is selected via class API
+   (covers class-only toggling for the fw-* variable consumers). */
+[data-theme="light"], html.light {
+  --bg-primary: #F8FAFC;
+  --bg-secondary: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-tertiary: #EEF1F7;
+  --text-primary: #0F172A;
+  --text-secondary: #64748B;
+  --text-muted: #7C8AA0;
+  --border: #E2E8F0;
+  --border-strong: #CBD5E1;
+  --input-bg: #FFFFFF;
+  --nav-bg: #FFFFFF;
+  --accent-green: #059669;
+  --accent-green-text: #047857;
+  --glow-primary: rgba(99, 102, 241, .12);
+  --glow-accent: rgba(16, 185, 129, .08);
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; background: var(--bg-primary); }
+/* Smooth, premium theme cross-fade (disabled for reduced-motion users) */
+body.fw-body, body.landing-page, .fw-top, .fw-sb, .fw-card, .fw-nav--landing {
+  transition: background-color var(--fw-dur) var(--fw-ease), color var(--fw-dur) var(--fw-ease), border-color var(--fw-dur) var(--fw-ease);
+}
+body.fw-body {
+  margin: 0;
+  font-family: var(--fw-font);
+  background: var(--fw-bg);
+  color: var(--fw-text);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+body.fw-body::before { content: none !important; }
+body.fw-body::after { content: none !important; }
+
+::selection { background: rgba(79, 70, 229, .22); }
+:focus-visible { outline: 2px solid var(--fw-primary); outline-offset: 2px; border-radius: 6px; }
+
+.fw-num, .fw-money { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; letter-spacing: -.01em; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}

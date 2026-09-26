@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <script>
+    /* Early theme paint (no-FOUC). Server pref arrives later via fwScripts;
+       until then follow saved choice, else Light. data-theme is Light|Dark. */
+    (function () {
+      try {
+        var pref = localStorage.getItem('finwise_theme') || 'light';
+        if (pref !== 'light' && pref !== 'dark') pref = 'light';
+        var eff = pref;
+
+        document.documentElement.setAttribute('data-theme', eff);
+        if (document.documentElement.classList) {
+          document.documentElement.classList.toggle('dark', eff === 'dark');
+          document.documentElement.classList.toggle('light', eff === 'light');
+        }
+        try { document.documentElement.style.colorScheme = eff; } catch (e) {}
+        try {
+          var __ts = localStorage.getItem('finwise_textsize') || 'default';
+          document.documentElement.setAttribute('data-fw-textsize', __ts);
+          if (localStorage.getItem('finwise_contrast') === 'on') document.documentElement.classList.add('fw-high-contrast');
+          if (localStorage.getItem('finwise_motion') === 'off') document.documentElement.classList.add('fw-no-motion');
+        } catch (e2) {}
+      } catch (e) {}
+    })();
+  </script>
+    <title>Add Account - Finwise</title>
+    <link rel="stylesheet" href="/css/3d-dynamic.css">
+  <link rel="stylesheet" href="/css/finwise-tokens.css">
+  <link rel="stylesheet" href="/css/finwise-layout.css">
+  <link rel="stylesheet" href="/css/finwise-components.css">
+  <link rel="stylesheet" href="/css/finwise-responsive.css">
+  <link rel="stylesheet" href="/css/chatbot-widget.css">
+  <link rel="stylesheet" href="/css/finwise-bridge.css">
+  <link rel="stylesheet" href="/css/finwise-theme.css">
+</head>
+<body class="fw-body fw-shell">
+    <div th:replace="~{fragments/finwise :: fwSidebar('accounts', ${user})}"></div>
+    <div th:replace="~{fragments/finwise :: fwTopbar('Accounts', null, ${user}, ${unreadCount})}"></div>
+<div class="fw-scrim" onclick="fwCloseSidebar()"></div>
+    <div class="fw-content"><main class="fw-wrap" id="main">
+        <div class="fw-form-wrapper fw-animate">
+            <div class="fw-form-card">
+                <div class="fw-form-header">
+                    <span class="fw-form-icon"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg></span>
+                    <h1>Add Account</h1>
+                    <p>Track a bank, wallet, or cash balance  stored locally</p>
+                </div>
+                <form method="POST" th:action="@{/accounts/add}" data-validate>
+                    <div class="fw-form-group">
+                        <label for="accountName">Account Name *</label>
+                        <input id="accountName" name="accountName" class="fw-form-input" type="text" required maxlength="100" placeholder="e.g. HDFC Savings">
+                    </div>
+                    <div class="fw-form-row">
+                        <div class="fw-form-group">
+                            <label for="accountType">Type</label>
+                            <select id="accountType" name="accountType" class="fw-form-input">
+                                <option value="CHECKING">Checking</option>
+                                <option value="SAVINGS">Savings</option>
+                                <option value="WALLET">Wallet</option>
+                                <option value="CASH">Cash</option>
+                                <option value="CREDIT">Credit</option>
+                                <option value="OTHER">Other</option>
+                            </select>
+                        </div>
+                        <div class="fw-form-group">
+                            <label for="balance">Balance</label>
+                            <input id="balance" name="balance" class="fw-form-input" type="number" step="0.01" placeholder="0.00">
+                        </div>
+                    </div>
+                    <div class="fw-form-group">
+                        <label for="institution">Institution (optional)</label>
+                        <input id="institution" name="institution" class="fw-form-input" type="text" maxlength="100" placeholder="e.g. HDFC Bank">
+                    </div>
+                    <div class="fw-btn-group">
+                        <button type="submit" class="fw-btn fw-btn-primary fw-btn-full">Create Account</button>
+                        <a href="/accounts" class="fw-btn fw-btn-secondary fw-btn-full">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main></div>
+    <div th:replace="~{fragments/finwise :: fwFooter}"></div>
+    <div th:replace="~{fragments/finwise :: fwScripts}"></div>
+</body>
+</html>

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinWise Locked</title>
+    <link rel="stylesheet" href="/css/finwise-tokens.css">
+    <link rel="stylesheet" href="/css/finwise-components.css">
+    <link rel="stylesheet" href="/css/finwise-theme.css">
+</head>
+<body class="fw-body" style="min-height:100vh;display:grid;place-items:center;padding:24px">
+<main style="width:min(420px,100%);padding:32px;background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-xl);box-shadow:var(--shadow-xl)">
+    <div style="text-align:center;margin-bottom:24px">
+        <div style="width:64px;height:64px;margin:0 auto 16px;display:grid;place-items:center;border-radius:50%;background:var(--primary-subtle);color:var(--primary)"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div>
+        <h1 style="margin:0 0 8px">FinWise is locked</h1>
+        <p style="color:var(--fw-text-2);margin:0">Enter your local passcode to continue.</p>
+    </div>
+    <div th:if="${errorMessage}" class="fw-alert fw-alert-danger" th:text="${errorMessage}" style="margin-bottom:16px">Incorrect passcode.</div>
+    <form method="post" th:action="@{/app-lock/unlock}" style="display:grid;gap:14px">
+        <input type="password" name="passcode" inputmode="numeric" pattern="[0-9]{4,8}" minlength="4" maxlength="8" autocomplete="off" placeholder="4–8 digit passcode" required autofocus class="fw-form-input" style="width:100%;padding:12px;text-align:center;font-size:1.2rem;letter-spacing:.3em">
+        <button type="submit" class="fw-btn fw-btn-primary" style="width:100%">Unlock FinWise</button>
+    </form>
+    <form method="post" th:action="@{/logout}" style="margin-top:12px"><button type="submit" class="fw-btn fw-btn-secondary" style="width:100%">Sign out</button></form>
+</main>
+</body>
+</html>

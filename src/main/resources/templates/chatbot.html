@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <script>
+    /* Early theme paint (no-FOUC). Server pref arrives later via fwScripts;
+       until then follow saved choice, else Light. data-theme is Light|Dark. */
+    (function () {
+      try {
+        var pref = localStorage.getItem('finwise_theme') || 'light';
+        if (pref !== 'light' && pref !== 'dark') pref = 'light';
+        var eff = pref;
+
+        document.documentElement.setAttribute('data-theme', eff);
+        if (document.documentElement.classList) {
+          document.documentElement.classList.toggle('dark', eff === 'dark');
+          document.documentElement.classList.toggle('light', eff === 'light');
+        }
+        try { document.documentElement.style.colorScheme = eff; } catch (e) {}
+        try {
+          var __ts = localStorage.getItem('finwise_textsize') || 'default';
+          document.documentElement.setAttribute('data-fw-textsize', __ts);
+          if (localStorage.getItem('finwise_contrast') === 'on') document.documentElement.classList.add('fw-high-contrast');
+          if (localStorage.getItem('finwise_motion') === 'off') document.documentElement.classList.add('fw-no-motion');
+        } catch (e2) {}
+      } catch (e) {}
+    })();
+  </script>
+    <title>Finwise  Offline Finance AI</title>
+    <link rel="stylesheet" href="/css/3d-dynamic.css">
+  <link rel="stylesheet" href="/css/finwise-tokens.css">
+  <link rel="stylesheet" href="/css/finwise-layout.css">
+  <link rel="stylesheet" href="/css/finwise-components.css">
+  <link rel="stylesheet" href="/css/finwise-responsive.css">
+  <link rel="stylesheet" href="/css/finwise-bridge.css">
+  <link rel="stylesheet" href="/css/finwise-theme.css">
+    <link rel="stylesheet" href="/css/chatbot-widget.css">
+</head>
+<body class="fw-body fw-shell">
+    <div th:replace="~{fragments/finwise :: fwTopbar('Chatbot', null, ${user}, ${unreadCount})}"></div>
+<div class="fw-scrim" onclick="fwCloseSidebar()"></div>
+
+    <div th:replace="~{fragments/finwise :: fwSidebar('chatbot', ${user})}"></div>
+    <div class="fw-sidebar__backdrop" onclick="document.getElementById('sidebar').classList.remove('fw-sidebar--open'); this.classList.remove('fw-sidebar__backdrop--visible')"></div>
+
+    <div class="fw-content"><main class="fw-wrap" id="main">
+        <div class="fw-pagehead">
+            <div><h1 data-i18n="assistantTitle">FinWise Assistant</h1><p data-i18n="assistantDesc">Your personal financial companion — 100% offline, answers from your local records only.</p></div>
+            <div class="fw-actions"><span class="fw-badge ok" data-i18n="offlineBadge">● Offline</span><span class="fw-badge mut" data-i18n="localDbOnly">Local DB only</span></div>
+        </div>
+        <div class="fw-card fw-card-pad" style="margin-bottom:14px">
+            <div style="font-size:.82rem;font-weight:700;color:var(--fw-text-2);margin-bottom:8px" data-i18n="suggestedPrompts">Suggested prompts — tap to ask</div>
+            <div class="fw-filters" id="fwSuggest">
+                <button type="button" class="fw-chip" data-q="How much did I spend this month?" data-i18n="qSpendMonth">How much did I spend this month?</button>
+                <button type="button" class="fw-chip" data-q="Where am I spending the most?" data-i18n="qMostSpending">Where am I spending the most?</button>
+                <button type="button" class="fw-chip" data-q="Show my recent expenses" data-i18n="qRecentExpenses">Show my recent expenses</button>
+                <button type="button" class="fw-chip" data-q="How much can I save?" data-i18n="qHowSave">How much can I save?</button>
+            </div>
+        </div>
+        <header class="fw-page-header fw-reveal" style="display:none">
+            <h1 class="fw-page-header__title">Offline Finance AI</h1>
+            <p class="fw-page-header__subtitle">Ask in natural language  100% offline, powered only by your local SQL database. Zero external APIs.</p>
+            <div class="fw-badge fw-badge--success fw-badge--glass" style="margin-top:var(--sp-3);"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg> Fully Offline  Local DB Only  Your Data Isolated</div>
+        </header>
+
+        <section class="fw-card fw-card--glass fw-card--section" aria-label="Chatbot panel" style="max-width:900px; margin:0 auto; display:flex; flex-direction:column; height:min(68vh,700px); padding:0; overflow:hidden;">
+            <header class="fw-chatbot__header" style="flex-shrink:0;">
+                <div class="fw-chatbot__header-info">
+                    <div class="fw-chatbot__header-avatar"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg></div>
+                    <div>
+                        <div class="fw-chatbot__header-title">Finwise Offline AI</div>
+                        <div class="fw-chatbot__header-status"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg> Local database  No internet</div>
+                    </div>
+                </div>
+                <div class="fw-chatbot__controls">
+                    <button class="fw-chatbot__control-btn" type="button" aria-label="Minimize" data-i18n-aria-label="minimize" title="Minimize" data-i18n-title="minimize" onclick="document.querySelector('.fw-card').style.height='auto'"></button>
+                    <button class="fw-chatbot__control-btn" type="button" aria-label="Clear" data-i18n-aria-label="clearChatTitle" title="Clear history" data-i18n-title="clearHistoryTitle" id="clearStandalone"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg></button>
+                </div>
+            </header>
+
+            <div id="standaloneChips" class="fw-chatbot__quick-actions" role="toolbar" aria-label="Quick actions" data-i18n-aria-label="quickActions">
+                <button class="fw-chatbot__quick-btn" type="button" data-q="Analyze Expenses"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg><span data-i18n="analyzeExpenses">Analyze Expenses</span></button>
+                <button class="fw-chatbot__quick-btn" type="button" data-q="Show Balance"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg><span data-i18n="showBalance">Show Balance</span></button>
+                <button class="fw-chatbot__quick-btn" type="button" data-q="Budget Summary"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg><span data-i18n="budgetSummary">Budget Summary</span></button>
+                <button class="fw-chatbot__quick-btn" type="button" data-q="How much did I spend this month?" data-i18n="thisMonthSpend">This Month Spend</button>
+                <button class="fw-chatbot__quick-btn" type="button" data-q="What is my monthly income?" data-i18n="monthlyIncome">Monthly Income</button>
+            </div>
+
+            <div id="standaloneMessages" class="fw-chatbot__messages" role="log" aria-live="polite" aria-relevant="additions" style="flex:1;">
+                <div id="standaloneEmpty" class="fw-empty" style="padding:var(--sp-8);">
+                    <div class="fw-empty__icon"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg></div>
+                    <h3 class="fw-empty__title" data-i18n="offlineAiWelcome">Hi, I'm your Offline Finance AI</h3>
+                    <p class="fw-empty__text" data-i18n="tryOneOf">Try one of these — all answers come strictly from your authenticated local records:</p>
+                    <div class="fw-chatbot__quick-actions" style="justify-content:center;">
+                        <button class="fw-chatbot__quick-btn" type="button" data-q="Analyze Expenses" data-i18n="analyzeExpenses">Analyze Expenses</button>
+                        <button class="fw-chatbot__quick-btn" type="button" data-q="Show Balance" data-i18n="showBalance">Show Balance</button>
+                        <button class="fw-chatbot__quick-btn" type="button" data-q="Budget Summary" data-i18n="budgetSummary">Budget Summary</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="fw-chatbot__input-area">
+                <label for="standaloneInput" class="fw-sr-only" data-i18n="typeQuestion">Type your question</label>
+                <textarea id="standaloneInput" class="fw-chatbot__input" rows="1" maxlength="500" placeholder="Ask about your finances" data-i18n-placeholder="askFinances" autocomplete="off" aria-label="Type your question" data-i18n-aria-label="typeQuestion"></textarea>
+                <span id="standaloneChar" class="fw-chatbot-char" style="position:absolute; right:70px; bottom:18px; font-size:10px; color:var(--surface-500); pointer-events:none;">0/500</span>
+                <button id="standaloneSend" class="fw-chatbot__send" type="button" aria-label="Send" data-i18n-aria-label="send"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg></button>
+            </div>
+        </section>
+
+        <p class="fw-text-center fw-text-muted fw-text-sm" style="margin-top:var(--sp-4);"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg> <span data-i18n="safeQueries">All queries are safe predefined selects scoped to your user  never arbitrary SQL. Works with Wi-Fi disabled.</span></p>
+    </main></div>
+
+    <!-- Premium fixed circular Offline AI chatbot button on every page -->
+    <div th:replace="~{fragments/chatbot-widget :: chatbotWidget}"></div>
+
+    <div th:replace="~{fragments/finwise :: fwFooter}"></div>
+
+    <script src="/vendor/chart.js/chart.umd.min.js"></script>
+    <script src="/js/chatbot-widget.js"></script>
+    <div th:replace="~{fragments/finwise :: fwScripts}"></div>
+    <style>
+      /* Fix standalone chat layout: own scroll area, no page jump, no double scrollbar */
+      #standaloneMessages{flex:1; overflow-y:auto; overflow-x:hidden; min-height:0; scrollbar-width:thin; scrollbar-color:rgba(99,102,241,.2) transparent;}
+      #standaloneMessages::-webkit-scrollbar{width:5px;}
+      #standaloneMessages::-webkit-scrollbar-track{background:transparent;}
+      #standaloneMessages::-webkit-scrollbar-thumb{background:rgba(99,102,241,.2); border-radius:4px;}
+      /* message appearance animation per spec */
+      .fw-chatbot-msg-row{animation: fwMsgFadeIn .28s ease;}
+      @keyframes fwMsgFadeIn{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+      /* loading placeholder */
+      .fw-chatbot-analyzing{font-size:13px; color:var(--surface-400); padding:8px 12px; font-style:italic; display:flex; align-items:center; gap:8px;}
+      .fw-chatbot-analyzing::before{content:''; width:14px; height:14px; border:2px solid rgba(99,102,241,.3); border-top-color:var(--primary-500); border-radius:50%; animation:spin .7s linear infinite; display:inline-block;}
+      @keyframes spin{to{transform:rotate(360deg);}}
+    </style>
+    <script>
+      (function(){
+        var API_ASK='/api/chatbot/ask', API_HISTORY='/api/chatbot/history', MAX=500;
+        var msgs=document.getElementById('standaloneMessages'), input=document.getElementById('standaloneInput'),
+            send=document.getElementById('standaloneSend'), chips=document.getElementById('standaloneChips'),
+            empty=document.getElementById('standaloneEmpty'), charEl=document.getElementById('standaloneChar'),
+            clearBtn=document.getElementById('clearStandalone');
+        if(!msgs||!input||!send) return;
+        var processing=false, lastUserMsg='';
+        var analyzingEl=null;
+
+        function fmt(iso){ try{ var d=iso?new Date(iso):new Date(); return d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}catch(e){return'';} }
+
+        function scrollBottom(){ msgs.scrollTop = msgs.scrollHeight; }
+
+        function add(content, role, ts, confidence){
+          if(empty) empty.style.display='none';
+          var row=document.createElement('div');
+          row.className='fw-chatbot-msg-row '+(role==='USER'?'user':role==='SYSTEM'?'system':'bot');
+          var av=document.createElement('div');
+          av.className=role==='USER'?'fw-chatbot-avatar-user':'fw-chatbot-avatar-bot';
+          av.textContent=role==='USER'?'U':'\uD83E\uDD16';
+          var body=document.createElement('div');
+          body.className='fw-chatbot-msg-body';
+          var bub=document.createElement('div');
+          bub.className='fw-chatbot-msg-bubble';
+          if(role==='USER'){ bub.textContent=content; } else { bub.innerHTML=content; }
+          var meta=document.createElement('div');
+          meta.className='fw-chatbot-msg-meta';
+          var time=document.createElement('span');
+          time.className='fw-chatbot-msg-time';
+          time.textContent=fmt(ts);
+          meta.appendChild(time);
+          if(role==='BOT' && typeof confidence==='number'){
+            var dot=document.createElement('span');
+            dot.className='fw-chatbot-confidence '+(confidence>0.7?'high':confidence>=0.4?'medium':'low');
+            dot.title='Confidence: '+Math.round(confidence*100)+'%';
+            meta.appendChild(dot);
+          }
+          // copy/retry for bot messages (offline, no API)
+          if(role==='BOT'){
+            var actions=document.createElement('span');
+            actions.className='fw-chatbot-msg-actions';
+            var copyBtn=document.createElement('button');
+            copyBtn.className='fw-chatbot-msg-copy'; copyBtn.title='Copy'; copyBtn.textContent='⧉';
+            copyBtn.addEventListener('click', function(){ var t=bub.textContent||''; if(navigator.clipboard) navigator.clipboard.writeText(t).catch(function(){}); copyBtn.textContent='✓'; setTimeout(function(){copyBtn.textContent='⧉';},900);});
+            actions.appendChild(copyBtn);
+            var retryBtn=document.createElement('button');
+            retryBtn.className='fw-chatbot-msg-retry'; retryBtn.title='Regenerate'; retryBtn.textContent='↻';
+            retryBtn.addEventListener('click', function(){ if(lastUserMsg && !processing){ input.value=lastUserMsg; sendMsg(); }});
+            actions.appendChild(retryBtn);
+            meta.appendChild(actions);
+          }
+          body.appendChild(bub);
+          body.appendChild(meta);
+          row.appendChild(av);
+          row.appendChild(body);
+          msgs.appendChild(row);
+          // smooth scroll inside panel only
+          requestAnimationFrame(function(){ scrollBottom(); });
+          return row;
+        }
+
+        function addErr(t){
+          hideAnalyzing();
+          var r=add(t,'BOT',new Date().toISOString());
+          var b=r.querySelector('.fw-chatbot-msg-bubble'); if(b){b.classList.add('error');}
+        }
+
+        function showAnalyzing(){
+          hideAnalyzing();
+          analyzingEl=document.createElement('div');
+          analyzingEl.className='fw-chatbot-msg-row bot';
+          analyzingEl.innerHTML='<div class="fw-chatbot-avatar-bot">\uD83E\uDD16</div><div class="fw-chatbot-msg-body"><div class="fw-chatbot-analyzing">Analyzing your finances...</div></div>';
+          msgs.appendChild(analyzingEl);
+          scrollBottom();
+        }
+        function hideAnalyzing(){ if(analyzingEl && analyzingEl.parentNode){ analyzingEl.parentNode.removeChild(analyzingEl); } analyzingEl=null; }
+
+        // legacy loadingBar for widget compatibility + analyzing placeholder for standalone
+        function showLoading(){ showAnalyzing(); var lb=document.getElementById('fwChatLoading'); if(lb) lb.classList.add('active'); }
+        function hideLoading(){ hideAnalyzing(); var lb=document.getElementById('fwChatLoading'); if(lb) lb.classList.remove('active'); }
+
+        function setLoading(on){
+          processing=on;
+          send.disabled=on; input.disabled=on;
+          send.innerHTML=on?'<span class="fw-chatbot-send-spinner" style="display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;"></span>':'&#x27A4;';
+          send.setAttribute('aria-label', on?'Sending...':'Send message');
+        }
+
+        function updateChar(){
+          if(!charEl) return;
+          var l=input.value.length;
+          charEl.textContent=l+'/'+MAX;
+          charEl.className='fw-chatbot-char'+(l>480?' danger':l>420?' warn':'');
+        }
+
+        function loadHistory(){
+          fetch(API_HISTORY, {headers:{'Accept':'application/json'}}).then(function(r){ if(!r.ok) throw 0; return r.json(); }).then(function(list){
+            if(!Array.isArray(list)||!list.length) return;
+            if(empty) empty.style.display='none';
+            list.forEach(function(m){
+              var roleUpper=(m.role||'').toUpperCase();
+              add(m.content||'', roleUpper==='BOT'?'BOT':'USER', m.timestamp);
+            });
+          }).catch(function(){});
+        }
+
+        function sendMsg(){
+          var text=input.value.trim();
+          if(processing) return;
+          if(!text){
+            // per spec: do nothing or show "Please enter a question." — we show inline error briefly
+            if(input.value.length===0){
+              input.focus();
+              // optional subtle shake or placeholder hint
+              input.placeholder='Please enter a question.';
+              setTimeout(function(){ input.placeholder='Ask about your finances'; }, 1400);
+            }
+            return;
+          }
+          if(text.length>MAX){ addErr('Message too long ('+text.length+'/'+MAX+'). Please shorten it.'); return; }
+          lastUserMsg=text;
+          add(text,'USER',new Date().toISOString());
+          input.value=''; input.style.height='auto'; updateChar();
+          setLoading(true); showLoading();
+          // short offline delay per spec, then fetch
+          setTimeout(function(){
+            fetch(API_ASK,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({message:text})})
+              .then(function(res){
+                hideLoading();
+                if(!res.ok){
+                  if(res.status===401) throw new Error('unauthorized');
+                  if(res.status===400) return res.text().then(function(body){ try{var d=JSON.parse(body); throw new Error(d.message||'Bad request');}catch(e){ throw new Error('Bad request');}});
+                  var ct=(res.headers.get('content-type')||'');
+                  return res.text().then(function(body){ if(ct.indexOf('application/json')===-1 && /<html|<!doctype/i.test(body)) throw new Error('unauthorized'); throw new Error('server');});
+                }
+                return res.text().then(function(body){
+                  var ct=(res.headers.get('content-type')||'');
+                  if(!body || ct.indexOf('application/json')===-1){ if(/<html|<!doctype/i.test(body||'')) throw new Error('unauthorized'); throw new Error('server'); }
+                  try{ return JSON.parse(body);}catch(e){ throw new Error('invalid-json');}
+                });
+              })
+              .then(function(data){
+                var reply=data && data.message ? data.message : 'I could not generate a response. Please try again.';
+                add(reply,'BOT', data && data.timestamp ? data.timestamp : new Date().toISOString(), data && typeof data.confidence==='number' ? data.confidence : undefined);
+                if(data && Array.isArray(data.suggestions) && data.suggestions.length){
+                  var sugRow=document.createElement('div');
+                  sugRow.className='fw-chatbot-suggestions';
+                  sugRow.style.display='flex'; sugRow.style.flexWrap='wrap'; sugRow.style.gap='6px'; sugRow.style.marginTop='8px';
+                  data.suggestions.forEach(function(s){
+                    if(!s || !s.trim()) return;
+                    var btn=document.createElement('button');
+                    btn.className='fw-chatbot-chip';
+                    btn.textContent=s;
+                    btn.addEventListener('click',function(){ input.value=s; updateChar(); sendMsg(); });
+                    sugRow.appendChild(btn);
+                  });
+                  if(sugRow.childNodes.length){
+                    var lastBody=msgs.lastChild.querySelector('.fw-chatbot-msg-body');
+                    if(lastBody) lastBody.appendChild(sugRow);
+                    scrollBottom();
+                  }
+                }
+                // chart if present
+                if(data && data.chart && window.Chart){
+                  // try render into hidden canvas if available
+                  var cc=document.getElementById('fwChatChartContainer'); var cv=document.getElementById('fwChatCanvas');
+                  if(cc && cv){
+                    cc.style.display='block';
+                    var ctx=cv.getContext('2d'); if(cv._chartInstance) cv._chartInstance.destroy();
+                    var labels=(data.chart.labels||[]).map(function(l){return (l||'').toString();});
+                    var values=(data.chart.values||[]).map(function(v){return parseFloat(v)||0;});
+                    var chC=(typeof window.fwChartThemeColors==='function')?window.fwChartThemeColors():{tick:'#8ea0bb',grid:'rgba(148,163,184,.14)',title:'#F8FAFC'};
+                    cv._chartInstance=new Chart(ctx,{type:'bar',data:{labels:labels,datasets:[{label:data.chart.title||'Data',data:values,backgroundColor:'rgba(99,102,241,0.7)',borderColor:'rgba(99,102,241,1)',borderWidth:1,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},title:{display:true,text:data.chart.title||'Data',color:chC.title,font:{size:13}}},scales:{y:{beginAtZero:true,ticks:{color:chC.tick},grid:{color:chC.grid}},x:{ticks:{color:chC.tick},grid:{display:false}}}}});
+                  }
+                }
+              })
+              .catch(function(err){
+                hideLoading();
+                if(err && err.message==='unauthorized') addErr('Please log in to use the chatbot. Your data is private per user.');
+                else if(err && err.message==='invalid-json') addErr('The server responded with an unexpected format. Please try again.');
+                else if(err && err.message && err.message!=='server' && err.message!=='Bad request') addErr(err.message);
+                else addErr("I couldn't access your local finance records. Please try again.");
+              })
+              .finally(function(){ setLoading(false); input.focus(); });
+          }, 280);
+        }
+
+        function clearChat(){
+          if(!confirm('Clear your chat history? Only your messages will be deleted.')) return;
+          setLoading(true); showLoading();
+          fetch(API_HISTORY,{method:'DELETE'}).then(function(r){
+            if(!r.ok) throw 0;
+            msgs.querySelectorAll('.fw-chatbot-msg-row').forEach(function(e){e.remove();});
+            if(empty) empty.style.display='';
+            add('Chat cleared. How can I help with your finances?','BOT',new Date().toISOString());
+          }).catch(function(){ addErr("I couldn't access your local finance records. Please try again."); }).finally(function(){ hideLoading(); setLoading(false); });
+        }
+
+        // auto-resize textarea
+        input.addEventListener('input', function(){
+          updateChar();
+          input.style.height='auto';
+          input.style.height=Math.min(input.scrollHeight,96)+'px';
+        });
+        send.addEventListener('click', sendMsg);
+        input.addEventListener('keydown', function(e){
+          if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendMsg(); }
+          e.stopPropagation();
+        });
+        if(chips) chips.addEventListener('click', function(e){ var c=e.target.closest('.fw-chatbot__quick-btn'); if(!c) return; var q=c.getAttribute('data-q')||c.textContent.trim(); if(!q) return; input.value=q; updateChar(); sendMsg(); });
+        if(empty) empty.addEventListener('click', function(e){ var c=e.target.closest('.fw-chatbot__quick-btn'); if(!c) return; var q=c.getAttribute('data-q')||c.textContent.trim(); if(!q) return; input.value=q; updateChar(); sendMsg(); });
+        if(clearBtn) clearBtn.addEventListener('click', clearChat);
+        document.addEventListener('keydown', function(e){ if(e.key==='Escape' && document.activeElement===input) input.blur(); });
+        updateChar(); loadHistory();
+        var sug = document.getElementById('fwSuggest');
+        if (sug) sug.addEventListener('click', function (e) {
+          var b = e.target.closest('[data-q]'); if (!b) return;
+          input.value = b.getAttribute('data-q') || ''; input.dispatchEvent(new Event('input'));
+          sendMsg();
+        });
+        // header AI Assistant link should open this page — ensure no duplicate handler breaks it (already server-rendered)
+      })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <script>
+        (function () {
+            try {
+                var pref = localStorage.getItem('finwise_theme') || 'light';
+                if (pref !== 'light' && pref !== 'dark') pref = 'light';
+                document.documentElement.setAttribute('data-theme', pref);
+                document.documentElement.classList.toggle('dark', pref === 'dark');
+                document.documentElement.classList.toggle('light', pref !== 'dark');
+                document.documentElement.style.colorScheme = pref;
+            } catch (e) {}
+        })();
+    </script>
+    <title>Import History - Finwise</title>
+    <link rel="stylesheet" href="/css/3d-dynamic.css">
+    <link rel="stylesheet" href="/css/finwise-tokens.css">
+    <link rel="stylesheet" href="/css/finwise-layout.css">
+    <link rel="stylesheet" href="/css/finwise-components.css">
+    <link rel="stylesheet" href="/css/finwise-responsive.css">
+    <link rel="stylesheet" href="/css/chatbot-widget.css">
+    <link rel="stylesheet" href="/css/finwise-bridge.css">
+    <link rel="stylesheet" href="/css/finwise-theme.css">
+</head>
+<body class="fw-body fw-shell">
+<div th:replace="~{fragments/finwise :: fwSidebar('import', ${user})}"></div>
+<div th:replace="~{fragments/finwise :: fwTopbar('Import History', null, ${user}, ${unreadCount})}"></div>
+<div class="fw-scrim" onclick="fwCloseSidebar()"></div>
+
+<div class="fw-content"><main class="fw-wrap" id="main">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: var(--sp-4); margin-bottom: var(--sp-6);">
+        <div class="fw-page-header fw-animate">
+            <h1>Import History</h1>
+            <p>All imported transactions added to Income and Expenses</p>
+        </div>
+        <a th:href="@{/import/preview}" class="fw-btn fw-btn-secondary">Back to Import</a>
+    </div>
+
+    <div class="fw-card fw-animate" style="margin-bottom: var(--sp-5);">
+        <div class="fw-card-header">
+            <h2 th:text="|Imported Income (${importedIncomeCount})|">Imported Income (0)</h2>
+        </div>
+        <div class="fw-card-body">
+            <div th:if="${#lists.isEmpty(importedIncomes)}" class="fw-empty">
+                <p>No imported income has been added.</p>
+            </div>
+            <div th:unless="${#lists.isEmpty(importedIncomes)}" class="fw-table-responsive">
+                <table class="fw-table">
+                    <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th>Category</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                        <th>Source</th>
+                        <th>Import Details</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="income : ${importedIncomes}">
+                        <td th:text="${income.description}">Description</td>
+                        <td><span class="fw-badge fw-badge-success" th:text="${income.category}">Category</span></td>
+                        <td class="fw-tx-amount" th:text="'$' + ${#numbers.formatDecimal(income.amount, 1, 2)}">$0.00</td>
+                        <td th:text="${#temporals.format(income.incomeDate, 'MMM d, yyyy')}">Date</td>
+                        <td th:text="${income.incomeSource}">IMPORT</td>
+                        <td th:text="${income.notes != null ? income.notes : '—'}">Imported from statement.csv</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="fw-card fw-animate">
+        <div class="fw-card-header">
+            <h2 th:text="|Imported Expenses (${importedExpenseCount})|">Imported Expenses (0)</h2>
+        </div>
+        <div class="fw-card-body">
+            <div th:if="${#lists.isEmpty(importedExpenses)}" class="fw-empty">
+                <p>No imported expense has been added.</p>
+            </div>
+            <div th:unless="${#lists.isEmpty(importedExpenses)}" class="fw-table-responsive">
+                <table class="fw-table">
+                    <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th>Category</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                        <th>Payment Method</th>
+                        <th>Import Details</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="expense : ${importedExpenses}">
+                        <td th:text="${expense.description}">Description</td>
+                        <td><span class="fw-badge fw-badge-info" th:text="${expense.category}">Category</span></td>
+                        <td class="fw-tx-amount" th:text="'$' + ${#numbers.formatDecimal(expense.amount, 1, 2)}">$0.00</td>
+                        <td th:text="${#temporals.format(expense.expenseDate, 'MMM d, yyyy')}">Date</td>
+                        <td th:text="${expense.paymentMethod}">Imported</td>
+                        <td th:text="${expense.notes != null ? expense.notes : '—'}">Imported from statement.csv</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main></div>
+
+<div th:replace="~{fragments/finwise :: fwFooter}"></div>
+<div th:replace="~{fragments/finwise :: fwScripts}"></div>
+</body>
+</html>

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="fwHead(title)">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <title th:text="${title} + ' — FinWise'">FinWise</title>
+  <!-- Early theme bootstrap: paint Light/Dark BEFORE CSS so there
+       is no flash. Preference = localStorage, else server (user.theme),
+       else Light. data-theme is always Light|Dark (no Auto mode). -->
+  <script th:inline="javascript">
+    (function () {
+      try {
+        window.__FW_SERVER_THEME = /*[[${user != null and user.theme != null ? user.theme : 'light'}]]*/ 'light';
+      } catch (e) { window.__FW_SERVER_THEME = 'light'; }
+      try {
+        window.__FW_SERVER_LANG = /*[[${user != null and user.language != null ? user.language : 'en'}]]*/ 'en';
+      } catch (e) { window.__FW_SERVER_LANG = 'en'; }
+      try {
+        var raw = localStorage.getItem('finwise_theme') || window.__FW_SERVER_THEME || 'light';
+        var pref = (raw === 'light' || raw === 'dark') ? raw : 'light';
+        if (raw !== pref) { try { localStorage.setItem('finwise_theme', pref); } catch (e2) {} }
+        document.documentElement.setAttribute('data-theme', pref);
+        if (document.documentElement.classList) {
+          document.documentElement.classList.toggle('dark', pref === 'dark');
+          document.documentElement.classList.toggle('light', pref === 'light');
+        }
+        document.documentElement.setAttribute('data-server-theme', window.__FW_SERVER_THEME || 'light');
+        try { document.documentElement.style.colorScheme = pref; } catch (e) {}
+        try {
+          var __ts = localStorage.getItem('finwise_textsize') || 'default';
+          document.documentElement.setAttribute('data-fw-textsize', __ts);
+          if (localStorage.getItem('finwise_contrast') === 'on') document.documentElement.classList.add('fw-high-contrast');
+          if (localStorage.getItem('finwise_motion') === 'off') document.documentElement.classList.add('fw-no-motion');
+        } catch (e2) {}
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="/css/3d-dynamic.css?v=2">
+  <link rel="stylesheet" href="/css/finwise-tokens.css?v=2">
+  <link rel="stylesheet" href="/css/finwise-layout.css?v=2">
+  <link rel="stylesheet" href="/css/finwise-components.css?v=2">
+  <link rel="stylesheet" href="/css/finwise-responsive.css?v=2">
+  <link rel="stylesheet" href="/css/chatbot-widget.css?v=2">
+  <link rel="stylesheet" href="/css/finwise-bridge.css?v=2">
+  <link rel="stylesheet" href="/css/finwise-theme.css?v=2">
+</head>
+<body>
+
+<!-- ============ SIDEBAR ============ -->
+<aside class="fw-sb" id="fwSidebar" aria-label="Primary navigation" th:fragment="fwSidebar(active, user)">
+  <div class="fw-sb-brand">
+    <div class="fw-sb-mark">₹</div>
+    <div class="fw-sb-name"><b>FinWise</b><span>Smart Finance</span></div>
+    <button class="fw-sb-collapse" onclick="fwToggleSidebar()" data-i18n-aria-label="collapseSidebar" aria-label="Collapse sidebar" title="Collapse">«</button>
+  </div>
+  <nav class="fw-sb-nav">
+    <div class="fw-sb-group">
+      <p data-i18n="overview">Overview</p>
+      <a class="fw-sb-link" data-tip="Dashboard" th:classappend="${active == 'dashboard'} ? ' active'" href="/dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+        <span class="lbl" data-i18n="dashboard">Dashboard</span></a>
+    </div>
+    <div class="fw-sb-group">
+      <p data-i18n="money">Money</p>
+      <a class="fw-sb-link" data-tip="Expenses" th:classappend="${active == 'expenses'} ? ' active'" href="/expenses">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="M17 6.5c0-1.5-2.2-2.5-5-2.5s-5 1-5 2.5 2 2.3 5 2.8 5 1.3 5 2.9-2.2 2.8-5 2.8-5-1.2-5-2.7"/></svg>
+        <span class="lbl" data-i18n="expenses">Expenses</span></a>
+      <a class="fw-sb-link" data-tip="Income" th:classappend="${active == 'income'} ? ' active'" href="/income">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16l6-6 4 4 6-8"/><path d="M15 6h5v5"/></svg>
+        <span class="lbl" data-i18n="income">Income</span></a>
+    </div>
+    <div class="fw-sb-group">
+      <p data-i18n="planning">Planning</p>
+      <a class="fw-sb-link" data-tip="Budgets" th:classappend="${active == 'budgets'} ? ' active'" href="/budgets">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7.5A2.5 2.5 0 0 1 5.5 5h13A2.5 2.5 0 0 1 21 7.5v9A2.5 2.5 0 0 1 18.5 19h-13A2.5 2.5 0 0 1 3 16.5v-9Z"/><path d="M3 9h18"/></svg>
+        <span class="lbl" data-i18n="budgets">Budgets</span></a>
+      <a class="fw-sb-link" data-tip="Goals" th:classappend="${active == 'goals'} ? ' active'" href="/goals">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg>
+        <span class="lbl" data-i18n="goals">Goals</span></a>
+    </div>
+    <div class="fw-sb-group">
+      <p data-i18n="insights">Insights</p>
+      <a class="fw-sb-link" data-tip="Analytics" th:classappend="${active == 'analytics'} ? ' active'" href="/analytics">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 16l4-8 4 4 4-6"/></svg>
+        <span class="lbl" data-i18n="analytics">Analytics</span></a>
+      <a class="fw-sb-link" data-tip="Reports" th:classappend="${active == 'reports'} ? ' active'" href="/reports">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l5 5v15H6z"/><path d="M9 12h8"/><path d="M9 16h8"/></svg>
+        <span class="lbl" data-i18n="reports">Reports</span></a>
+      <a class="fw-sb-link" data-tip="Campus Habits" th:classappend="${active == 'habits'} ? ' active'" href="/habits">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.5 5.5L20 9l-4 4 1 6-5-3-5 3 1-6-4-4 5.5-1.5z"/></svg>
+        <span class="lbl" data-i18n="habits">Habits</span><span class="fw-sb-badge" data-i18n="newBadge">New</span></a>
+    </div>
+    <div class="fw-sb-group">
+      <p data-i18n="tools">Tools</p>
+      <a class="fw-sb-link" data-tip="Scan &amp; Fill" th:classappend="${active == 'scan'} ? ' active'" href="/scan">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V4h3"/><path d="M18 4h3v3"/><path d="M21 17v3h-3"/><path d="M6 21H3v-3"/><rect x="7" y="9" width="10" height="6" rx="1.5"/></svg>
+        <span class="lbl" data-i18n="scanFill">Scan &amp; Fill</span></a>
+      <a class="fw-sb-link" data-tip="Import" th:classappend="${active == 'import'} ? ' active'" href="/import">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>
+        <span class="lbl" data-i18n="importAction">Import</span></a>
+      <a class="fw-sb-link" data-tip="Assistant" th:classappend="${active == 'chatbot'} ? ' active'" href="/chatbot">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 10h8"/><path d="M8 14h5"/><path d="M7 19V8.5A2.5 2.5 0 0 1 9.5 6h5A2.5 2.5 0 0 1 17 8.5V19l-3-2.5L11 19l-3-2.5L7 19Z"/></svg>
+        <span class="lbl" data-i18n="assistant">Assistant</span></a>
+      <a class="fw-sb-link" data-tip="Finance Plus" th:classappend="${active == 'finance-plus'} ? ' active'" href="/finance-plus">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5"/><path d="m3 17 9 5 9-5"/></svg>
+        <span class="lbl">Finance Plus</span><span class="fw-sb-badge">New</span></a>
+    </div>
+    <div class="fw-sb-group">
+      <p data-i18n="system">System</p>
+      <a class="fw-sb-link" data-tip="Notifications" th:classappend="${active == 'notifications'} ? ' active'" href="/notifications">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+        <span class="lbl" data-i18n="notifications">Notifications</span>
+        <span class="fw-sb-count" th:if="${unreadCount != null and unreadCount > 0}" th:text="${unreadCount}">0</span></a>
+      <a class="fw-sb-link" data-tip="Profile" th:classappend="${active == 'account'} ? ' active'" href="/account">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5"/></svg>
+        <span class="lbl" data-i18n="profile">Profile</span></a>
+      <a class="fw-sb-link" data-tip="Settings" th:classappend="${active == 'settings'} ? ' active'" href="/settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2L14 3h-4l-.5 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6A7 7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2 1.2L10 21h4l.5-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.07-.4.1-.8.1-1.2Z"/></svg>
+        <span class="lbl" data-i18n="settings">Settings</span></a>
+    </div>
+  </nav>
+  <div class="fw-sb-foot">
+    <a class="fw-sb-user" href="/account" th:if="${user != null}">
+      <span class="fw-avatar" th:text="${user.username != null ? #strings.substring(user.username, 0, 1).toUpperCase() : 'F'}">F</span>
+      <div><b th:text="${user.username}">User</b><span th:text="${user.email}">email</span></div>
+    </a>
+    <form th:action="@{/logout}" method="post" style="margin:0">
+      <button class="fw-sb-logout" type="submit"><span>⎋</span><span data-i18n="logout">Logout</span></button>
+    </form>
+  </div>
+  <div class="fw-sb-grip" id="fwSbGrip" role="separator" aria-orientation="vertical" aria-label="Resize sidebar" title="Drag to resize, double-click to reset" tabindex="0"></div>
+</aside>
+
+<!-- ============ TOPBAR ============ -->
+<header class="fw-top" th:fragment="fwTopbar(pageTitle, pageSub, user, unreadCount)">
+  <button class="fw-iconbtn fw-burger" onclick="fwToggleSidebar()" data-i18n-aria-label="openMenu" aria-label="Open menu">☰</button>
+  <button class="fw-iconbtn" onclick="fwToggleSidebar()" data-i18n-aria-label="collapseSidebar" aria-label="Collapse sidebar" title="Collapse sidebar" style="font-size:.85rem">⇆</button>
+  <div class="fw-top-title"><span th:text="${pageTitle}" th:attr="data-fw-page-title=${pageTitle}">Page</span><small th:if="${pageSub != null}" th:text="${pageSub}" data-fw-page-sub>Subtitle</small></div>
+  <div class="fw-top-search" role="search">
+    <input id="fwGlobalSearch" type="search" placeholder="Search this page…" data-i18n-placeholder="searchPage" data-i18n-aria-label="searchPage" aria-label="Search this page">
+  </div>
+  <div class="fw-top-actions">
+    <button class="fw-iconbtn fw-theme-toggle" data-fw-theme-btn onclick="fwToggleTheme()" aria-label="Switch to dark mode" title="Switch to dark mode"><span data-fw-theme-icon aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg></span></button>
+    <a class="fw-iconbtn fw-bell" href="/notifications" data-i18n-aria-label="notifications" aria-label="Notifications">🔔<i th:if="${unreadCount != null and unreadCount > 0}" th:text="${unreadCount > 9 ? '9+' : unreadCount}">0</i></a>
+    <a class="fw-userchip" href="/account" th:if="${user != null}">
+      <span class="fw-avatar" th:text="${user.username != null ? #strings.substring(user.username, 0, 1).toUpperCase() : 'F'}">F</span>
+      <b th:text="${user.username}">User</b>
+    </a>
+  </div>
+</header>
+
+<footer class="fw-foot" th:fragment="fwFooter">
+  <div><span data-i18n="footerOffline">© 2026 FinWise • 100% offline — your data stays on this device</span><span data-i18n="footerLocal">Local SQLite • No tracking</span></div>
+</footer>
+
+<div th:fragment="fwScripts">
+  <div id="fw-toasts" aria-live="polite"></div>
+  <script th:inline="javascript">
+    window.FW_CSRF_TOKEN = /*[[${_csrf != null ? _csrf.token : ''}]]*/ '';
+    (function () {
+      var originalFetch = window.fetch.bind(window);
+      window.fetch = function (input, init) {
+        var options = init || {};
+        var method = String(options.method || (input instanceof Request ? input.method : 'GET')).toUpperCase();
+        var requestUrl = typeof input === 'string' ? input : input.url;
+        var resolvedUrl = new URL(requestUrl, window.location.href);
+        if (resolvedUrl.origin === window.location.origin && ['POST', 'PUT', 'PATCH', 'DELETE'].indexOf(method) !== -1) {
+          var headers = new Headers(options.headers || (input instanceof Request ? input.headers : undefined));
+          if (!headers.has('X-XSRF-TOKEN') && window.FW_CSRF_TOKEN) {
+            headers.set('X-XSRF-TOKEN', window.FW_CSRF_TOKEN);
+          }
+          options = Object.assign({}, options, { headers: headers, credentials: options.credentials || 'same-origin' });
+        }
+        return originalFetch(input, options);
+      };
+    })();
+  </script>
+  <script src="/js/script.js?v=2"></script>
+  <script src="/js/finwise-ui.js?v=2"></script>
+</div>
+
+</body>
+</html>

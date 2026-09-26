@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <script>
+    /* Early theme paint (no-FOUC). Server pref arrives later via fwScripts;
+       until then follow saved choice, else Light. data-theme is Light|Dark. */
+    (function () {
+      try {
+        var pref = localStorage.getItem('finwise_theme') || 'light';
+        if (pref !== 'light' && pref !== 'dark') pref = 'light';
+        var eff = pref;
+
+        document.documentElement.setAttribute('data-theme', eff);
+        if (document.documentElement.classList) {
+          document.documentElement.classList.toggle('dark', eff === 'dark');
+          document.documentElement.classList.toggle('light', eff === 'light');
+        }
+        try { document.documentElement.style.colorScheme = eff; } catch (e) {}
+        try {
+          var __ts = localStorage.getItem('finwise_textsize') || 'default';
+          document.documentElement.setAttribute('data-fw-textsize', __ts);
+          if (localStorage.getItem('finwise_contrast') === 'on') document.documentElement.classList.add('fw-high-contrast');
+          if (localStorage.getItem('finwise_motion') === 'off') document.documentElement.classList.add('fw-no-motion');
+        } catch (e2) {}
+      } catch (e) {}
+    })();
+  </script>
+    <title>Budgets  Finwise</title>
+    <link rel="stylesheet" href="/css/3d-dynamic.css">
+  <link rel="stylesheet" href="/css/finwise-tokens.css">
+  <link rel="stylesheet" href="/css/finwise-layout.css">
+  <link rel="stylesheet" href="/css/finwise-components.css">
+  <link rel="stylesheet" href="/css/finwise-responsive.css">
+  <link rel="stylesheet" href="/css/chatbot-widget.css">
+  <link rel="stylesheet" href="/css/finwise-bridge.css">
+  <link rel="stylesheet" href="/css/finwise-theme.css">
+</head>
+<body class="fw-body fw-shell">
+    <div class="fw-particles">
+        <div class="fw-particle" style="left:10%;animation-duration:20s;animation-delay:0s;top:30%;background:rgba(99,102,241,0.25);"></div>
+        <div class="fw-particle" style="left:40%;animation-duration:24s;animation-delay:-6s;top:70%;background:rgba(139,92,246,0.2);width:5px;height:5px;"></div>
+        <div class="fw-particle" style="left:70%;animation-duration:18s;animation-delay:-12s;top:40%;background:rgba(16,185,129,0.2);"></div>
+    </div>
+
+    <div th:replace="~{fragments/finwise :: fwSidebar('budgets', ${user})}"></div>
+
+    <div th:replace="~{fragments/finwise :: fwTopbar('Budgets', null, ${user}, ${unreadCount})}"></div>
+<div class="fw-scrim" onclick="fwCloseSidebar()"></div>
+
+    <div class="fw-content"><main class="fw-wrap" id="main">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--sp-8);">
+            <div>
+                <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: var(--sp-2);"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg> Budgets</h1>
+                <p style="color: var(--surface-400);">Manage and track your spending limits</p>
+            </div>
+            <a href="/budgets/add" class="fw-btn fw-btn-primary fw-btn-lg">+ Create Budget</a>
+        </div>
+
+        <div th:if="${successMessage}" data-fw-flash data-fw-kind="ok" th:text="${successMessage}" style="display:none"></div>
+        <div th:if="${errorMessage}" data-fw-flash data-fw-kind="bad" th:text="${errorMessage}" style="display:none"></div>
+
+        <div th:if="${#lists.isEmpty(budgets)}" class="fw-empty">
+            <div class="fw-empty-icon"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg></div>
+            <h3>No budgets yet</h3>
+            <p>Set spending limits to stay on track with your finances</p>
+            <a href="/budgets/add" class="fw-btn fw-btn-primary fw-btn-lg">Create Your First Budget</a>
+        </div>
+
+        <div th:if="${not #lists.isEmpty(budgets)}" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: var(--sp-6);">
+            <div th:each="budget : ${budgets}" style="padding: var(--sp-6); background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-xl); transition: all .3s var(--ease-out);">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--sp-4);">
+                    <div>
+                        <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: var(--sp-1);" th:text="${budget.category}">Category</h3>
+                        <p style="font-size: .85rem; color: var(--surface-500);">Budget limit</p>
+                    </div>
+                    <span class="fw-badge" th:classappend="${budget.spentAmount * 100 / budget.limitAmount > 100 ? 'fw-badge-danger' : budget.spentAmount * 100 / budget.limitAmount > 80 ? 'fw-badge-warning' : 'fw-badge-success'}" th:text="${#numbers.formatDecimal(budget.spentAmount * 100 / budget.limitAmount, 1, 0) + '%'}">0%</span>
+                </div>
+                
+                <div style="margin-bottom: var(--sp-4);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--sp-2);">
+                        <span style="font-size: .85rem; color: var(--surface-400);">Spending</span>
+                        <span style="font-weight: 600;">
+                            <span th:text="'$' + ${#numbers.formatDecimal(budget.spentAmount, 1, 2)}">$0</span> / 
+                            <span th:text="'$' + ${#numbers.formatDecimal(budget.limitAmount, 1, 2)}">$0</span>
+                        </span>
+                    </div>
+                    <div class="fw-progress">
+                        <div class="fw-progress__track" th:classappend="${budget.spentAmount * 100 / budget.limitAmount > 100 ? 'danger' : budget.spentAmount * 100 / budget.limitAmount > 80 ? 'warning' : 'safe'}" th:style="'width:' + ${#numbers.formatDecimal(budget.spentAmount * 100 / budget.limitAmount, 1, 0) + '%;'} + 'max-width:100%;'"></div>
+                    </div>
+                </div>
+
+                <form method="post" th:action="@{/budgets/spent/{id}(id=${budget.id})}" style="display: grid; gap: var(--sp-2); margin-bottom: var(--sp-4);">
+                    <label class="fw-label" th:for="'budget-spent-' + ${budget.id}">Amount spent</label>
+                    <div style="display: flex; gap: var(--sp-2);">
+                        <input th:id="'budget-spent-' + ${budget.id}" class="fw-input" type="number" name="spentAmount" th:value="${#numbers.formatDecimal(budget.spentAmount, 1, 2)}" min="0" max="1000000000" step="0.01" inputmode="decimal" required>
+                        <button type="submit" class="fw-btn fw-btn-primary fw-btn-sm">Check</button>
+                    </div>
+                    <span class="fw-hint">Enter a non-negative amount. The budget bar updates after saving.</span>
+                </form>
+
+                <div style="display: flex; gap: var(--sp-2);">
+                    <a th:href="@{/budgets/edit/{id}(id=${budget.id})}" class="fw-btn fw-btn-secondary fw-btn-sm" style="flex: 1; text-align: center;">Edit</a>
+                    <form method="post" th:action="@{/budgets/delete/{id}(id=${budget.id})}" style="flex:1"><button type="submit" class="fw-btn fw-btn-danger fw-btn-sm" style="width:100%" onclick="return confirm('Are you sure?')">Delete</button></form>
+                </div>
+            </div>
+        </div>
+    </main></div>
+
+    <div th:replace="~{fragments/finwise :: fwFooter}"></div>
+
+    <div th:replace="~{fragments/finwise :: fwScripts}"></div>
+</body>
+</html>

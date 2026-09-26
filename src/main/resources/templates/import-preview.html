@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <script>
+    /* Early theme paint (no-FOUC). Server pref arrives later via fwScripts;
+       until then follow saved choice, else Light. data-theme is Light|Dark. */
+    (function () {
+      try {
+        var pref = localStorage.getItem('finwise_theme') || 'light';
+        if (pref !== 'light' && pref !== 'dark') pref = 'light';
+        var eff = pref;
+
+        document.documentElement.setAttribute('data-theme', eff);
+        if (document.documentElement.classList) {
+          document.documentElement.classList.toggle('dark', eff === 'dark');
+          document.documentElement.classList.toggle('light', eff === 'light');
+        }
+        try { document.documentElement.style.colorScheme = eff; } catch (e) {}
+        try {
+          var __ts = localStorage.getItem('finwise_textsize') || 'default';
+          document.documentElement.setAttribute('data-fw-textsize', __ts);
+          if (localStorage.getItem('finwise_contrast') === 'on') document.documentElement.classList.add('fw-high-contrast');
+          if (localStorage.getItem('finwise_motion') === 'off') document.documentElement.classList.add('fw-no-motion');
+        } catch (e2) {}
+      } catch (e) {}
+    })();
+  </script>
+    <title>Import Preview - Finwise</title>
+    <link rel="stylesheet" href="/css/3d-dynamic.css">
+  <link rel="stylesheet" href="/css/finwise-tokens.css">
+  <link rel="stylesheet" href="/css/finwise-layout.css">
+  <link rel="stylesheet" href="/css/finwise-components.css">
+  <link rel="stylesheet" href="/css/finwise-responsive.css">
+  <link rel="stylesheet" href="/css/chatbot-widget.css">
+  <link rel="stylesheet" href="/css/finwise-bridge.css">
+  <link rel="stylesheet" href="/css/finwise-theme.css">
+</head>
+<body class="fw-body fw-shell">
+<div th:replace="~{fragments/finwise :: fwSidebar('import', ${user})}"></div>
+<div th:replace="~{fragments/finwise :: fwTopbar('Import', null, ${user}, ${unreadCount})}"></div>
+<div class="fw-scrim" onclick="fwCloseSidebar()"></div>
+
+<div class="fw-content"><main class="fw-wrap" id="main">
+    <div class="fw-page-header fw-animate" style="display: flex; justify-content: space-between; align-items: flex-start; gap: var(--sp-4);">
+        <div>
+            <h1>Import Preview</h1>
+            <p>Review and edit parsed records before importing</p>
+        </div>
+        <a th:href="@{/import/history}" class="fw-btn fw-btn-secondary">Import History</a>
+    </div>
+
+    <div th:if="${not #lists.isEmpty(globalErrorMessages)}" class="fw-alert fw-alert-error">
+        <span th:text="${globalErrorMessages}"></span>
+    </div>
+
+    <div th:if="${successMessage}" class="fw-alert fw-alert-success">
+        <span th:text="${successMessage}"></span>
+    </div>
+
+    <div th:if="${errorMessage}" class="fw-alert fw-alert-error">
+        <span th:text="${errorMessage}"></span>
+    </div>
+
+    <div class="fw-card fw-animate">
+        <div class="fw-card-header">
+            <h2 th:text="|Preview - ${records.size} Records Found|">Preview - 0 Records Found</h2>
+        </div>
+        <div class="fw-card-body">
+            <form th:action="@{/import/validate}" method="post">
+                <div class="fw-table-responsive">
+                    <table class="fw-table">
+                        <thead>
+                        <tr>
+                            <th><input type="checkbox" id="selectAll" onchange="toggleSelect(this)" th:disabled="${!hasPendingRecords}"></th>
+                            <th>Image</th>
+                            <th>Description</th>
+                            <th>Type</th>
+                            <th>Amount</th>
+                            <th>Date</th>
+                            <th>Category</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="record : ${records}">
+                            <td>
+                                <input type="checkbox" name="validIds" th:value="${record.id}" class="fw-checkbox" th:disabled="${record.importStatus == 'IMPORTED'}"/>
+                            </td>
+                            <td>
+                                <a th:if="${record.fileType == 'IMAGE' and record.sourceImagePath != null}"
+                                   th:href="@{/import/image/{id}(id=${record.id})}"
+                                   target="_blank"
+                                   rel="noopener"
+                                   class="fw-action-btn small">Preview</a>
+                                <span th:unless="${record.fileType == 'IMAGE' and record.sourceImagePath != null}">—</span>
+                            </td>
+                            <td>
+                                <span th:text="${record.description}">Description</span>
+                                <input type="text" name="description_${record.id}" th:value="${record.description}" class="fw-input-small" th:disabled="${record.importStatus == 'IMPORTED'}"/>
+                            </td>
+                            <td>
+                                <select name="type_${record.id}" class="fw-select fw-select-small" th:disabled="${record.importStatus == 'IMPORTED'}">
+                                    <option value="INCOME" th:selected="${record.transactionType == 'INCOME'}">INCOME</option>
+                                    <option value="EXPENSE" th:selected="${record.transactionType == 'EXPENSE'}">EXPENSE</option>
+                                </select>
+                            </td>
+                            <td class="fw-tx-amount" th:text="'$' + ${#numbers.formatDecimal(record.amount, 1, 2)}">$0.00</td>
+                            <td th:text="${#temporals.format(record.transactionDate, 'MMM d, yyyy')}">2024-01-15</td>
+                            <td>
+                                <input type="text" name="category_${record.id}" th:value="${record.category}" class="fw-input-small" th:disabled="${record.importStatus == 'IMPORTED'}"/>
+                            </td>
+                            <td>
+                                <span class="fw-badge"
+                                      th:classappend="${record.importStatus == 'IMPORTED' ? 'fw-badge-success' : record.importStatus == 'REJECTED' ? 'fw-badge-danger' : record.importStatus == 'DUPLICATE' ? 'fw-badge-warning' : 'fw-badge-info'}"
+                                      th:text="${record.importStatus}">PARSED</span>
+                            </td>
+                            <td>
+                                <span th:if="${record.importStatus == 'IMPORTED'}">—</span>
+                                <th:block th:unless="${record.importStatus == 'IMPORTED'}">
+                                    <button type="submit" name="editIds" th:value="${record.id}" class="fw-action-btn small">Edit</button>
+                                    <button type="submit" th:formaction="@{/import/delete/{id}(id=${record.id})}"
+                                       onclick="return confirm('Are you sure you want to delete this imported record?')"
+                                       class="fw-danger-btn small">Delete</button>
+                                </th:block>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div th:if="${hasPendingRecords}" class="fw-form-group fw-form-group-wide fw-mt-4">
+                    <input type="checkbox" name="editIds" id="selectNone" style="display:none;">
+                    <button type="submit" name="action" value="import" class="fw-btn fw-btn-primary fw-btn-large fw-width-100">Import Selected Records</button>
+                    <button type="submit" name="action" value="cancel" class="fw-btn fw-btn-secondary fw-btn-large fw-width-100 fw-ml-2">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div th:if="${#lists.isEmpty(records)}" class="fw-mt-4 fw-empty">
+        <div class="fw-empty-icon"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg></div>
+        <h3>No records found</h3>
+        <p>Upload a file to import transactions.</p>
+    </div>
+</main></div>
+
+<div th:replace="~{fragments/finwise :: fwFooter}"></div>
+
+<div th:replace="~{fragments/finwise :: fwScripts}"></div>
+
+<script>
+    function toggleSelect(checkbox) {
+        var checkboxes = document.querySelectorAll('input[name="validIds"]:not(:disabled)');
+        checkboxes.forEach(function(cb) {
+            cb.checked = checkbox.checked;
+        });
+    }
+</script>
+</body>
+</html>

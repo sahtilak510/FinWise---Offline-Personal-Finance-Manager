@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <script>
+    /* Early theme paint (no-FOUC). Server pref arrives later via fwScripts;
+       until then follow saved choice, else Light. data-theme is Light|Dark. */
+    (function () {
+      try {
+        var pref = localStorage.getItem('finwise_theme') || 'light';
+        if (pref !== 'light' && pref !== 'dark') pref = 'light';
+        var eff = pref;
+
+        document.documentElement.setAttribute('data-theme', eff);
+        if (document.documentElement.classList) {
+          document.documentElement.classList.toggle('dark', eff === 'dark');
+          document.documentElement.classList.toggle('light', eff === 'light');
+        }
+        try { document.documentElement.style.colorScheme = eff; } catch (e) {}
+        try {
+          var __ts = localStorage.getItem('finwise_textsize') || 'default';
+          document.documentElement.setAttribute('data-fw-textsize', __ts);
+          if (localStorage.getItem('finwise_contrast') === 'on') document.documentElement.classList.add('fw-high-contrast');
+          if (localStorage.getItem('finwise_motion') === 'off') document.documentElement.classList.add('fw-no-motion');
+        } catch (e2) {}
+      } catch (e) {}
+    })();
+  </script>
+    <title>Goals  Finwise</title>
+    <link rel="stylesheet" href="/css/3d-dynamic.css">
+  <link rel="stylesheet" href="/css/finwise-tokens.css">
+  <link rel="stylesheet" href="/css/finwise-layout.css">
+  <link rel="stylesheet" href="/css/finwise-components.css">
+  <link rel="stylesheet" href="/css/finwise-responsive.css">
+  <link rel="stylesheet" href="/css/chatbot-widget.css">
+  <link rel="stylesheet" href="/css/finwise-bridge.css">
+  <link rel="stylesheet" href="/css/finwise-theme.css">
+</head>
+<body class="fw-body fw-shell">
+    <div class="fw-particles">
+        <div class="fw-particle" style="left:10%;animation-duration:20s;animation-delay:0s;top:30%;background:rgba(99,102,241,0.25);"></div>
+        <div class="fw-particle" style="left:40%;animation-duration:24s;animation-delay:-6s;top:70%;background:rgba(139,92,246,0.2);width:5px;height:5px;"></div>
+        <div class="fw-particle" style="left:70%;animation-duration:18s;animation-delay:-12s;top:40%;background:rgba(16,185,129,0.2);"></div>
+    </div>
+
+    <div th:replace="~{fragments/finwise :: fwSidebar('goals', ${user})}"></div>
+
+    <div th:replace="~{fragments/finwise :: fwTopbar('Goals', null, ${user}, ${unreadCount})}"></div>
+<div class="fw-scrim" onclick="fwCloseSidebar()"></div>
+
+    <div class="fw-content"><main class="fw-wrap" id="main">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--sp-8);">
+            <div>
+                <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: var(--sp-2);"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg> Financial Goals</h1>
+                <p style="color: var(--surface-400);">Track your long-term savings and financial targets</p>
+            </div>
+            <a href="/goals/add" class="fw-btn fw-btn-primary fw-btn-lg">+ Create Goal</a>
+        </div>
+
+        <div th:if="${successMessage}" data-fw-flash data-fw-kind="ok" th:text="${successMessage}" style="display:none"></div>
+        <div th:if="${errorMessage}" data-fw-flash data-fw-kind="bad" th:text="${errorMessage}" style="display:none"></div>
+
+        <div th:if="${#lists.isEmpty(goals)}" class="fw-empty">
+            <div class="fw-empty-icon"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg></div>
+            <h3>No goals yet</h3>
+            <p>Create a financial goal to start tracking your savings</p>
+            <a href="/goals/add" class="fw-btn fw-btn-primary fw-btn-lg">Create Your First Goal</a>
+        </div>
+
+        <div th:if="${not #lists.isEmpty(goals)}" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: var(--sp-6);">
+            <div th:each="goal : ${goals}" style="padding: var(--sp-6); background: linear-gradient(135deg, var(--navy-800), var(--navy-750)); border: 1px solid var(--glass-border); border-radius: var(--radius-xl); transition: all .3s var(--ease-out);">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--sp-4);">
+                    <div style="flex: 1;">
+                        <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: var(--sp-1);" th:text="${goal.goalName}">Goal</h3>
+                        <p style="font-size: .85rem; color: var(--surface-500); margin-bottom: var(--sp-2);" th:text="${goal.description}">Description</p>
+                    </div>
+                    <span class="fw-badge" th:classappend="${goal.priority == 'HIGH' ? 'fw-badge-danger' : goal.priority == 'MEDIUM' ? 'fw-badge-warning' : 'fw-badge-info'}" th:text="${goal.priority}">MEDIUM</span>
+                </div>
+                
+                <div style="margin-bottom: var(--sp-4);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--sp-2);">
+                        <span style="font-size: .85rem; color: var(--surface-400);">Progress</span>
+                        <span style="font-weight: 700; color: var(--primary-400);" th:text="${#numbers.formatDecimal(goal.currentAmount * 100 / goal.targetAmount, 1, 0) + '%'}">0%</span>
+                    </div>
+                    <div class="fw-progress">
+                        <div class="fw-progress__track safe" th:style="'width:' + ${#numbers.formatDecimal(goal.currentAmount * 100 / goal.targetAmount, 1, 0) + '%;'} + 'max-width:100%;'"></div>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--sp-4); padding-bottom: var(--sp-4); border-bottom: 1px solid var(--glass-border);">
+                    <div>
+                        <div style="font-size: .85rem; color: var(--surface-400); margin-bottom: var(--sp-1);">Saved</div>
+                        <div style="font-size: 1.25rem; font-weight: 700;" th:text="'$' + ${#numbers.formatDecimal(goal.currentAmount, 1, 2)}">$0</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: .85rem; color: var(--surface-400); margin-bottom: var(--sp-1);">Target</div>
+                        <div style="font-size: 1.25rem; font-weight: 700;" th:text="'$' + ${#numbers.formatDecimal(goal.targetAmount, 1, 2)}">$0</div>
+                    </div>
+                </div>
+
+                <form method="post" th:action="@{/goals/progress/{id}(id=${goal.id})}" style="display: grid; gap: var(--sp-2); margin-bottom: var(--sp-4);">
+                    <label class="fw-label" th:for="'goal-progress-' + ${goal.id}" style="color: var(--surface-300);">Amount saved</label>
+                    <div style="display: flex; gap: var(--sp-2);">
+                        <input th:id="'goal-progress-' + ${goal.id}" class="fw-input" type="number" name="currentAmount" th:value="${#numbers.formatDecimal(goal.currentAmount, 1, 2)}" min="0" max="1000000000" step="0.01" inputmode="decimal" required>
+                        <button type="submit" class="fw-btn fw-btn-primary fw-btn-sm">Check</button>
+                    </div>
+                    <span class="fw-hint">Enter a non-negative amount. Values above the target mark the goal complete.</span>
+                </form>
+
+                <div style="display: flex; gap: var(--sp-2);">
+                    <a th:href="@{/goals/edit/{id}(id=${goal.id})}" class="fw-btn fw-btn-secondary fw-btn-sm" style="flex: 1; text-align: center;">Edit</a>
+                    <form method="post" th:action="@{/goals/complete/{id}(id=${goal.id})}" style="flex:1"><button type="submit" class="fw-btn fw-btn-success fw-btn-sm" style="width:100%">Complete</button></form>
+                    <form method="post" th:action="@{/goals/delete/{id}(id=${goal.id})}" style="flex:1"><button type="submit" class="fw-btn fw-btn-danger fw-btn-sm" style="width:100%" onclick="return confirm('Are you sure?')">Delete</button></form>
+                </div>
+            </div>
+        </div>
+    </main></div>
+
+    <div th:replace="~{fragments/finwise :: fwFooter}"></div>
+
+    <div th:replace="~{fragments/finwise :: fwScripts}"></div>
+</body>
+</html>

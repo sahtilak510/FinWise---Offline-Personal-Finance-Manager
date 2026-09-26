@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="${errorTitle} + ' — FinWise'">Error — FinWise</title>
+  <link rel="stylesheet" href="/css/3d-dynamic.css">
+  <link rel="stylesheet" href="/css/finwise-tokens.css">
+  <link rel="stylesheet" href="/css/finwise-layout.css">
+  <link rel="stylesheet" href="/css/finwise-components.css">
+  <link rel="stylesheet" href="/css/finwise-responsive.css">
+  <link rel="stylesheet" href="/css/finwise-bridge.css">
+</head>
+<body class="fw-body">
+<main style="min-height:100vh;display:grid;place-items:center;padding:32px 16px">
+  <div class="fw-card fw-card-pad" style="max-width:520px;width:100%;text-align:center">
+    <div class="fw-empty-ic" style="font-size:1.4rem">⚠</div>
+    <div class="fw-num" style="font-size:3rem;font-weight:800;letter-spacing:-.03em" th:text="${statusCode}">500</div>
+    <h1 style="margin:0 0 6px;font-size:1.3rem" th:text="${errorTitle}">Something went wrong</h1>
+    <p style="color:var(--fw-text-2);margin:0 0 4px" th:text="${errorMessage}">An unexpected error occurred</p>
+    <p class="fw-hint" th:text="${errorDescription}">Please try again later</p>
+    <p class="fw-hint fw-num" th:text="${requestPath}">/</p>
+    <p class="fw-hint">Don't worry — your financial data is safe on this device.</p>
+    <div style="display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap">
+      <a href="/dashboard" class="fw-btn fw-btn-pri">← Back to Dashboard</a>
+      <a href="/" class="fw-btn fw-btn-sec">Home</a>
+      <a href="/login" class="fw-btn fw-btn-sec" th:if="${statusCode == 401 or statusCode == 403}">Sign In</a>
+    </div>
+  </div>
+</main>
+</body>
+</html>

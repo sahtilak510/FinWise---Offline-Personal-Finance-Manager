@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <script>
+    /* Early theme paint (no-FOUC). Server pref arrives later via fwScripts;
+       until then follow saved choice, else Light. data-theme is Light|Dark. */
+    (function () {
+      try {
+        var pref = localStorage.getItem('finwise_theme') || 'light';
+        if (pref !== 'light' && pref !== 'dark') pref = 'light';
+        var eff = pref;
+
+        document.documentElement.setAttribute('data-theme', eff);
+        if (document.documentElement.classList) {
+          document.documentElement.classList.toggle('dark', eff === 'dark');
+          document.documentElement.classList.toggle('light', eff === 'light');
+        }
+        try { document.documentElement.style.colorScheme = eff; } catch (e) {}
+        try {
+          var __ts = localStorage.getItem('finwise_textsize') || 'default';
+          document.documentElement.setAttribute('data-fw-textsize', __ts);
+          if (localStorage.getItem('finwise_contrast') === 'on') document.documentElement.classList.add('fw-high-contrast');
+          if (localStorage.getItem('finwise_motion') === 'off') document.documentElement.classList.add('fw-no-motion');
+        } catch (e2) {}
+      } catch (e) {}
+    })();
+  </script>
+    <title>Notifications - Finwise</title>
+    <link rel="stylesheet" href="/css/3d-dynamic.css">
+  <link rel="stylesheet" href="/css/finwise-tokens.css">
+  <link rel="stylesheet" href="/css/finwise-layout.css">
+  <link rel="stylesheet" href="/css/finwise-components.css">
+  <link rel="stylesheet" href="/css/finwise-responsive.css">
+  <link rel="stylesheet" href="/css/chatbot-widget.css">
+  <link rel="stylesheet" href="/css/finwise-bridge.css">
+  <link rel="stylesheet" href="/css/finwise-theme.css">
+</head>
+<body class="fw-body fw-shell">
+    <div class="fw-particles">
+        <div class="fw-particle" style="left:10%;animation-duration:20s;animation-delay:0s;top:30%;background:rgba(99,102,241,0.25);"></div>
+        <div class="fw-particle" style="left:40%;animation-duration:24s;animation-delay:-6s;top:70%;background:rgba(139,92,246,0.2);width:5px;height:5px;"></div>
+        <div class="fw-particle" style="left:70%;animation-duration:18s;animation-delay:-12s;top:40%;background:rgba(16,185,129,0.2);"></div>
+    </div>
+
+    <div th:replace="~{fragments/finwise :: fwSidebar('notifications', ${user})}"></div>
+
+    <div th:replace="~{fragments/finwise :: fwTopbar('Notifications', null, ${user}, ${unreadCount})}"></div>
+<div class="fw-scrim" onclick="fwCloseSidebar()"></div>
+
+    <div class="fw-content"><main class="fw-wrap" id="main">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--sp-8); flex-wrap: wrap; gap: var(--sp-4);">
+            <div>
+                <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: var(--sp-2);"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg> Notifications</h1>
+                <p style="color: var(--surface-400);">
+                    <span th:if="${unreadCount > 0}">
+                        <strong th:text="${unreadCount}">0</strong> unread notification<span th:if="${unreadCount > 1}">s</span>
+                    </span>
+                    <span th:if="${unreadCount == 0}">All caught up!</span>
+                </p>
+            </div>
+            <div style="display: flex; gap: var(--sp-3);">
+                <form method="post" th:action="@{/notifications/mark-all-read}" style="display: contents;">
+                    <button type="submit" class="fw-btn fw-btn-secondary" th:disabled="${unreadCount == 0}">Mark All as Read</button>
+                </form>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: var(--sp-3); margin-bottom: var(--sp-6);">
+            <a href="/notifications" class="fw-btn fw-btn-sm" th:classappend="${!unreadOnly ? 'fw-btn-primary' : 'fw-btn-secondary'}">All</a>
+            <a href="/notifications?unreadOnly=true" class="fw-btn fw-btn-sm" th:classappend="${unreadOnly ? 'fw-btn-primary' : 'fw-btn-secondary'}">Unread Only</a>
+        </div>
+
+        <div th:if="${#lists.isEmpty(notifications)}" class="fw-empty" style="text-align: center; padding: var(--sp-16);">
+            <div class="fw-empty-icon"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></div>
+            <h3 th:text="${unreadOnly ? 'No unread notifications' : 'No notifications yet'}">No notifications</h3>
+            <p th:text="${unreadOnly ? 'You are all caught up!' : 'Notifications about budgets, goals, and recurring payments will appear here.'}">You are all caught up!</p>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: var(--sp-3);" th:if="${not #lists.isEmpty(notifications)}">
+            <div th:each="notif : ${notifications}" style="padding: var(--sp-5); background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-xl); display: flex; gap: var(--sp-4); align-items: flex-start;"
+                 th:styleappend="${notif.isRead() ? 'opacity: 0.7;' : ''}">
+                <div style="flex-shrink: 0; margin-top: 4px;">
+                    <div style="width: 10px; height: 10px; border-radius: 50%;"
+                         th:styleappend="${notif.isRead() ? 'background: var(--surface-500);' : 'background: var(--primary);'}"></div>
+                </div>
+                <div style="flex: 1;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--sp-2);">
+                        <div>
+                            <h4 style="font-size: 1rem; font-weight: 600; margin-bottom: var(--sp-1);" th:text="${notif.title}">Notification Title</h4>
+                            <span class="fw-badge" th:classappend="${notif.priority == 'HIGH' ? 'fw-badge-danger' : notif.priority == 'MEDIUM' ? 'fw-badge-warning' : 'fw-badge-info'}" th:text="${notif.priority}">Priority</span>
+                        </div>
+                        <div style="display: flex; gap: var(--sp-2); align-items: center; flex-shrink: 0;">
+                            <span style="font-size: .8rem; color: var(--surface-500);" th:text="${notif.createdAt != null ? #temporals.format(notif.createdAt, 'MMM dd, HH:mm') : ''}">Time</span>
+                            <form th:if="${not notif.isRead()}" method="post" th:action="@{/notifications/mark-read/{id}(id=${notif.notificationId})}" style="display: contents;">
+                                <button type="submit" class="fw-btn fw-btn-secondary fw-btn-sm">Mark Read</button>
+                            </form>
+                        </div>
+                    </div>
+                    <p style="font-size: .9rem; color: var(--surface-400); margin: 0;" th:text="${notif.message}">Notification message</p>
+                </div>
+            </div>
+        </div>
+    </main></div>
+
+    <div th:replace="~{fragments/finwise :: fwFooter}"></div>
+
+    <div th:replace="~{fragments/finwise :: fwScripts}"></div>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <script>
+    /* Early theme paint (no-FOUC). Server pref arrives later via fwScripts;
+       until then follow saved choice, else Light. data-theme is Light|Dark. */
+    (function () {
+      try {
+        var pref = localStorage.getItem('finwise_theme') || 'light';
+        if (pref !== 'light' && pref !== 'dark') pref = 'light';
+        var eff = pref;
+
+        document.documentElement.setAttribute('data-theme', eff);
+        if (document.documentElement.classList) {
+          document.documentElement.classList.toggle('dark', eff === 'dark');
+          document.documentElement.classList.toggle('light', eff === 'light');
+        }
+        try { document.documentElement.style.colorScheme = eff; } catch (e) {}
+        try {
+          var __ts = localStorage.getItem('finwise_textsize') || 'default';
+          document.documentElement.setAttribute('data-fw-textsize', __ts);
+          if (localStorage.getItem('finwise_contrast') === 'on') document.documentElement.classList.add('fw-high-contrast');
+          if (localStorage.getItem('finwise_motion') === 'off') document.documentElement.classList.add('fw-no-motion');
+        } catch (e2) {}
+      } catch (e) {}
+    })();
+  </script>
+    <title>Campus Habits - Finwise</title>
+    <link rel="stylesheet" href="/css/3d-dynamic.css">
+    <link rel="stylesheet" href="/css/finwise-tokens.css">
+    <link rel="stylesheet" href="/css/finwise-layout.css">
+    <link rel="stylesheet" href="/css/finwise-components.css">
+    <link rel="stylesheet" href="/css/finwise-responsive.css">
+    <link rel="stylesheet" href="/css/chatbot-widget.css">
+  <link rel="stylesheet" href="/css/finwise-bridge.css">
+  <link rel="stylesheet" href="/css/finwise-theme.css">
+</head>
+<body class="fw-body fw-shell">
+    <div class="fw-particles">
+        <div class="fw-particle" style="left:10%;animation-duration:20s;animation-delay:0s;top:30%;background:rgba(99,102,241,0.25);"></div>
+        <div class="fw-particle" style="left:70%;animation-duration:18s;animation-delay:-12s;top:40%;background:rgba(16,185,129,0.2);"></div>
+    </div>
+
+    <div th:replace="~{fragments/finwise :: fwSidebar('habits', ${user})}"></div>
+    <div th:replace="~{fragments/finwise :: fwTopbar('Campus Habits', null, ${user}, ${unreadCount})}"></div>
+    <div class="fw-scrim" onclick="fwCloseSidebar()"></div>
+
+    <div class="fw-content"><main class="fw-wrap" id="main">
+        <div style="margin-bottom: var(--sp-8);">
+            <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: var(--sp-2);">🎓 Campus Habits</h1>
+            <p style="color: var(--surface-400);">Original feature: Student Money Map — 50/30/20 balance, Mess vs Outside food, No-Spend Streak. Built with OOP (Interface + Abstract class + Polymorphism).</p>
+        </div>
+
+        <div th:if="${!hasData}" class="fw-empty" style="margin-bottom: var(--sp-8);">
+            <div class="fw-empty-icon">📊</div>
+            <h3>No financial data yet.</h3>
+            <p>Add income (pocket money) and expenses to unlock your habit score.</p>
+            <div style="display:flex;gap:8px;justify-content:center;margin-top:12px;">
+                <a href="/income/add" class="fw-btn fw-btn-primary">Add Income</a>
+                <a href="/expenses/add" class="fw-btn fw-btn-secondary">Add Expense</a>
+            </div>
+        </div>
+
+        <div th:if="${hasData}">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--sp-4); margin-bottom: var(--sp-8);">
+                <div style="padding: var(--sp-5); background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-xl); border-left: 4px solid var(--success-500);">
+                    <div style="font-size: .8125rem; color: var(--surface-400); margin-bottom: var(--sp-1);">Habit Score</div>
+                    <div style="font-size: 2rem; font-weight: 800;" th:text="${overallScore} + '/100'">0/100</div>
+                    <div style="font-size: .9rem; color: var(--surface-400);" th:text="${grade}">Grade</div>
+                </div>
+                <div style="padding: var(--sp-5); background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-xl);">
+                    <div style="font-size: .8125rem; color: var(--surface-400); margin-bottom: var(--sp-1);">Total Income</div>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--success-400);" th:text="'₹' + ${#numbers.formatDecimal(totalIncome, 1, 2)}">₹0</div>
+                </div>
+                <div style="padding: var(--sp-5); background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-xl);">
+                    <div style="font-size: .8125rem; color: var(--surface-400); margin-bottom: var(--sp-1);">Total Expenses</div>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--fw-danger-text);" th:text="'₹' + ${#numbers.formatDecimal(totalExpenses, 1, 2)}">₹0</div>
+                </div>
+                <div style="padding: var(--sp-5); background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-xl);">
+                    <div style="font-size: .8125rem; color: var(--surface-400); margin-bottom: var(--sp-1);">Savings Rate</div>
+                    <div style="font-size: 1.5rem; font-weight: 700;" th:text="${savingsRate} + '%'">0%</div>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--sp-4);">
+                <div th:each="r : ${results}" style="padding: var(--sp-5); background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-xl);"
+                     th:styleappend="${r.status == 'GOOD'} ? ';border-left:4px solid var(--success-500)' : (${r.status == 'OK'} ? ';border-left:4px solid #fbbf24' : ';border-left:4px solid #ef4444}')">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                        <b th:text="${r.title}">Rule</b>
+                        <span th:text="${r.status}" class="fw-habit-badge" style="font-size:.75rem;padding:2px 10px;border-radius:999px;background:var(--fw-surface-3);">GOOD</span>
+                    </div>
+                    <div style="font-size:2rem;font-weight:800;margin-bottom:4px;" th:text="${r.score} + '/100'">0/100</div>
+                    <div class="fw-habit-track" style="height:8px;background:var(--fw-surface-3);border-radius:999px;overflow:hidden;margin-bottom:10px;">
+                        <div th:style="'height:100%;width:' + ${r.score} + '%;background:linear-gradient(90deg,#6366f1,#10b981);'"></div>
+                    </div>
+                    <p style="color: var(--surface-300); font-size:.9rem;" th:text="${r.message}">message</p>
+                    <p style="color: var(--surface-400); font-size:.85rem;margin-top:6px;" th:text="${r.tip}">tip</p>
+                </div>
+            </div>
+
+            <div style="margin-top: var(--sp-8); padding: var(--sp-5); background: var(--glass-bg); border: 1px dashed var(--glass-border); border-radius: var(--radius-xl);">
+                <b>For viva:</b>
+                <span style="color: var(--surface-400); font-size:.9rem;">SpendingRule (interface, abstraction) → AbstractSpendingRule (inheritance) → NeedWantRule, HostelFoodRule, StreakRule (polymorphism) → RuleResult (encapsulation). HabitService uses List&lt;SpendingRule&gt; so new rules need zero changes there.</span>
+            </div>
+        </div>
+    </main></div>
+    <script src="/js/finwise-ui.js"></script>
+</body>
+</html>

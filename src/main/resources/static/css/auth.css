@@ -1,0 +1,315 @@
+/* ============================================================
+   FinWise — Premium Authentication
+   Split-layout auth (brand 45% / form 55%), fully theme-aware.
+   Reuses global tokens + .fw-btn-*, .fw-input, .fw-label, .fw-alert.
+   Brand panel is intentionally deep navy in BOTH themes.
+   ============================================================ */
+
+.authx {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: 45% 55%;
+  overflow-x: clip;
+}
+
+/* ---------- Left: brand panel (always deep navy) ---------- */
+.authx-brand {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: clamp(28px, 4vw, 56px);
+  color: #F8FAFC;
+  background:
+    radial-gradient(ellipse 70% 45% at 85% 8%, rgba(99, 102, 241, .22), transparent 60%),
+    radial-gradient(ellipse 55% 40% at 8% 95%, rgba(16, 185, 129, .10), transparent 60%),
+    linear-gradient(165deg, #0B1226 0%, #070B14 55%, #0A1030 100%);
+}
+.authx-brand::before {
+  /* very subtle grid pattern */
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(148, 163, 184, .055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, .055) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse 90% 80% at 30% 20%, #000 30%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse 90% 80% at 30% 20%, #000 30%, transparent 75%);
+  pointer-events: none;
+}
+.authx-brand::after {
+  /* low-opacity geometric accent */
+  content: "";
+  position: absolute;
+  width: 420px;
+  height: 420px;
+  right: -140px;
+  bottom: -140px;
+  border: 1px solid rgba(129, 140, 248, .14);
+  border-radius: 50%;
+  box-shadow: 0 0 0 56px rgba(129, 140, 248, .04), 0 0 0 112px rgba(129, 140, 248, .025);
+  pointer-events: none;
+}
+.authx-logo {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #F8FAFC;
+  text-decoration: none;
+  font-weight: 800;
+  font-size: 1.2rem;
+  letter-spacing: -.01em;
+}
+.authx-hero { position: relative; z-index: 1; margin: auto 0; max-width: 460px; padding: 40px 0; }
+.authx-kicker {
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: #a5b4fc;
+  margin: 0 0 14px;
+}
+.authx-hero h1 {
+  margin: 0 0 14px;
+  font-size: clamp(2rem, 3.4vw, 2.9rem);
+  line-height: 1.1;
+  letter-spacing: -.025em;
+  color: #F8FAFC;
+  animation: authx-rise .55s var(--fw-ease, ease-out) both;
+}
+.authx-hero > p {
+  margin: 0 0 8px;
+  color: #CBD5E1;
+  font-size: 1.02rem;
+  line-height: 1.6;
+  animation: authx-rise .55s var(--fw-ease, ease-out) .06s both;
+}
+.authx-feats { list-style: none; margin: 26px 0 0; padding: 0; display: grid; gap: 8px; }
+.authx-feats li {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border: 1px solid rgba(148, 163, 184, .14);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, .03);
+  transition: background-color .18s ease, border-color .18s ease, transform .18s ease;
+  animation: authx-rise .55s var(--fw-ease, ease-out) both;
+}
+.authx-feats li:nth-child(1) { animation-delay: .1s; }
+.authx-feats li:nth-child(2) { animation-delay: .16s; }
+.authx-feats li:nth-child(3) { animation-delay: .22s; }
+.authx-feats li:hover {
+  background: rgba(99, 102, 241, .10);
+  border-color: rgba(129, 140, 248, .35);
+  transform: translateX(4px);
+}
+.authx-feats .fi {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  color: #c7d2fe;
+  background: rgba(99, 102, 241, .14);
+  border: 1px solid rgba(129, 140, 248, .25);
+}
+.authx-feats .fi svg { width: 19px; height: 19px; }
+.authx-feats b { display: block; font-size: .82rem; letter-spacing: .06em; color: #F8FAFC; }
+.authx-feats span { font-size: .85rem; color: #94A3B8; line-height: 1.5; }
+.authx-secure {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-top: 28px;
+  padding: 14px 16px;
+  border: 1px solid rgba(52, 211, 153, .25);
+  border-radius: 14px;
+  background: rgba(16, 185, 129, .07);
+  animation: authx-fade .6s ease .28s both;
+}
+.authx-secure svg { flex: none; width: 20px; height: 20px; color: #34d399; margin-top: 1px; }
+.authx-secure b { display: block; font-size: .78rem; letter-spacing: .08em; color: #F8FAFC; }
+.authx-secure span { font-size: .82rem; color: #94A3B8; }
+.authx-foot { position: relative; z-index: 1; margin-top: 22px; font-size: .76rem; color: rgba(148, 163, 184, .6); }
+
+/* ---------- Right: auth workspace (theme-aware) ---------- */
+.authx-main {
+  display: grid;
+  place-items: center;
+  padding: clamp(24px, 4vw, 56px) clamp(20px, 4vw, 48px);
+  background: var(--fw-bg);
+}
+.authx-card {
+  width: min(460px, 100%);
+  background: var(--fw-surface);
+  border: 1px solid var(--fw-border);
+  border-radius: 22px;
+  padding: clamp(26px, 3.4vw, 40px);
+  box-shadow: var(--fw-shadow-lg);
+  animation: authx-rise .5s var(--fw-ease, ease-out) .08s both;
+}
+[data-theme="light"] .authx-card { box-shadow: 0 20px 50px -20px rgba(15, 23, 42, .18); }
+.authx-mark {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(135deg, var(--fw-primary-600), var(--fw-primary));
+  box-shadow: 0 8px 20px rgba(99, 102, 241, .35);
+  margin-bottom: 18px;
+}
+.authx-card h2 { margin: 0; font-size: 1.55rem; letter-spacing: -.02em; color: var(--fw-text); }
+.authx-sub { margin: 6px 0 22px; color: var(--fw-text-2); font-size: .93rem; }
+.authx-alert { display: flex; }
+.authx-alert svg { flex: none; width: 18px; height: 18px; margin-top: 1px; }
+
+/* ---------- Fields ---------- */
+.authx-field { margin-bottom: 15px; }
+.authx-field .fw-label { margin-bottom: 7px; }
+.authx-control { position: relative; }
+.authx-control .fi-left {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  color: var(--fw-text-3);
+  pointer-events: none;
+}
+.authx .fw-input {
+  min-height: 50px;
+  border-radius: 12px;
+  padding-left: 42px;
+  font-size: .94rem;
+  transition: border-color .16s ease, box-shadow .16s ease, background-color .18s ease;
+}
+.authx .fw-input::placeholder { color: var(--fw-text-3); }
+.authx-control .fi-eye {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--fw-text-3);
+  cursor: pointer;
+  transition: color .15s ease, background-color .15s ease, transform .12s ease;
+}
+.authx-control .fi-eye:hover { color: var(--fw-text); background: var(--fw-hover); }
+.authx-control .fi-eye:active { transform: translateY(-50%) scale(.92); }
+.authx-control .fi-eye:focus-visible { outline: 2px solid var(--fw-primary); outline-offset: 1px; }
+.authx-control .fi-eye svg { width: 18px; height: 18px; }
+.authx .fw-input--error { border-color: var(--fw-danger-text); }
+.authx .fw-input--error:focus { box-shadow: 0 0 0 3px var(--fw-danger-soft); }
+.authx-err { display: none; align-items: flex-start; gap: 8px; margin: 10px 0 0; font-size: .83rem; color: var(--fw-danger-text); }
+.authx-err.show { display: flex; }
+.authx-err svg { flex: none; width: 16px; height: 16px; margin-top: 1px; }
+.authx-hint { margin: 8px 0 0; font-size: .79rem; color: var(--fw-text-3); }
+
+/* ---------- Password strength (visual guide; rule = 6+ chars) ---------- */
+.authx-strength { margin: 10px 0 0; }
+.authx-strength-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 7px; }
+.authx-strength-top small { font-size: .76rem; color: var(--fw-text-3); }
+.authx-strength-top b { font-size: .78rem; }
+.authx-meter { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.authx-meter i { height: 5px; border-radius: 99px; background: var(--fw-surface-3); transition: background-color .2s ease; }
+.authx-meter i.on-1 { background: #ef4444; }
+.authx-meter i.on-2 { background: #f59e0b; }
+.authx-meter i.on-3 { background: #22c55e; }
+.authx-meter i.on-4 { background: #10b981; }
+.authx-s-1 { color: #ef4444; } .authx-s-2 { color: #f59e0b; }
+.authx-s-3 { color: #22c55e; } .authx-s-4 { color: #10b981; }
+
+/* ---------- Submit ---------- */
+.authx .fw-btn-pri { min-height: 52px; font-size: .95rem; margin-top: 6px; transition: transform .1s ease, box-shadow .18s ease, background-color .18s ease; }
+.authx .fw-btn-pri:hover:not(:disabled) { transform: translateY(-1px); }
+.authx .fw-btn-pri:active:not(:disabled) { transform: translateY(0) scale(.985); }
+.authx .fw-btn-pri:disabled { opacity: .75; cursor: wait; transform: none; }
+.authx-spin {
+  display: none;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, .35);
+  border-top-color: #fff;
+  animation: authx-spin .65s linear infinite;
+}
+.authx .fw-btn-pri.loading .authx-spin { display: inline-block; }
+.authx .fw-btn-pri.loading { pointer-events: none; }
+
+/* ---------- Switch + safety note ---------- */
+.authx-switch {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid var(--fw-border);
+  text-align: center;
+  font-size: .88rem;
+  color: var(--fw-text-2);
+}
+.authx-switch p { margin: 0 0 10px; }
+.authx-safe {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: .8rem;
+  line-height: 1.5;
+  color: var(--fw-text-2);
+  background: var(--fw-surface-2);
+  border: 1px solid var(--fw-border);
+  animation: authx-fade .6s ease .3s both;
+}
+.authx-safe svg { flex: none; width: 17px; height: 17px; margin-top: 1px; color: var(--fw-success-text); }
+.authx-safe b { color: var(--fw-text); }
+
+/* ---------- Entrance ---------- */
+@keyframes authx-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes authx-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes authx-spin { to { transform: rotate(360deg); } }
+
+/* ---------- Tablet ---------- */
+@media (max-width: 1100px) {
+  .authx { grid-template-columns: 42% 58%; }
+}
+
+/* ---------- Mobile: brand becomes a slim banner ---------- */
+@media (max-width: 900px) {
+  .authx { grid-template-columns: 1fr; }
+  .authx-brand { padding: 22px 22px 20px; }
+  .authx-brand::after { display: none; }
+  .authx-hero { margin: 0; padding: 18px 0 0; max-width: none; }
+  .authx-hero h1 { font-size: 1.45rem; }
+  .authx-hero h1 br { display: none; }
+  .authx-hero > p, .authx-feats, .authx-secure, .authx-foot { display: none; }
+  .authx-main { padding: 22px 16px 40px; place-items: start center; }
+  .authx-card { padding: 24px 20px; border-radius: 18px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .authx-hero h1, .authx-hero > p, .authx-feats li,
+  .authx-card, .authx-safe, .authx-secure { animation: none !important; }
+  .authx-feats li:hover, .authx .fw-btn-pri:hover:not(:disabled) { transform: none; }
+}

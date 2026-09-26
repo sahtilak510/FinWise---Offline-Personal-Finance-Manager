@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <script>
+    /* Early theme paint (no-FOUC). Server pref arrives later via fwScripts;
+       until then follow saved choice, else Light. data-theme is Light|Dark. */
+    (function () {
+      try {
+        var pref = localStorage.getItem('finwise_theme') || 'light';
+        if (pref !== 'light' && pref !== 'dark') pref = 'light';
+        var eff = pref;
+
+        document.documentElement.setAttribute('data-theme', eff);
+        if (document.documentElement.classList) {
+          document.documentElement.classList.toggle('dark', eff === 'dark');
+          document.documentElement.classList.toggle('light', eff === 'light');
+        }
+        try { document.documentElement.style.colorScheme = eff; } catch (e) {}
+        try {
+          var __ts = localStorage.getItem('finwise_textsize') || 'default';
+          document.documentElement.setAttribute('data-fw-textsize', __ts);
+          if (localStorage.getItem('finwise_contrast') === 'on') document.documentElement.classList.add('fw-high-contrast');
+          if (localStorage.getItem('finwise_motion') === 'off') document.documentElement.classList.add('fw-no-motion');
+        } catch (e2) {}
+      } catch (e) {}
+    })();
+  </script>
+    <title>Accounts - Finwise</title>
+    <link rel="stylesheet" href="/css/3d-dynamic.css">
+  <link rel="stylesheet" href="/css/finwise-tokens.css">
+  <link rel="stylesheet" href="/css/finwise-layout.css">
+  <link rel="stylesheet" href="/css/finwise-components.css">
+  <link rel="stylesheet" href="/css/finwise-responsive.css">
+  <link rel="stylesheet" href="/css/chatbot-widget.css">
+  <link rel="stylesheet" href="/css/finwise-bridge.css">
+  <link rel="stylesheet" href="/css/finwise-theme.css">
+</head>
+<body class="fw-body fw-shell">
+    <div th:replace="~{fragments/finwise :: fwSidebar('accounts', ${user})}"></div>
+    <div th:replace="~{fragments/finwise :: fwTopbar('Accounts', null, ${user}, ${unreadCount})}"></div>
+<div class="fw-scrim" onclick="fwCloseSidebar()"></div>
+
+    <div class="fw-content"><main class="fw-wrap" id="main">
+        <div th:if="${successMessage}" data-fw-flash data-fw-kind="ok" th:text="${successMessage}" style="display:none"></div>
+        <div th:if="${errorMessage}" data-fw-flash data-fw-kind="bad" th:text="${errorMessage}" style="display:none"></div>
+
+        <div class="fw-page-header fw-animate">
+            <h1>Accounts</h1>
+            <p>Track balances across banks, wallets & cash  100% local</p>
+        </div>
+
+        <div class="fw-section fw-animate" style="margin-bottom: var(--space-5);">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                    <div class="fw-caption">Total Balance</div>
+                    <div class="fw-h2" th:text="'$' + ${#numbers.formatDecimal(totalBalance, 1, 2)}">$0.00</div>
+                </div>
+                <a href="/accounts/add" class="fw-btn fw-btn-primary">+ Add Account</a>
+            </div>
+        </div>
+
+        <div th:if="${#lists.isEmpty(accounts)}" class="fw-empty fw-animate">
+            <div class="fw-empty-icon"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg></div>
+            <h3>No accounts yet</h3>
+            <p>Create an account to track balances for banks, wallets, or cash</p>
+            <a href="/accounts/add" class="fw-btn fw-btn-primary">Add First Account</a>
+        </div>
+
+        <div th:if="${not #lists.isEmpty(accounts)}" class="fw-animate">
+            <div class="fw-goal-grid">
+                <div class="fw-goal-card" th:each="acc : ${accounts}">
+                    <h3 th:text="${acc.accountName}">Account</h3>
+                    <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:var(--space-3);">
+                        <span th:text="${acc.accountType}">CHECKING</span>
+                        <span th:if="${acc.institution != null}" th:text="' @ ' + ${acc.institution}"></span>
+                    </p>
+                    <div class="fw-h2" th:text="'$' + ${#numbers.formatDecimal(acc.balance, 1, 2)}" style="margin-bottom:var(--space-2);">$0.00</div>
+                    <span class="fw-badge" th:classappend="${acc.isActive ? 'fw-badge-success' : 'fw-badge-danger'}" th:text="${acc.isActive ? 'Active' : 'Inactive'}">Active</span>
+                    <div style="margin-top:var(--space-4); display:grid; gap:var(--space-2);">
+                        <details>
+                            <summary class="fw-btn fw-btn-secondary fw-btn-sm" style="display:block; text-align:center;">Edit</summary>
+                            <form method="post" th:action="@{/accounts/update/{id}(id=${acc.id})}" style="display:grid; gap:var(--space-3); margin-top:var(--space-3);">
+                                <div>
+                                    <label class="fw-label" th:for="'account-name-' + ${acc.id}">Account name</label>
+                                    <input th:id="'account-name-' + ${acc.id}" class="fw-input" type="text" name="accountName" th:value="${acc.accountName}" maxlength="100" required>
+                                </div>
+                                <div>
+                                    <label class="fw-label" th:for="'account-type-' + ${acc.id}">Type</label>
+                                    <select th:id="'account-type-' + ${acc.id}" class="fw-input" name="accountType" required>
+                                        <option value="CHECKING" th:selected="${acc.accountType == 'CHECKING'}">Checking</option>
+                                        <option value="SAVINGS" th:selected="${acc.accountType == 'SAVINGS'}">Savings</option>
+                                        <option value="WALLET" th:selected="${acc.accountType == 'WALLET'}">Wallet</option>
+                                        <option value="CASH" th:selected="${acc.accountType == 'CASH'}">Cash</option>
+                                        <option value="CREDIT" th:selected="${acc.accountType == 'CREDIT'}">Credit</option>
+                                        <option value="OTHER" th:selected="${acc.accountType == 'OTHER'}">Other</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="fw-label" th:for="'account-balance-' + ${acc.id}">Balance</label>
+                                    <input th:id="'account-balance-' + ${acc.id}" class="fw-input" type="number" name="balance" th:value="${#numbers.formatDecimal(acc.balance, 1, 2)}" min="0" max="1000000000" step="0.01" inputmode="decimal" required>
+                                </div>
+                                <div>
+                                    <label class="fw-label" th:for="'account-institution-' + ${acc.id}">Institution</label>
+                                    <input th:id="'account-institution-' + ${acc.id}" class="fw-input" type="text" name="institution" th:value="${acc.institution}" maxlength="100">
+                                </div>
+                                <button type="submit" class="fw-btn fw-btn-primary fw-btn-sm">Check &amp; Save</button>
+                            </form>
+                        </details>
+                        <form method="post" th:action="@{/accounts/delete/{id}(id=${acc.id})}" style="margin:0"><button type="submit" class="fw-danger-btn" onclick="return confirm('Delete this account?')">Delete</button></form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main></div>
+
+    <div th:replace="~{fragments/finwise :: fwFooter}"></div>
+    <div th:replace="~{fragments/finwise :: fwScripts}"></div>
+</body>
+</html>

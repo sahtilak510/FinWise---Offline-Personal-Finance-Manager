@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <script>
+    /* Early theme paint (no-FOUC). Server pref arrives later via fwScripts;
+       until then follow saved choice, else Light. data-theme is Light|Dark. */
+    (function () {
+      try {
+        var pref = localStorage.getItem('finwise_theme') || 'light';
+        if (pref !== 'light' && pref !== 'dark') pref = 'light';
+        var eff = pref;
+
+        document.documentElement.setAttribute('data-theme', eff);
+        if (document.documentElement.classList) {
+          document.documentElement.classList.toggle('dark', eff === 'dark');
+          document.documentElement.classList.toggle('light', eff === 'light');
+        }
+        try { document.documentElement.style.colorScheme = eff; } catch (e) {}
+        try {
+          var __ts = localStorage.getItem('finwise_textsize') || 'default';
+          document.documentElement.setAttribute('data-fw-textsize', __ts);
+          if (localStorage.getItem('finwise_contrast') === 'on') document.documentElement.classList.add('fw-high-contrast');
+          if (localStorage.getItem('finwise_motion') === 'off') document.documentElement.classList.add('fw-no-motion');
+        } catch (e2) {}
+      } catch (e) {}
+    })();
+  </script>
+    <title>Reports - Finwise</title>
+    <link rel="stylesheet" href="/css/3d-dynamic.css">
+  <link rel="stylesheet" href="/css/finwise-tokens.css">
+  <link rel="stylesheet" href="/css/finwise-layout.css">
+  <link rel="stylesheet" href="/css/finwise-components.css">
+  <link rel="stylesheet" href="/css/finwise-responsive.css">
+  <link rel="stylesheet" href="/css/chatbot-widget.css">
+  <link rel="stylesheet" href="/css/finwise-bridge.css">
+  <link rel="stylesheet" href="/css/finwise-theme.css">
+</head>
+<body class="fw-body fw-shell">
+<div th:if="${successMessage}" data-fw-flash data-fw-kind="ok" th:text="${successMessage}" style="display:none"></div>
+<div th:if="${errorMessage}" data-fw-flash data-fw-kind="bad" th:text="${errorMessage}" style="display:none"></div>
+<div class="fw-particles">
+    <div class="fw-particle" style="left:10%;animation-duration:20s;animation-delay:0s;top:30%;background:rgba(99,102,241,0.25);"></div>
+</div>
+
+<div th:replace="~{fragments/finwise :: fwSidebar('reports', ${user})}"></div>
+
+<div th:replace="~{fragments/finwise :: fwTopbar('Reports', null, ${user}, ${unreadCount})}"></div>
+<div class="fw-scrim" onclick="fwCloseSidebar()"></div>
+
+<div class="fw-content"><main class="fw-wrap" id="main">
+    <div style="margin-bottom: var(--sp-8);">
+        <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: var(--sp-2);">Reports</h1>
+        <p style="color: var(--surface-400);">Generate and view detailed financial reports based on real data</p>
+    </div>
+
+    <!-- Report Options -->
+    <div style="padding: var(--sp-6); background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-xl); margin-bottom: var(--sp-6);">
+        <h2 style="font-size: 1.1rem; font-weight: 700; margin-bottom: var(--sp-4);">Generate Report</h2>
+        <form id="reportGenerateForm" method="post" th:action="@{/reports/generate}" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--sp-4);">
+            <div>
+                <label class="fw-label" data-i18n="reportType">Report Type</label>
+                <select name="reportType" class="fw-input">
+                    <option value="summary" th:selected="${selectedType == 'summary'}">Financial Summary</option>
+                    <option value="income" th:selected="${selectedType == 'income'}">Income Report</option>
+                    <option value="expenses" th:selected="${selectedType == 'expenses'}">Expense Report</option>
+                    <option value="category" th:selected="${selectedType == 'category'}">Category Report</option>
+                    <option value="budget" th:selected="${selectedType == 'budget'}">Budget Report</option>
+                    <option value="trend" th:selected="${selectedType == 'trend'}">Spending Trend</option>
+                    <option value="forecast" th:selected="${selectedType == 'forecast'}">Forecast Report</option>
+                    <option value="health" th:selected="${selectedType == 'health'}">Health Score Report</option>
+                    <option value="insights" th:selected="${selectedType == 'insights'}">Insights Report</option>
+                </select>
+            </div>
+            <div>
+                <label class="fw-label" data-i18n="period">Period</label>
+                <select name="period" class="fw-input">
+                    <option value="this-month" th:selected="${selectedPeriod == 'this-month'}">This Month</option>
+                    <option value="last-month" th:selected="${selectedPeriod == 'last-month'}">Last Month</option>
+                    <option value="last-3-months" th:selected="${selectedPeriod == 'last-3-months'}">Last 3 Months</option>
+                    <option value="last-6-months" th:selected="${selectedPeriod == 'last-6-months'}">Last 6 Months</option>
+                    <option value="this-year" th:selected="${selectedPeriod == 'this-year'}">This Year</option>
+                </select>
+            </div>
+            <div>
+                <label class="fw-label" data-i18n="format">Format</label>
+                <select name="format" class="fw-input">
+                    <option value="CSV" th:selected="${selectedFormat == 'CSV'}">CSV</option>
+                    <option value="XLSX" th:selected="${selectedFormat == 'XLSX'}">Excel (.xlsx)</option>
+                    <option value="PDF" th:selected="${selectedFormat == 'PDF'}">PDF</option>
+                </select>
+            </div>
+            <div style="display: flex; align-items: end;">
+                <button id="generateReportButton" type="submit" class="fw-btn fw-btn-primary">Generate Report</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Report Results -->
+    <div th:if="${reportData != null}" style="padding: var(--sp-6); background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-xl);">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: var(--sp-4); margin-bottom: var(--sp-4); flex-wrap: wrap;">
+            <div>
+                <h2 style="font-size: 1.1rem; font-weight: 700; margin: 0 0 var(--sp-1);">Report Results</h2>
+                <p style="margin: 0; color: var(--surface-500); font-size: .85rem;">
+                    Real financial data from <span th:text="${startDate}">Start</span> to <span th:text="${endDate}">End</span>
+                </p>
+            </div>
+        </div>
+
+        <div th:if="${selectedType == 'summary'}" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--sp-4);">
+            <div class="fw-kpi-card fw-kpi-success">
+                <h3 style="font-weight: 600; font-size: 1rem;">Total Income</h3>
+                <div style="font-size: 1.5rem; font-weight: 700;" th:text="'$' + ${#numbers.formatDecimal(reportData.totalIncome, 1, 2)}">$0</div>
+            </div>
+            <div class="fw-kpi-card fw-kpi-danger">
+                <h3 style="font-weight: 600; font-size: 1rem;">Total Expenses</h3>
+                <div style="font-size: 1.5rem; font-weight: 700;" th:text="'$' + ${#numbers.formatDecimal(reportData.totalExpenses, 1, 2)}">$0</div>
+            </div>
+            <div class="fw-kpi-card" th:classappend="${reportData.netBalance >= 0 ? 'fw-kpi-success' : 'fw-kpi-danger'}">
+                <h3 style="font-weight: 600; font-size: 1rem;">Net Balance</h3>
+                <div style="font-size: 1.5rem; font-weight: 700;" th:text="'$' + ${#numbers.formatDecimal(reportData.netBalance, 1, 2)}">$0</div>
+            </div>
+            <div class="fw-kpi-card">
+                <h3 style="font-weight: 600; font-size: 1rem;">Savings Rate</h3>
+                <div style="font-size: 1.5rem; font-weight: 700;" th:text="${#numbers.formatDecimal(reportData.savingsRate, 1, 1)} + '%'">0%</div>
+            </div>
+            <div class="fw-kpi-card">
+                <h3 style="font-weight: 600; font-size: 1rem;">Active Budgets</h3>
+                <div style="font-size: 1.5rem; font-weight: 700;" th:text="${reportData.budgetCount}">0</div>
+            </div>
+            <div class="fw-kpi-card">
+                <h3 style="font-weight: 600; font-size: 1rem;">Over Budget</h3>
+                <div style="font-size: 1.5rem; font-weight: 700; color: var(--danger-400);" th:text="${reportData.overBudgetCount}">0</div>
+            </div>
+            <div class="fw-kpi-card">
+                <h3 style="font-weight: 600; font-size: 1rem;">Active Goals</h3>
+                <div style="font-size: 1.5rem; font-weight: 700;" th:text="${reportData.activeGoals}">0</div>
+            </div>
+            <div class="fw-kpi-card">
+                <h3 style="font-weight: 600; font-size: 1rem;">Completed Goals</h3>
+                <div style="font-size: 1.5rem; font-weight: 700; color: var(--success-400);" th:text="${reportData.completedGoals}">0</div>
+            </div>
+        </div>
+
+        <div th:if="${selectedType == 'income'}" style="margin-top: var(--sp-4);">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--sp-4); margin-bottom: var(--sp-5);">
+                <div class="fw-kpi-card fw-kpi-success">
+                    <h3 style="font-weight: 600; font-size: .95rem;">Total Income</h3>
+                    <div style="font-size: 1.5rem; font-weight: 700;" th:text="'$' + ${#numbers.formatDecimal(reportData.totalIncome, 1, 2)}">$0</div>
+                </div>
+                <div class="fw-kpi-card">
+                    <h3 style="font-weight: 600; font-size: .95rem;">Income Records</h3>
+                    <div style="font-size: 1.5rem; font-weight: 700;" th:text="${reportData.incomeCount}">0</div>
+                </div>
+                <div class="fw-kpi-card">
+                    <h3 style="font-weight: 600; font-size: .95rem;">Average Income</h3>
+                    <div style="font-size: 1.5rem; font-weight: 700;" th:text="'$' + ${#numbers.formatDecimal(reportData.averageIncome, 1, 2)}">$0</div>
+                </div>
+            </div>
+            <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: var(--sp-4);">Income Transactions</h3>
+            <div style="overflow-x: auto;">
+                <table class="fw-table">
+                    <thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Source</th><th>Amount</th></tr></thead>
+                    <tbody>
+                    <tr th:each="income : ${reportData.incomes}">
+                        <td th:text="${income.incomeDate}">Date</td>
+                        <td th:text="${income.description}">Description</td>
+                        <td th:text="${income.category}">Category</td>
+                        <td th:text="${income.incomeSource}">Source</td>
+                        <td style="color: var(--success-400); font-weight: 600;" th:text="'$' + ${#numbers.formatDecimal(income.amount, 1, 2)}">$0</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p th:if="${!reportData.hasData}" style="color: var(--surface-500); margin-top: var(--sp-4);">No income records were found for this period.</p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--sp-4); margin-top: var(--sp-5);">
+                <div>
+                    <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: var(--sp-3);">Income by Category</h3>
+                    <div th:each="entry : ${reportData.byCategory.entrySet()}" style="display: flex; justify-content: space-between; padding: var(--sp-2) 0; border-bottom: 1px solid var(--glass-border);">
+                        <span th:text="${entry.getKey()}">Category</span>
+                        <b th:text="'$' + ${#numbers.formatDecimal(entry.getValue(), 1, 2)}">$0</b>
+                    </div>
+                </div>
+                <div>
+                    <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: var(--sp-3);">Income by Source</h3>
+                    <div th:each="entry : ${reportData.bySource.entrySet()}" style="display: flex; justify-content: space-between; padding: var(--sp-2) 0; border-bottom: 1px solid var(--glass-border);">
+                        <span th:text="${entry.getKey()}">Source</span>
+                        <b th:text="'$' + ${#numbers.formatDecimal(entry.getValue(), 1, 2)}">$0</b>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${selectedType == 'expenses'}" style="margin-top: var(--sp-4);">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--sp-4); margin-bottom: var(--sp-5);">
+                <div class="fw-kpi-card fw-kpi-danger">
+                    <h3 style="font-weight: 600; font-size: .95rem;">Total Expenses</h3>
+                    <div style="font-size: 1.5rem; font-weight: 700;" th:text="'$' + ${#numbers.formatDecimal(reportData.totalExpenses, 1, 2)}">$0</div>
+                </div>
+                <div class="fw-kpi-card">
+                    <h3 style="font-weight: 600; font-size: .95rem;">Expense Records</h3>
+                    <div style="font-size: 1.5rem; font-weight: 700;" th:text="${reportData.expenseCount}">0</div>
+                </div>
+                <div class="fw-kpi-card">
+                    <h3 style="font-weight: 600; font-size: .95rem;">Average Expense</h3>
+                    <div style="font-size: 1.5rem; font-weight: 700;" th:text="'$' + ${#numbers.formatDecimal(reportData.averageExpense, 1, 2)}">$0</div>
+                </div>
+            </div>
+            <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: var(--sp-4);">Expense Transactions</h3>
+            <div style="overflow-x: auto;">
+                <table class="fw-table">
+                    <thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Payment Method</th><th>Amount</th></tr></thead>
+                    <tbody>
+                    <tr th:each="expense : ${reportData.expenses}">
+                        <td th:text="${expense.expenseDate}">Date</td>
+                        <td th:text="${expense.description}">Description</td>
+                        <td th:text="${expense.category}">Category</td>
+                        <td th:text="${expense.paymentMethod}">Payment Method</td>
+                        <td style="color: var(--danger-400); font-weight: 600;" th:text="'$' + ${#numbers.formatDecimal(expense.amount, 1, 2)}">$0</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p th:if="${!reportData.hasData}" style="color: var(--surface-500); margin-top: var(--sp-4);">No expense records were found for this period.</p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--sp-4); margin-top: var(--sp-5);">
+                <div>
+                    <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: var(--sp-3);">Expenses by Category</h3>
+                    <div th:each="entry : ${reportData.byCategory.entrySet()}" style="display: flex; justify-content: space-between; padding: var(--sp-2) 0; border-bottom: 1px solid var(--glass-border);">
+                        <span th:text="${entry.getKey()}">Category</span>
+                        <b th:text="'$' + ${#numbers.formatDecimal(entry.getValue(), 1, 2)}">$0</b>
+                    </div>
+                </div>
+                <div>
+                    <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: var(--sp-3);">Expenses by Payment Method</h3>
+                    <div th:each="entry : ${reportData.byPaymentMethod.entrySet()}" style="display: flex; justify-content: space-between; padding: var(--sp-2) 0; border-bottom: 1px solid var(--glass-border);">
+                        <span th:text="${entry.getKey()}">Method</span>
+                        <b th:text="'$' + ${#numbers.formatDecimal(entry.getValue(), 1, 2)}">$0</b>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${selectedType == 'health'}" style="margin-top: var(--sp-4);">
+            <div style="padding: var(--sp-6); background: linear-gradient(135deg, rgba(99,102,241,.08), rgba(139,92,246,.06)); border-radius: var(--radius-xl); border: 1px solid var(--glass-border);">
+                <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: var(--sp-2);">
+                    Financial Health Score: <span style="color: var(--primary-400);" th:text="${reportData.score}">0</span>
+                    <span style="font-size: 1.2rem; color: var(--surface-500);" th:text="'(' + ${reportData.grade} + ')'">(A+)</span>
+                </h2>
+                <div style="display: flex; gap: var(--sp-2); flex-wrap: wrap; margin-top: var(--sp-4);">
+                    <span th:each="factor : ${reportData.factors}" style="padding: var(--sp-2) var(--sp-3); background: rgba(99,102,241,.1); border: 1px solid rgba(99,102,241,.2); border-radius: var(--radius-md); font-size: .85rem; color: var(--surface-300);" th:text="${factor}">Factor</span>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${selectedType == 'forecast'}" style="margin-top: var(--sp-4);">
+            <div style="padding: var(--sp-6); background: linear-gradient(135deg, rgba(16,185,129,.08), rgba(99,102,241,.06)); border-radius: var(--radius-xl); border: 1px solid var(--glass-border);">
+                <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: var(--sp-4);">Forecast for <span th:text="${reportData.forecastMonth}">Next Month</span></h2>
+                <div th:if="${reportData.hasData}" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--sp-4);">
+                    <div class="fw-kpi-card fw-kpi-info">
+                        <h3 style="font-weight: 600; font-size: .9rem;">Predicted Spending</h3>
+                        <div style="font-size: 1.5rem; font-weight: 700;" th:text="'$' + ${#numbers.formatDecimal(reportData.predictedSpending, 1, 2)}">$0</div>
+                    </div>
+                    <div class="fw-kpi-card fw-kpi-info">
+                        <h3 style="font-weight: 600; font-size: .9rem;">Current Spending</h3>
+                        <div style="font-size: 1.5rem; font-weight: 700;" th:text="'$' + ${#numbers.formatDecimal(reportData.currentSpending, 1, 2)}">$0</div>
+                    </div>
+                    <div class="fw-kpi-card" th:classappend="${reportData.previousMonthComparison >= 0 ? 'fw-kpi-danger' : 'fw-kpi-success'}">
+                        <h3 style="font-weight: 600; font-size: .9rem;">Previous Month Diff</h3>
+                        <div style="font-size: 1.5rem; font-weight: 700;" th:text="'$' + ${#numbers.formatDecimal(reportData.previousMonthComparison, 1, 2)}">$0</div>
+                    </div>
+                    <div class="fw-kpi-card fw-kpi-info">
+                        <h3 style="font-weight: 600; font-size: .9rem;">Trend</h3>
+                        <div style="font-size: 1.5rem; font-weight: 700;" th:text="${reportData.trend}">Stable</div>
+                    </div>
+                    <div class="fw-kpi-card fw-kpi-info">
+                        <h3 style="font-weight: 600; font-size: .9rem;">Confidence</h3>
+                        <div style="font-size: 1.5rem; font-weight: 700;" th:text="${#numbers.formatDecimal(reportData.confidence * 100, 0, 0)} + '%'">0%</div>
+                    </div>
+                </div>
+                <div th:unless="${reportData.hasData}" style="color: var(--surface-500); font-size: .9rem;">
+                    Not enough transaction history for a reliable forecast. Add more transactions to generate forecasts.
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${selectedType == 'insights'}" style="margin-top: var(--sp-4);">
+            <h2 style="font-size: 1.2rem; font-weight: 700; margin-bottom: var(--sp-4);">Smart Financial Insights</h2>
+            <div th:each="insight : ${reportData.insights}" style="padding: var(--sp-4); margin-bottom: var(--sp-3); border-radius: var(--radius-lg); border: 1px solid var(--glass-border);" th:styleappend="'background: ' + (${insight.priority == 'CRITICAL'} ? 'rgba(244,63,94,.08)' : (${insight.priority == 'HIGH'} ? 'rgba(245,158,11,.08)' : (${insight.priority == 'MEDIUM'} ? 'rgba(59,130,246,.08)' : 'rgba(16,185,129,.06)')))">
+                <div style="display: flex; align-items: center; gap: var(--sp-3); margin-bottom: var(--sp-2);">
+                    <span class="fw-badge" th:classappend="${insight.priority == 'CRITICAL' ? 'fw-badge-danger' : (insight.priority == 'HIGH' ? 'fw-badge-warning' : (insight.priority == 'MEDIUM' ? 'fw-badge-info' : 'fw-badge-success'))}" th:text="${insight.priority}">PRIORITY</span>
+                    <h3 style="font-weight: 600; font-size: 1rem; margin: 0;" th:text="${insight.message}">Insight message</h3>
+                </div>
+                <p style="margin: 0; color: var(--surface-400); font-size: .85rem;" th:text="${insight.recommendation}">Recommendation</p>
+            </div>
+        </div>
+
+        <div th:if="${selectedType == 'budget'}" style="margin-top: var(--sp-4);">
+            <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: var(--sp-4);">Budget Status</h3>
+            <div th:each="budget : ${reportData.budgets}" style="margin-bottom: var(--sp-4); padding: var(--sp-4); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); background: rgba(0,0,0,.15);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--sp-2); gap: var(--sp-3);">
+                    <span><b th:text="${budget.category}">Category</b> <small style="color: var(--surface-500);" th:text="'(' + ${budget.budgetMonth} + ')'">(Month)</small></span>
+                    <span style="font-size: .85rem; color: var(--surface-400);">
+                        <span th:text="'$' + ${#numbers.formatDecimal(budget.spentAmount, 1, 2)}">$0</span> /
+                        <span th:text="'$' + ${#numbers.formatDecimal(budget.limitAmount, 1, 2)}">$0</span>
+                    </span>
+                </div>
+                <div style="font-size: .85rem; color: var(--surface-500); margin-bottom: var(--sp-2);" th:text="${budget.alertLevel == 'OVER' ? 'Over budget!' : (budget.alertLevel == 'CRITICAL' ? 'Critical - near limit' : (budget.alertLevel == 'WARNING' ? 'Approaching limit' : budget.alertLevel == 'CAUTION' ? 'Caution - 50% used' : 'On track'))}">Status</div>
+                <div class="fw-progress">
+                    <div class="fw-progress__track" th:classappend="${budget.spentAmount.compareTo(budget.limitAmount) > 0 ? 'danger' : (budget.percentageUsed >= 90 ? 'warning' : (budget.percentageUsed >= 75 ? 'warning' : (budget.percentageUsed >= 50 ? 'caution' : 'safe')))}" th:style="'width:' + ${#numbers.formatDecimal(budget.percentageUsed, 1, 0)} + '%;max-width:100%;'"></div>
+                </div>
+            </div>
+            <p th:if="${!reportData.hasData}" style="color: var(--surface-500);">No budgets were found for this period.</p>
+        </div>
+
+        <div th:if="${selectedType == 'category'}" style="margin-top: var(--sp-4);">
+            <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: var(--sp-4);">Category Breakdown</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--sp-4);">
+                <div th:each="cat : ${reportData.categories}" style="padding: var(--sp-4); background: rgba(0,0,0,.15); border-radius: var(--radius-lg); border: 1px solid var(--glass-border);">
+                    <h4 style="font-weight: 600; margin-bottom: var(--sp-1);" th:text="${cat.name}">Category</h4>
+                    <div style="font-size: .9rem; color: var(--surface-400);" th:text="'Type: ' + ${cat.type}">Type</div>
+                    <div style="margin-top: var(--sp-2); font-size: .85rem;">
+                        <span th:if="${cat.incomeTotal.compareTo(BigDecimal.ZERO) > 0}" style="color: var(--success-400);" th:text="'+$' + ${#numbers.formatDecimal(cat.incomeTotal, 1, 2)}">Income</span>
+                        <span th:if="${cat.expenseTotal.compareTo(BigDecimal.ZERO) > 0}" th:style="'margin-left:' + ${cat.incomeTotal.compareTo(BigDecimal.ZERO) > 0 ? '8px' : '0'} + ';color: var(--danger-400);'" th:text="'-$' + ${#numbers.formatDecimal(cat.expenseTotal, 1, 2)}">Expense</span>
+                    </div>
+                    <div style="font-size: .85rem; color: var(--surface-300); margin-top: var(--sp-2); font-weight: 600;" th:text="'Net: $' + ${#numbers.formatDecimal(cat.netAmount, 1, 2)}">Net</div>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${selectedType == 'trend'}" style="margin-top: var(--sp-4);">
+            <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: var(--sp-4);">Monthly Trend</h3>
+            <table class="fw-table">
+                <thead>
+                <tr><th>Month</th><th>Income</th><th>Expenses</th><th>Net</th></tr>
+                </thead>
+                <tbody>
+                <tr th:each="entry : ${reportData.monthlyIncome.entrySet()}">
+                    <td th:text="${entry.getKey()}">Month</td>
+                    <td style="color: var(--success-400); font-weight: 600;" th:text="'$' + ${#numbers.formatDecimal(entry.getValue(), 1, 2)}">$0</td>
+                    <td style="color: var(--danger-400); font-weight: 600;" th:text="'$' + ${#numbers.formatDecimal(reportData.monthlyExpenses.get(entry.getKey()), 1, 2)}">$0</td>
+                    <td style="font-weight: 600;" th:classappend="${entry.getValue().subtract(reportData.monthlyExpenses.get(entry.getKey())).compareTo(BigDecimal.ZERO) >= 0 ? 'text-success' : 'text-danger'}" th:text="'$' + ${#numbers.formatDecimal(entry.getValue().subtract(reportData.monthlyExpenses.get(entry.getKey())), 1, 2)}">$0</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main></div>
+
+<div th:replace="~{fragments/finwise :: fwFooter}"></div>
+
+<div th:replace="~{fragments/chatbot-widget :: chatbotWidget}"></div>
+<script src="/vendor/chart.js/chart.umd.min.js"></script>
+<script src="/js/chatbot-widget.js"></script>
+<div th:replace="~{fragments/finwise :: fwScripts}"></div>
+<script>
+(function() {
+    function reportFilename(response, fallback) {
+        const header = response.headers.get('content-disposition') || '';
+        const match = /filename\s*=\s*(?:"([^"]+)"|([^;]+))/i.exec(header);
+        return match ? (match[1] || match[2] || fallback) : fallback;
+    }
+
+    function reportToast(title, message, kind) {
+        if (typeof window.fwToast === 'function') {
+            window.fwToast(title, message, kind);
+        }
+    }
+
+    window.handleGenerateReport = function(form) {
+        const button = form.querySelector('button[type="submit"]');
+        if (!button || button.disabled) return;
+
+        const originalText = button.textContent;
+        button.disabled = true;
+        button.textContent = 'Generating...';
+        const formData = new FormData(form);
+
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            credentials: 'same-origin'
+        })
+            .then(async (response) => {
+                if (!response.ok) {
+                    const message = (await response.text()).trim();
+                    throw new Error(message || 'The report could not be generated.');
+                }
+                return {
+                    blob: await response.blob(),
+                    filename: reportFilename(response, 'FinWise-Financial-Report.' + formData.get('format').toLowerCase())
+                };
+            })
+            .then(({ blob, filename }) => {
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                URL.revokeObjectURL(url);
+                reportToast('Success', 'Report generated successfully!', 'ok');
+            })
+            .catch((error) => {
+                reportToast('Report error', error && error.message ? error.message : 'The report could not be generated.', 'bad');
+            })
+            .finally(() => {
+                button.disabled = false;
+                button.textContent = originalText;
+            });
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('reportGenerateForm');
+        if (!form) return;
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            window.handleGenerateReport(form);
+        });
+    });
+}());
+</script>
+</body>
+</html>

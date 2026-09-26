@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Finance Plus Locked - FinWise</title>
+  <link rel="stylesheet" href="/webjars/bootstrap/5.3.3/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/webjars/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="/css/finwise-tokens.css">
+  <link rel="stylesheet" href="/css/finance-plus.css">
+</head>
+<body class="fp-lock-page">
+  <main class="fp-lock-card">
+    <div th:if="${errorMessage}" class="alert alert-danger"><i class="fa-solid fa-triangle-exclamation"></i> <span th:text="${errorMessage}">Incorrect passcode</span></div>
+    <div class="fp-lock-logo"><i class="fa-solid fa-layer-group"></i></div>
+    <span class="fp-eyebrow">FINANCE PLUS</span>
+    <h1>Workspace locked</h1>
+    <p>Enter your 4–8 digit passcode to continue.</p>
+    <form method="post" th:action="@{/finance-plus/unlock}">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+      <div class="fp-passcode-wrap"><i class="fa-solid fa-key"></i><input type="password" inputmode="numeric" pattern="[0-9]{4,8}" maxlength="8" name="passcode" placeholder="Passcode" autofocus required></div>
+      <button class="btn btn-primary w-100 mt-3"><i class="fa-solid fa-unlock"></i> Unlock Finance Plus</button>
+    </form>
+    <a class="fp-lock-back" th:href="@{/dashboard}"><i class="fa-solid fa-arrow-left"></i> Back to dashboard</a>
+  </main>
+</body>
+</html>

@@ -1,0 +1,4 @@
+Description,Type,Amount,Date,Category
+Salary Credit,INCOME,$2500.00,2026-09-01,Salary
+Grocery Store,EXPENSE,$125.40,2026-09-02,Groceries
+Electric Utility,EXPENSE,$84.10,2026-09-03,Utilities

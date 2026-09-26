@@ -1,0 +1,62 @@
+/* Scan & Fill page styles. Reuses the 3d-dynamic.css theme variables. */
+.scan-card {
+    padding: var(--sp-6);
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-xl);
+    margin-bottom: var(--sp-6);
+}
+
+.scan-card h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0 0 var(--sp-2);
+}
+
+.scan-hint {
+    margin: 0 0 var(--sp-4);
+    color: var(--surface-400, #94a3b8);
+    font-size: 0.85rem;
+}
+
+.scan-upload-row {
+    display: flex;
+    gap: var(--sp-3);
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.scan-upload-row input[type="file"] {
+    flex: 1 1 260px;
+}
+
+.scan-loading {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    margin-top: var(--sp-4);
+    color: var(--surface-300, #cbd5e1);
+    font-size: 0.9rem;
+}
+
+.scan-spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(99, 102, 241, 0.3);
+    border-top-color: var(--primary-500, #6366f1);
+    border-radius: 50%;
+    animation: scan-spin 0.8s linear infinite;
+}
+
+@keyframes scan-spin {
+    to { transform: rotate(360deg); }
+}
+
+.scan-notice {
+    margin-top: var(--sp-4);
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    background: rgba(245, 158, 11, 0.08);
+    color: #fcd34d;
+    border-radius: var(--radius-lg);
+    padding: var(--sp-3) var(--sp-4);
+}

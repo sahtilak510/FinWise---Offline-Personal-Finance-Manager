@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <script>
+    /* Early theme paint (no-FOUC). Server pref arrives later via fwScripts;
+       until then follow saved choice, else Light. data-theme is Light|Dark. */
+    (function () {
+      try {
+        var pref = localStorage.getItem('finwise_theme') || 'light';
+        if (pref !== 'light' && pref !== 'dark') pref = 'light';
+        var eff = pref;
+
+        document.documentElement.setAttribute('data-theme', eff);
+        if (document.documentElement.classList) {
+          document.documentElement.classList.toggle('dark', eff === 'dark');
+          document.documentElement.classList.toggle('light', eff === 'light');
+        }
+        try { document.documentElement.style.colorScheme = eff; } catch (e) {}
+        try {
+          var __ts = localStorage.getItem('finwise_textsize') || 'default';
+          document.documentElement.setAttribute('data-fw-textsize', __ts);
+          if (localStorage.getItem('finwise_contrast') === 'on') document.documentElement.classList.add('fw-high-contrast');
+          if (localStorage.getItem('finwise_motion') === 'off') document.documentElement.classList.add('fw-no-motion');
+        } catch (e2) {}
+        if (localStorage.getItem('finwise_motion') === 'off') document.documentElement.classList.add('fw-no-motion');
+      } catch (e) {}
+    })();
+  </script>
+    <title>Settings - Finwise</title>
+    <link rel="stylesheet" href="/css/3d-dynamic.css">
+  <link rel="stylesheet" href="/css/finwise-tokens.css">
+  <link rel="stylesheet" href="/css/finwise-layout.css">
+  <link rel="stylesheet" href="/css/finwise-components.css">
+  <link rel="stylesheet" href="/css/finwise-responsive.css">
+  <link rel="stylesheet" href="/css/chatbot-widget.css">
+  <link rel="stylesheet" href="/css/finwise-bridge.css">
+  <link rel="stylesheet" href="/css/finwise-theme.css">
+  <link rel="stylesheet" href="/css/settings.css">
+</head>
+<body class="fw-body fw-shell" th:attr="data-app-lock-enabled=${appLockEnabled}">
+    <div class="fw-particles">
+        <div class="fw-particle" style="left:10%;animation-duration:20s;animation-delay:0s;top:30%;background:rgba(99,102,241,0.25);"></div>
+        <div class="fw-particle" style="left:40%;animation-duration:24s;animation-delay:-6s;top:70%;background:rgba(139,92,246,0.2);width:5px;height:5px;"></div>
+        <div class="fw-particle" style="left:70%;animation-duration:18s;animation-delay:-12s;top:40%;background:rgba(16,185,129,0.2);"></div>
+    </div>
+
+    <div th:replace="~{fragments/finwise :: fwSidebar('settings', ${user})}"></div>
+
+    <div th:replace="~{fragments/finwise :: fwTopbar('Settings', null, ${user}, ${unreadCount})}"></div>
+<div class="fw-scrim" onclick="fwCloseSidebar()"></div>
+
+    <div class="fw-content"><main class="fw-wrap" id="main">
+        <div class="setx-head">
+            <div>
+                <h1 data-i18n="controlCenter" style="font-size: 2rem; font-weight: 700; margin: 0 0 4px;">FinWise Control Center</h1>
+                <p data-i18n="controlSubtitle" style="color: var(--fw-text-2); margin: 0;">Manage your FinWise experience, privacy, finance preferences and data.</p>
+            </div>
+            <div class="setx-search">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+                <input type="search" id="setxSearch" placeholder="Search settings..." data-i18n-placeholder="searchSettings" data-i18n-aria-label="searchSettings" aria-label="Search settings">
+            </div>
+        </div>
+
+        <div th:if="${successMessage}" class="fw-alert fw-alert-success" style="margin-top:16px" th:text="${successMessage}">Settings saved!</div>
+        <div th:if="${errorMessage}" class="fw-alert fw-alert-danger" style="margin-top:16px" th:text="${errorMessage}">Error</div>
+
+        <div class="setx-layout">
+            <nav class="setx-side" aria-label="Settings categories">
+                <a href="#sec-appearance"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg><span data-i18n="appearance">Appearance</span></a>
+                <a href="#sec-regional"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg><span data-i18n="languageRegion">Language &amp; Region</span></a>
+                <a href="#sec-notifications"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span data-i18n="notifications">Notifications</span></a>
+                <a href="#sec-privacy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg><span data-i18n="privacySecurity">Privacy &amp; Security</span></a>
+                <a href="#sec-data"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg><span data-i18n="dataBackup">Data &amp; Backup</span></a>
+                <a href="#sec-finance"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="m19 9-5 5-4-4-3 3"/></svg><span data-i18n="financePrefs">Finance Preferences</span></a>
+                <a href="#sec-dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg><span data-i18n="dashboardPrefs">Dashboard Preferences</span></a>
+                <a href="#sec-ai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.8H20l-4.9 3.6 1.9 5.8-5-3.6-5 3.6 1.9-5.8L4 8.8h6.1z"/></svg><span data-i18n="aiInsights">AI &amp; Insights</span></a>
+                <a href="#sec-access"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="16" cy="4" r="1"/><path d="m18 19 1-7-6 1"/><path d="m5 8 3-3 5.5 3-2.4 3.5"/><path d="M4.2 14.5a5 5 0 0 0 6.9 6"/><path d="M13.8 9.5a5 5 0 0 0-6.9-6"/></svg><span data-i18n="accessibility">Accessibility</span></a>
+                <a href="#sec-advanced"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m14.7 6.3-5.4 5.4 5.4 5.4"/><path d="m9.3 6.3 5.4 5.4-5.4 5.4" transform="translate(4 0)"/></svg><span data-i18n="advanced">Advanced</span></a>
+                <a href="#sec-about"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><span data-i18n="aboutFinwise">About FinWise</span></a>
+            </nav>
+
+            <div class="setx-cards">
+            <form method="post" th:action="@{/settings/update}" id="setxForm">
+                <!-- A. Appearance -->
+                <section class="setx-card" id="sec-appearance" data-search="appearance theme light dark mode color accent motion animation">
+                    <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg><span data-i18n="appearance">Appearance</span></h3>
+                    <p class="sub" data-i18n="appearanceDescription">Theme and display preferences</p>
+                    <div class="setx-row" data-search="theme light dark">
+                        <div class="t"><b data-i18n="theme">Theme</b><span data-i18n="themeDescription">Light or Dark — applies instantly across the whole app.</span></div>
+                        <div class="c">
+                            <div class="setx-seg" role="group" aria-label="Theme">
+                                <button type="button" data-setx-theme="light" aria-pressed="false"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg><span data-i18n="themeLight">Light</span></button>
+                                <button type="button" data-setx-theme="dark" aria-pressed="false"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg><span data-i18n="themeDark">Dark</span></button>
+                            </div>
+                            <select name="theme" id="setxThemeSelect" class="fw-input" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" tabindex="-1" aria-hidden="true">
+                                <option value="light" th:selected="${settings.theme == 'light'}">Light</option>
+                                <option value="dark" th:selected="${settings.theme == 'dark'}">Dark</option>
+                            </select>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- B. Regional -->
+                <section class="setx-card" id="sec-regional" data-search="regional language hindi tamil nepali english currency inr usd date format locale week">
+                    <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg><span data-i18n="languageRegion">Regional &amp; Localization</span></h3>
+                    <p class="sub" data-i18n="languageDescription">One language for the entire app — navigation, pages, forms and assistant.</p>
+                    <div class="setx-row setx-row-col" data-search="language english hindi tamil nepali">
+                        <div class="t"><b data-i18n="language">Language</b><span data-i18n="selectLanguage">Select language</span></div>
+                        <div class="c" style="width:100%">
+                            <div class="setx-lang" role="radiogroup" aria-label="Language" id="setxLangGroup">
+                                <button type="button" class="setx-lang-opt" role="radio" data-setx-lang="en" aria-checked="false"><span class="l1">English</span><span class="l2">English</span></button>
+                                <button type="button" class="setx-lang-opt" role="radio" data-setx-lang="hi" aria-checked="false"><span class="l1">Hindi</span><span class="l2">हिन्दी</span></button>
+                                <button type="button" class="setx-lang-opt" role="radio" data-setx-lang="ta" aria-checked="false"><span class="l1">Tamil</span><span class="l2">தமிழ்</span></button>
+                                <button type="button" class="setx-lang-opt" role="radio" data-setx-lang="ne" aria-checked="false"><span class="l1">Nepali</span><span class="l2">नेपाली</span></button>
+                            </div>
+                            <input type="hidden" name="language" id="setxLangHidden" th:value="${settings.language}">
+                        </div>
+                    </div>
+                    <div class="setx-row" data-search="currency usd inr eur gbp npr">
+                        <div class="t"><b data-i18n="currency">Currency</b><span data-i18n="defaultCurrency">Default currency</span></div>
+                        <div class="c">
+                            <select name="currency" id="setxCurrency" class="fw-input setx-select">
+                                <option value="USD" th:selected="${settings.currency == 'USD'}">USD ($)</option>
+                                <option value="INR" th:selected="${settings.currency == 'INR'}">INR (&#8377;)</option>
+                                <option value="EUR" th:selected="${settings.currency == 'EUR'}">EUR (&euro;)</option>
+                                <option value="GBP" th:selected="${settings.currency == 'GBP'}">GBP (&pound;)</option>
+                                <option value="NPR" th:selected="${settings.currency == 'NPR'}">NPR (&#x930;&#x942;)</option>
+                                <option value="CAD" th:selected="${settings.currency == 'CAD'}">CAD ($)</option>
+                                <option value="AUD" th:selected="${settings.currency == 'AUD'}">AUD ($)</option>
+                                <option value="JPY" th:selected="${settings.currency == 'JPY'}">JPY (&yen;)</option>
+                                <option value="PKR" th:selected="${settings.currency == 'PKR'}">PKR (&#8360;)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="setx-row" data-search="date format">
+                        <div class="t"><b data-i18n="dateFormat">Date format</b><span data-i18n="dateFormatDescription">How dates are displayed.</span></div>
+                        <div class="c">
+                            <select name="dateFormat" id="setxDateFormat" class="fw-input setx-select">
+                                <option value="MM/dd/yyyy" th:selected="${settings.dateFormat == 'MM/dd/yyyy'}">MM/DD/YYYY</option>
+                                <option value="dd/MM/yyyy" th:selected="${settings.dateFormat == 'dd/MM/yyyy'}">DD/MM/YYYY</option>
+                                <option value="yyyy-MM-dd" th:selected="${settings.dateFormat == 'yyyy-MM-dd'}">YYYY-MM-DD</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="setx-row" data-search="first day week sunday monday saturday">
+                        <div class="t"><b data-i18n="firstDayWeek">First day of week</b><span id="setxWeekPreview" data-i18n="weekStartPreview">Week preview</span></div>
+                        <div class="c">
+                            <select id="setxFirstDay" class="fw-input setx-select" aria-label="First day of week">
+                                <option value="sunday" data-i18n="sunday">Sunday</option>
+                                <option value="monday" data-i18n="monday">Monday</option>
+                                <option value="saturday" data-i18n="saturday">Saturday</option>
+                            </select>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- C. Notifications -->
+                <section class="setx-card" id="sec-notifications" data-search="notifications alerts budget bills goals summary sound reminders">
+                    <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span data-i18n="notifications">Notifications</span></h3>
+                    <p class="sub" data-i18n="notificationsDescription">Everything stays on this device. Each preference is independent.</p>
+                    <div class="setx-row" data-search="enable notifications">
+                        <div class="t"><b data-i18n="enableNotifications">Enable notifications</b><span data-i18n="enableNotificationsDescription">Master switch for in-app notifications.</span></div>
+                        <div class="c"><label class="setx-switch"><input type="checkbox" data-pref="notificationsEnabled" th:checked="${settings.notificationsEnabled == 'true'}"><span class="tr"></span><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Enable notifications</span></label><input type="hidden" name="notificationsEnabled" th:value="${settings.notificationsEnabled}"></div>
+                    </div>
+                    <div class="setx-row" data-search="budget alerts">
+                        <div class="t"><b data-i18n="budgetAlerts">Budget alerts</b><span data-i18n="budgetAlertsDescription2">Warn when spending approaches a budget limit.</span></div>
+                        <div class="c"><label class="setx-switch"><input type="checkbox" data-pref="budgetAlertsEnabled" th:checked="${settings.budgetAlertsEnabled == 'true'}"><span class="tr"></span><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Budget alerts</span></label><input type="hidden" name="budgetAlertsEnabled" th:value="${settings.budgetAlertsEnabled}"></div>
+                    </div>
+                    <div class="setx-row" data-search="daily summary spending">
+                        <div class="t"><b data-i18n="dailySummary">Daily Summary</b><span data-i18n="dailySummaryDescription">A short recap of each day's activity.</span></div>
+                        <div class="c"><label class="setx-switch"><input type="checkbox" data-pref="dailySummaryEnabled" th:checked="${settings.dailySummaryEnabled == 'true'}"><span class="tr"></span><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Daily spending summary</span></label><input type="hidden" name="dailySummaryEnabled" th:value="${settings.dailySummaryEnabled}"></div>
+                    </div>
+                    <div class="setx-row" data-search="goal milestones updates">
+                        <div class="t"><b data-i18n="goalMilestones">Goal milestones</b><span data-i18n="goalMilestonesDescription">Celebrate progress on your financial goals.</span></div>
+                        <div class="c"><label class="setx-switch"><input type="checkbox" data-pref="goalUpdatesEnabled" th:checked="${settings.goalUpdatesEnabled == 'true'}"><span class="tr"></span><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Goal milestones</span></label><input type="hidden" name="goalUpdatesEnabled" th:value="${settings.goalUpdatesEnabled}"></div>
+                    </div>
+                    <div class="setx-row" data-search="bill reminders">
+                        <div class="t"><b data-i18n="billReminders">Bill reminders</b><span data-i18n="billRemindersDescription">Get reminded 14 days before recurring payments are due.</span></div>
+                        <div class="c"><label class="setx-switch"><input type="checkbox" data-pref="billRemindersEnabled" th:checked="${settings.billRemindersEnabled == 'true'}"><span class="tr"></span><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Bill reminders</span></label><input type="hidden" name="billRemindersEnabled" th:value="${settings.billRemindersEnabled}"></div>
+                    </div>
+                    <div class="setx-row" data-search="large expense alerts threshold">
+                        <div class="t"><b data-i18n="largeExpenseAlerts">Large expense alerts</b><span data-i18n="largeExpenseDescription">Flag transactions at or above your alert threshold.</span></div>
+                        <div class="c" style="display:flex;gap:10px;align-items:center"><input type="number" name="largeExpenseThreshold" min="0.01" max="1000000" step="0.01" th:value="${settings.largeExpenseThreshold}" class="fw-input" aria-label="Large expense threshold"><label class="setx-switch"><input type="checkbox" data-pref="largeExpenseAlertsEnabled" th:checked="${settings.largeExpenseAlertsEnabled == 'true'}"><span class="tr"></span><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Large expense alerts</span></label><input type="hidden" name="largeExpenseAlertsEnabled" th:value="${settings.largeExpenseAlertsEnabled}"></div>
+                    </div>
+                    <div class="setx-row" data-search="weekly monthly summary">
+                        <div class="t"><b data-i18n="weeklyMonthlySummary">Weekly &amp; monthly summaries</b><span data-i18n="weeklyMonthlyDescription">Generate local income, expense and net summaries.</span></div>
+                        <div class="c"><label class="setx-switch"><input type="checkbox" data-pref="weeklyMonthlySummaryEnabled" th:checked="${settings.weeklyMonthlySummaryEnabled == 'true'}"><span class="tr"></span><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Weekly and monthly summaries</span></label><input type="hidden" name="weeklyMonthlySummaryEnabled" th:value="${settings.weeklyMonthlySummaryEnabled}"></div>
+                    </div>
+                </section>
+
+                <div class="setx-savebar">
+                    <button type="submit" class="fw-btn fw-btn-primary" data-i18n="saveSettings">Save Settings</button>
+                    <span class="setx-dirty" id="setxDirty" data-i18n="unsavedChanges">Unsaved changes</span>
+                    <span class="setx-saved" id="setxSaved" data-i18n="changesSaved">Changes saved</span>
+                    <span class="setx-note" style="margin:0" data-i18n="saveSettingsDescription">Theme and language preview instantly; saving persists them to your account.</span>
+                </div>
+            </form>
+
+                <!-- D. Privacy & Security -->
+                <section class="setx-card" id="sec-privacy" data-search="privacy security password passcode biometric lock local data">
+                    <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg><span data-i18n="privacySecurity">Privacy &amp; Security</span></h3>
+                    <p class="sub" data-i18n="privacyDescription">Your data never leaves this device.</p>
+                    <div class="setx-row" data-search="local only data privacy">
+                        <div class="t"><b data-i18n="localOnlyData">Local-only data</b><span data-i18n="localOnlyDescription">Your financial data is stored locally on this device. No cloud storage is used.</span></div>
+                        <div class="c"><span class="setx-status"><span class="setx-dot"></span><span data-i18n="enabledBadge">Enabled</span></span></div>
+                    </div>
+                    <div class="setx-row" data-search="change password security">
+                        <div class="t"><b data-i18n="changePassword">Change Password</b><span data-i18n="changePasswordDescription">Update the password for this local account.</span></div>
+                        <div class="c"><a href="/account" class="fw-btn fw-btn-secondary" data-i18n="change">Change</a></div>
+                    </div>
+                    <div class="setx-row" data-search="passcode lock security">
+                        <div class="t"><b data-i18n="passcodeLock">Passcode lock</b><span data-i18n="passcodeDescription">Require a local 4–8 digit passcode after locking FinWise.</span></div>
+                        <div class="c" th:if="${appLockEnabled}" style="display:flex;gap:8px"><form method="post" th:action="@{/app-lock/lock}" style="margin:0"><button type="submit" class="fw-btn fw-btn-secondary">Lock now</button></form><form method="post" th:action="@{/settings/security/passcode/disable}" style="margin:0"><button type="submit" class="fw-btn fw-btn-danger">Disable</button></form></div>
+                        <div class="c" th:unless="${appLockEnabled}" style="display:flex;gap:8px;align-items:center"><form method="post" th:action="@{/settings/security/passcode}" style="display:flex;gap:8px;align-items:center;margin:0"><input type="password" name="passcode" minlength="4" maxlength="8" pattern="[0-9]{4,8}" placeholder="4–8 digits" required class="fw-input" style="width:110px"><input type="password" name="confirmPasscode" minlength="4" maxlength="8" pattern="[0-9]{4,8}" placeholder="Confirm" required class="fw-input" style="width:110px"><button type="submit" class="fw-btn fw-btn-secondary">Enable</button></form></div>
+                    </div>
+                    <div class="setx-row" data-search="device security browser password">
+                        <div class="t"><b>Device-managed sign-in</b><span>For fingerprint or face protection, use your operating-system lock screen and browser profile security.</span></div>
+                        <div class="c"><span class="setx-status"><span class="setx-dot"></span>Browser managed</span></div>
+                    </div>
+                    <div class="setx-row" data-search="auto lock inactivity">
+                        <div class="t"><b data-i18n="autoLock">Auto-lock</b><span data-i18n="autoLockDescription">Sign out automatically after a period of inactivity.</span></div>
+                        <div class="c">
+                            <select id="setxAutoLock" class="fw-input setx-select" aria-label="Auto-lock">
+                                <option value="never" data-i18n="never">Never</option>
+                                <option value="5" data-i18n="min5">5 minutes</option>
+                                <option value="15" data-i18n="min15">15 minutes</option>
+                                <option value="30" data-i18n="min30">30 minutes</option>
+                                <option value="60" data-i18n="hour1">1 hour</option>
+                            </select>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- E. Data & Backup -->
+                <section class="setx-card" id="sec-data" data-search="data backup export import restore storage location">
+                    <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg><span data-i18n="dataBackup">Data &amp; Backup</span></h3>
+                    <p class="sub" data-i18n="backupDescription">Everything is stored on this device.</p>
+                    <div class="setx-row" data-search="storage status local">
+                        <div class="t"><b data-i18n="storageStatus">Storage status</b><span data-i18n="storageStatusDescription">Local SQLite database on this device.</span></div>
+                        <div class="c"><span class="setx-status"><span class="setx-dot"></span><span data-i18n="localStorageBadge">Local storage</span></span></div>
+                    </div>
+                    <div class="setx-row" data-search="create backup">
+                        <div class="t"><b data-i18n="createBackup">Create Backup</b><span data-i18n="createBackupDescription">Save a timestamped copy of your data. Files are stored in <code>/data/backups/</code>.</span></div>
+                        <div class="c">
+                            <form method="post" th:action="@{/settings/backup}" style="margin:0"><button type="submit" class="fw-btn fw-btn-secondary" data-i18n="createBackup">Create Backup</button></form>
+                        </div>
+                    </div>
+                    <div class="setx-row" data-search="export data excel csv">
+                        <div class="t"><b data-i18n="exportDataBtn">Export Data</b><span data-i18n="exportDataDescription">Download your financial data (CSV/Excel).</span></div>
+                        <div class="c" style="display:flex;gap:8px"><button type="button" class="fw-btn fw-btn-secondary" onclick="exportData('xlsx')">Excel</button><button type="button" class="fw-btn fw-btn-secondary" onclick="exportData('csv')">CSV</button></div>
+                    </div>
+                    <div class="setx-row" data-search="import data file">
+                        <div class="t"><b data-i18n="importData">Import Data</b><span data-i18n="importDataDescription">Bring transactions in from PDF, Excel or CSV files.</span></div>
+                        <div class="c"><a href="/import" class="fw-btn fw-btn-secondary" data-i18n="importData">Import Data</a></div>
+                    </div>
+                    <div class="setx-row" data-search="backup history restore delete encrypted">
+                        <div class="t"><b data-i18n="backupHistory">Encrypted backup history</b><span th:text="'Stored locally in ' + ${backupDirectory}">Stored locally</span></div>
+                        <div class="c"><span class="setx-status"><span class="setx-dot"></span><span th:text="${#lists.size(backups)} + ' available'">0 available</span></span></div>
+                    </div>
+                    <p class="setx-note" th:if="${#lists.isEmpty(backups)}" data-i18n="noBackup">No backup created yet.</p>
+                    <div th:unless="${#lists.isEmpty(backups)}" style="display:grid;gap:10px;margin-top:10px">
+                        <div th:each="backup : ${backups}" style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px;border:1px solid var(--glass-border);border-radius:var(--radius-lg)">
+                            <div><b th:text="${#temporals.format(backup.timestamp, 'MMM d, yyyy HH:mm:ss')}">Backup</b><div style="font-size:.78rem;color:var(--fw-text-3)"><span th:text="${backup.formattedSize}">0 KB</span> · AES-256-GCM</div></div>
+                            <div style="display:flex;gap:8px">
+                                <form method="post" th:action="@{/settings/backups/restore/{fileName}(fileName=${backup.fileName})}" style="margin:0"><button type="submit" class="fw-btn fw-btn-secondary" th:attr="data-filename=${backup.fileName}" onclick="return confirm('Restore this backup? A safety backup will be created first.')">Restore</button></form>
+                                <form method="post" th:action="@{/settings/backups/delete/{fileName}(fileName=${backup.fileName})}" style="margin:0"><button type="submit" class="fw-btn fw-btn-danger" onclick="return confirm('Delete this backup?')">Delete</button></form>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- F. Finance Preferences -->
+                <section class="setx-card" id="sec-finance" data-search="finance currency account budget cycle categories decimal week negative default">
+                    <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="m19 9-5 5-4-4-3 3"/></svg><span data-i18n="financePrefs">Finance Preferences</span></h3>
+                    <p class="sub" data-i18n="financeDescription">Defaults that shape how FinWise handles your money.</p>
+                    <div class="setx-row" data-search="currency default">
+                        <div class="t"><b data-i18n="defaultCurrency">Default currency</b><span data-i18n="managedRegional">Managed in Regional &amp; Localization above.</span></div>
+                        <div class="c"><a href="#sec-regional" class="fw-btn fw-btn-secondary" data-i18n="openRegional">Open Regional</a></div>
+                    </div>
+                    <div class="setx-row" data-search="categories income expense manage">
+                        <div class="t"><b data-i18n="incomeExpenseCategories">Income &amp; expense categories</b><span data-i18n="categoriesDescription">Create and organize your own categories.</span></div>
+                        <div class="c"><a href="/categories" class="fw-btn fw-btn-secondary" data-i18n="manageCategories">Manage Categories</a></div>
+                    </div>
+                    <div class="setx-row" data-search="budget cycle monthly weekly">
+                        <div class="t"><b data-i18n="budgetCycle">Budget cycle</b><span data-i18n="budgetCycleDescription">Monthly, weekly or custom budget periods.</span></div>
+                        <div class="c">
+                            <select id="setxBudgetCycle" class="fw-input setx-select" aria-label="Budget cycle">
+                                <option value="monthly" data-i18n="monthly">Monthly</option>
+                                <option value="weekly" data-i18n="weekly">Weekly</option>
+                                <option value="yearly" data-i18n="yearly">Yearly</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="setx-row" data-search="default transaction date today">
+                        <div class="t"><b data-i18n="defaultTxDate">Default transaction date</b><span data-i18n="defaultTxDateDescription">New transactions default to today.</span></div>
+                        <div class="c"><span class="setx-badge ok" data-i18n="todayBadge">Today</span></div>
+                    </div>
+                    <div class="setx-row" data-search="decimal places">
+                        <div class="t"><b data-i18n="decimalPlaces">Decimal places</b><span data-i18n="decimalsDescription">Choose 0 or 2 decimals for amounts.</span></div>
+                        <div class="c">
+                            <select id="setxDecimals" class="fw-input setx-select" aria-label="Decimal places">
+                                <option value="2">2</option>
+                                <option value="0">0</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="setx-row" data-search="first day week negative display">
+                        <div class="t"><b data-i18n="firstDayWeek">First day of week</b><span data-i18n="regionalDescription">Language, currency, dates and week start.</span></div>
+                        <div class="c"><a href="#sec-regional" class="fw-btn fw-btn-secondary" data-i18n="openRegional">Open Regional</a></div>
+                    </div>
+                    <div class="setx-row" data-search="negative display minus brackets">
+                        <div class="t"><b data-i18n="negativeDisplay">Negative amount display</b><span data-i18n="negativeDescription">How negative amounts look.</span></div>
+                        <div class="c">
+                            <select id="setxNegative" class="fw-input setx-select" aria-label="Negative amount display">
+                                <option value="minus">−100</option>
+                                <option value="brackets">(100)</option>
+                            </select>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- G. Dashboard Preferences -->
+                <section class="setx-card" id="sec-dashboard" data-search="dashboard cards charts period trends widgets">
+                    <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg><span data-i18n="dashboardPrefs">Dashboard Preferences</span></h3>
+                    <p class="sub" data-i18n="dashDescription">Choose what appears on your dashboard.</p>
+                    <div class="setx-row" data-search="dashboard cards balance">
+                        <div class="t"><b data-i18n="balance">Balance</b></div>
+                        <div class="c"><label class="setx-switch"><input type="checkbox" data-dash="balance" checked><span class="tr"></span><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Balance</span></label></div>
+                    </div>
+                    <div class="setx-row" data-search="dashboard cards income">
+                        <div class="t"><b data-i18n="income">Income</b></div>
+                        <div class="c"><label class="setx-switch"><input type="checkbox" data-dash="income" checked><span class="tr"></span><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Income</span></label></div>
+                    </div>
+                    <div class="setx-row" data-search="dashboard cards expenses">
+                        <div class="t"><b data-i18n="expenses">Expenses</b></div>
+                        <div class="c"><label class="setx-switch"><input type="checkbox" data-dash="expenses" checked><span class="tr"></span><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Expenses</span></label></div>
+                    </div>
+                    <div class="setx-row" data-search="dashboard cards budgets">
+                        <div class="t"><b data-i18n="budgets">Budgets</b></div>
+                        <div class="c"><label class="setx-switch"><input type="checkbox" data-dash="budgets" checked><span class="tr"></span><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Budgets</span></label></div>
+                    </div>
+                    <div class="setx-row" data-search="dashboard cards goals">
+                        <div class="t"><b data-i18n="goals">Goals</b></div>
+                        <div class="c"><label class="setx-switch"><input type="checkbox" data-dash="goals" checked><span class="tr"></span><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Goals</span></label></div>
+                    </div>
+                    <div class="setx-row" data-search="dashboard cards trends charts">
+                        <div class="t"><b data-i18n="spendingTrends">Spending Trends</b></div>
+                        <div class="c"><label class="setx-switch"><input type="checkbox" data-dash="trends" checked><span class="tr"></span><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Spending Trends</span></label></div>
+                    </div>
+                    <div class="setx-row" data-search="dashboard cards insights health">
+                        <div class="t"><b data-i18n="financialInsights">Financial Insights</b></div>
+                        <div class="c"><label class="setx-switch"><input type="checkbox" data-dash="insights" checked><span class="tr"></span><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Financial Insights</span></label></div>
+                    </div>
+                    <div class="setx-row" data-search="dashboard upcoming bills">
+                        <div class="t"><b data-i18n="upcomingBills">Upcoming bills</b><span>View locally generated reminders for recurring expenses.</span></div>
+                        <div class="c"><a href="/notifications" class="fw-btn fw-btn-secondary">View bills</a></div>
+                    </div>
+                </section>
+
+                <!-- H. AI & Insights -->
+                <section class="setx-card" id="sec-ai" data-search="ai insights smart categorization forecast ocr duplicate local">
+                    <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.8H20l-4.9 3.6 1.9 5.8-5-3.6-5 3.6 1.9-5.8L4 8.8h6.1z"/></svg><span data-i18n="aiInsights">AI &amp; Insights</span></h3>
+                    <p class="sub" data-i18n="aiDescription">Financial insights are generated from your locally stored data. No external AI APIs are used.</p>
+                    <a class="setx-row" th:href="@{/categories}" data-search="smart categorization"><div class="t"><b data-i18n="smartCategorization">Smart categorization</b></div><div class="c"><span class="setx-badge ok" data-i18n="builtIn">Built-in</span></div></a>
+                    <a class="setx-row" th:href="@{/analytics}" data-search="spending insights"><div class="t"><b data-i18n="spendingInsights">Spending insights</b></div><div class="c"><span class="setx-badge ok" data-i18n="builtIn">Built-in</span></div></a>
+                    <a class="setx-row" th:href="@{/budgets}" data-search="budget recommendations"><div class="t"><b data-i18n="budgetRecommendations">Budget recommendations</b></div><div class="c"><span class="setx-badge ok" data-i18n="builtIn">Built-in</span></div></a>
+                    <a class="setx-row" th:href="@{/goals}" data-search="goal insights"><div class="t"><b data-i18n="goalInsights">Goal insights</b></div><div class="c"><span class="setx-badge ok" data-i18n="builtIn">Built-in</span></div></a>
+                    <a class="setx-row" th:href="@{/reports}" data-search="forecasting"><div class="t"><b data-i18n="forecasting">Forecasting</b></div><div class="c"><span class="setx-badge ok" data-i18n="builtIn">Built-in</span></div></a>
+                    <a class="setx-row" th:href="@{/import}" data-search="duplicate detection"><div class="t"><b data-i18n="duplicateDetection">Duplicate transaction detection</b></div><div class="c"><span class="setx-badge ok" data-i18n="builtIn">Built-in</span></div></a>
+                    <a class="setx-row" th:href="@{/scan}" data-search="ocr imports scan"><div class="t"><b data-i18n="ocrImports">OCR-assisted imports</b></div><div class="c"><span class="setx-badge ok" data-i18n="builtIn">Built-in</span></div></a>
+                </section>
+
+                <!-- I. Accessibility -->
+                <section class="setx-card" id="sec-access" data-search="accessibility text size contrast keyboard motion">
+                    <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="16" cy="4" r="1"/><path d="m18 19 1-7-6 1"/><path d="m5 8 3-3 5.5 3-2.4 3.5"/><path d="M4.2 14.5a5 5 0 0 0 6.9 6"/><path d="M13.8 9.5a5 5 0 0 0-6.9-6"/></svg><span data-i18n="accessibility">Accessibility</span></h3>
+                    <p class="sub" data-i18n="accessibilityDescription">FinWise is fully keyboard navigable with visible focus states.</p>
+                    <div class="setx-row" data-search="text size large">
+                        <div class="t"><b data-i18n="textSize">Text size</b><span data-i18n="textSizeDescription">Default, Large or Extra large interface text.</span></div>
+                        <div class="c">
+                            <select id="setxTextSize" class="fw-input setx-select" aria-label="Text size">
+                                <option value="default" data-i18n="textDefault">Default</option>
+                                <option value="large" data-i18n="textLarge">Large</option>
+                                <option value="xlarge" data-i18n="textExtraLarge">Extra large</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="setx-row" data-search="high contrast">
+                        <div class="t"><b data-i18n="highContrast">High contrast</b><span data-i18n="contrastDescription">Extra contrast for text and controls.</span></div>
+                        <div class="c"><label class="setx-switch"><input type="checkbox" id="setxContrast"><span class="tr"></span><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">High contrast</span></label></div>
+                    </div>
+                    <div class="setx-row" data-search="reduce animations motion">
+                        <div class="t"><b data-i18n="reduceAnimations">Reduce animations</b><span data-i18n="reduceDescription">Minimize motion and transitions everywhere.</span></div>
+                        <div class="c"><label class="setx-switch"><input type="checkbox" id="setxReduceMotion"><span class="tr"></span><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Reduce animations</span></label></div>
+                    </div>
+                </section>
+
+                <!-- J. Advanced -->
+                <section class="setx-card" id="sec-advanced" data-search="advanced storage version database reset clear cache danger">
+                    <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m14.7 6.3-5.4 5.4 5.4 5.4"/><path d="m9.3 6.3 5.4 5.4-5.4 5.4" transform="translate(4 0)"/></svg><span data-i18n="advanced">Advanced</span></h3>
+                    <p class="sub" data-i18n="advancedDescription">Technical details and maintenance.</p>
+                    <div class="setx-row" data-search="storage database location">
+                        <div class="t"><b data-i18n="storageTitle">Storage</b><span data-i18n="storageDescription">Local SQLite database on this device. Preferences are stored per account.</span></div>
+                        <div class="c"><span class="setx-status"><span class="setx-dot"></span><span data-i18n="connectedBadge">Connected</span></span></div>
+                    </div>
+                    <div class="setx-row" data-search="storage used browser">
+                        <div class="t"><b data-i18n="storageUsed">Storage used</b><span data-i18n="storageUsedDescription">Browser data kept by FinWise on this device.</span></div>
+                        <div class="c"><span class="setx-badge" id="setxStorageUsed">—</span></div>
+                    </div>
+                    <div class="setx-row" data-search="version application">
+                        <div class="t"><b data-i18n="appVersion">Application version</b></div>
+                        <div class="c"><span class="setx-badge">1.0.0</span></div>
+                    </div>
+                    <div class="setx-row" data-search="clear cached ui data">
+                        <div class="t"><b data-i18n="clearCachedData">Clear cached UI data</b><span data-i18n="clearCacheDescription">Removes offline queues and drafts kept in this browser. Your accounts and settings stay.</span></div>
+                        <div class="c"><button type="button" class="fw-btn fw-btn-secondary" id="setxClearCache" data-i18n="clearCache">Clear Cache</button></div>
+                    </div>
+                </section>
+
+                <!-- Danger zone -->
+                <section class="setx-card setx-danger" id="sec-danger" data-search="danger reset delete data defaults">
+                    <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg><span data-i18n="dangerZone">Danger Zone</span></h3>
+                    <p class="sub" data-i18n="dangerDescription">Destructive actions are always confirmed first.</p>
+                    <div class="setx-row" data-search="reset preferences defaults">
+                        <div class="t"><b data-i18n="resetPreferences">Reset preferences</b><span data-i18n="resetDescription">Restores default preferences only. Your financial data is never touched.</span></div>
+                        <div class="c">
+                            <form method="post" th:action="@{/settings/reset}" id="setxResetForm" style="margin:0"><button type="button" class="fw-btn fw-btn-secondary" id="setxResetBtn" data-i18n="resetPreferencesBtn">Reset Preferences</button></form>
+                        </div>
+                    </div>
+                    <div class="setx-row" data-search="delete all local data">
+                        <div class="t"><b data-i18n="deleteAllData">Delete all local data</b><span data-i18n="deleteDataDescription">Permanently remove your account and everything stored on this device.</span></div>
+                        <div class="c"><button type="button" class="fw-btn fw-btn-danger" id="setxDeleteAllBtn" data-i18n="deleteAllDataBtn">Delete All Data</button></div>
+                    </div>
+                </section>
+
+                <!-- K. About -->
+                <section class="setx-card" id="sec-about" data-search="about finwise version privacy licenses">
+                    <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><span data-i18n="aboutFinwise">About FinWise</span></h3>
+                    <p class="sub" data-i18n="aboutDescription">Private. Local. In control.</p>
+                    <div class="setx-row" data-search="version"><div class="t"><b data-i18n="version">Version</b></div><div class="c"><span class="setx-badge">1.0.0</span></div></div>
+                    <div class="setx-row" data-search="data handling offline"><div class="t"><b data-i18n="dataHandling">Data handling</b><span data-i18n="dataHandlingDescription">Offline-first. Accounts, transactions and preferences live in a local database.</span></div></div>
+                    <div class="setx-row" data-search="privacy security"><div class="t"><b data-i18n="privacySecurity">Privacy &amp; Security</b><span data-i18n="privacySecurityDescription">No tracking, no external cloud storage, no analytics calls.</span></div></div>
+                </section>
+            </div>
+
+            <!-- RIGHT: contextual summary -->
+            <aside class="setx-rail" aria-label="Settings summary">
+                <div class="setx-rail-card">
+                    <h3 data-i18n="summaryTitle">Summary</h3>
+                    <p class="sub" data-i18n="prefSummary">Live summary of your current preferences.</p>
+                    <dl>
+                        <div><dt data-i18n="theme">Theme</dt><dd id="sumTheme">Light</dd></div>
+                        <div><dt data-i18n="language">Language</dt><dd id="sumLang">English</dd></div>
+                        <div><dt data-i18n="currency">Currency</dt><dd id="sumCurrency">USD</dd></div>
+                        <div><dt data-i18n="dateFormat">Date Format</dt><dd id="sumDate">MM/DD/YYYY</dd></div>
+                        <div><dt data-i18n="firstDayWeek">First day of week</dt><dd id="sumWeek">Sunday</dd></div>
+                        <div><dt data-i18n="notifications">Notifications</dt><dd id="sumNotif">On</dd></div>
+                        <div><dt data-i18n="storageUsed">Storage used</dt><dd id="sumStorage">—</dd></div>
+                    </dl>
+                </div>
+            </aside>
+        </div>
+    </main></div>
+
+    <div th:replace="~{fragments/finwise :: fwFooter}"></div>
+
+    <div th:replace="~{fragments/finwise :: fwScripts}"></div>
+
+    <!-- Confirm dialog -->
+    <div class="setx-scrim" id="setxScrim">
+        <div class="setx-dialog" role="alertdialog" aria-modal="true" aria-labelledby="setxDlgTitle" aria-describedby="setxDlgBody">
+            <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg><span id="setxDlgTitle" data-i18n="confirmTitle">Are you sure?</span></h3>
+            <p id="setxDlgBody"></p>
+            <div class="acts">
+                <button type="button" class="fw-btn fw-btn-secondary" id="setxDlgCancel" data-i18n="cancel">Cancel</button>
+                <button type="button" class="fw-btn fw-btn-primary" id="setxDlgOk" data-i18n="confirm">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    (function () {
+      function setxT(key, fallback) {
+        try {
+          if (window.FinwiseLanguage && typeof window.FinwiseLanguage.t === 'function') {
+            var v = window.FinwiseLanguage.t(key);
+            if (v && v !== key) return v;
+          }
+        } catch (e) {}
+        return fallback;
+      }
+      function setxLSGet(k, fb) { try { var v = localStorage.getItem(k); return v == null ? fb : v; } catch (e) { return fb; } }
+      function setxLSSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+      setxLSSet('finwise_passcode_enabled', document.body.getAttribute('data-app-lock-enabled') === 'true' ? 'true' : 'false');
+
+      /* ---- Dirty indicator + saved pill ---- */
+      var form = document.getElementById('setxForm');
+      var dirtyEl = document.getElementById('setxDirty');
+      var savedEl = document.getElementById('setxSaved');
+      var savedTimer = null;
+      window.setxDirty = function () { if (dirtyEl) dirtyEl.classList.add('show'); };
+      function setxSavedFlash(serverDirty) {
+        if (serverDirty !== false) setxDirty();
+        if (!savedEl) return;
+        savedEl.classList.add('show');
+        if (savedTimer) clearTimeout(savedTimer);
+        savedTimer = setTimeout(function () { savedEl.classList.remove('show'); }, 2200);
+      }
+      if (form) form.addEventListener('change', function () { setxDirty(); });
+
+      /* ---- Live summary rail + storage meter ---- */
+      var LANG_LABELS = { en: 'English', hi: 'हिन्दी', ta: 'தமிழ்', ne: 'नेपाली' };
+      function setxStorageText() {
+        var bytes = 0;
+        try {
+          for (var i = 0; i < localStorage.length; i++) {
+            var k = localStorage.key(i);
+            var v = localStorage.getItem(k) || '';
+            bytes += (k ? k.length : 0) + v.length * 2;
+          }
+        } catch (e) {}
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / 1048576).toFixed(2) + ' MB';
+      }
+      function setxSummary() {
+        function set(id, v) { var el = document.getElementById(id); if (el) el.textContent = v; }
+        var theme = 'light';
+        try {
+          if (typeof window.fwGetTheme === 'function') theme = window.fwGetTheme().effective;
+          else theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+        } catch (e) {}
+        var lang = 'en';
+        try { lang = (window.FinwiseLanguage && window.FinwiseLanguage.current) || setxLSGet('finwise_locale', 'en'); } catch (e) {}
+        if (!LANG_LABELS[lang]) lang = 'en';
+        var cur = document.getElementById('setxCurrency');
+        var df = document.getElementById('setxDateFormat');
+        var fd = document.getElementById('setxFirstDay');
+        var notifBox = document.querySelector('[data-pref="notificationsEnabled"]');
+        set('sumTheme', theme === 'dark' ? setxT('themeDark', 'Dark') : setxT('themeLight', 'Light'));
+        set('sumLang', LANG_LABELS[lang]);
+        set('sumCurrency', cur ? cur.value : 'USD');
+        set('sumDate', df ? df.options[df.selectedIndex].text : 'MM/DD/YYYY');
+        set('sumWeek', setxT(fd && fd.value === 'monday' ? 'monday' : fd && fd.value === 'saturday' ? 'saturday' : 'sunday', 'Sunday'));
+        var on = !notifBox || notifBox.checked;
+        set('sumNotif', on ? setxT('enabledBadge', 'Enabled') : setxT('never', 'Never'));
+        var st = setxStorageText();
+        set('sumStorage', st);
+        var su = document.getElementById('setxStorageUsed');
+        if (su) su.textContent = st;
+      }
+
+      /* ---- Theme: Light/Dark segmented, instant + saved on submit ---- */
+      function setxPaintTheme(val) {
+        document.querySelectorAll('[data-setx-theme]').forEach(function (b) {
+          var on = b.getAttribute('data-setx-theme') === val;
+          b.classList.toggle('on', on);
+          b.setAttribute('aria-pressed', on ? 'true' : 'false');
+        });
+      }
+      function setxThemePick(val) {
+        var v = (val === 'light' || val === 'dark') ? val : 'light';
+        try {
+          if (typeof window.fwSetTheme === 'function') window.fwSetTheme(v);
+          else {
+            try { localStorage.setItem('finwise_theme', v); } catch (e) {}
+            document.documentElement.setAttribute('data-theme', v);
+            if (document.documentElement.classList) {
+              document.documentElement.classList.toggle('dark', v === 'dark');
+              document.documentElement.classList.toggle('light', v === 'light');
+            }
+          }
+        } catch (e) {}
+        var sel = document.getElementById('setxThemeSelect');
+        if (sel) sel.value = v;
+        setxPaintTheme(v);
+        setxSavedFlash();
+        setxSummary();
+      }
+      document.querySelectorAll('[data-setx-theme]').forEach(function (b) {
+        b.addEventListener('click', function () { setxThemePick(b.getAttribute('data-setx-theme')); });
+      });
+      // Keep the legacy fwThemePick name working (other scripts may call it).
+      window.fwThemePick = setxThemePick;
+      try {
+        var cur = (typeof window.fwGetTheme === 'function') ? window.fwGetTheme().effective : null;
+        if (cur !== 'light' && cur !== 'dark') {
+          cur = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+        }
+        setxPaintTheme(cur);
+      } catch (e) {}
+
+      /* ---- Notification switches: visual checkbox <-> hidden backend field ---- */
+      document.querySelectorAll('[data-pref]').forEach(function (box) {
+        var hidden = box.closest('.c').querySelector('input[type="hidden"][name="' + box.getAttribute('data-pref') + '"]');
+        box.addEventListener('change', function () {
+          if (hidden) hidden.value = box.checked ? 'true' : 'false';
+          setxSavedFlash();
+          setxSummary();
+        });
+      });
+
+      /* ---- Language selector: ONE global language, whole app, instantly ---- */
+      function setxPaintLang(code) {
+        document.querySelectorAll('[data-setx-lang]').forEach(function (b) {
+          var on = b.getAttribute('data-setx-lang') === code;
+          b.classList.toggle('on', on);
+          b.setAttribute('aria-checked', on ? 'true' : 'false');
+        });
+      }
+      function setxLangPick(code) {
+        var valid = { en: 1, hi: 1, ta: 1, ne: 1 };
+        var v = valid[code] ? code : 'en';
+        try {
+          // Instant: the ENTIRE application re-renders in the new language,
+          // no reload, no logout, no state loss. Server persist happens
+          // inside set() best-effort (offline-safe).
+          if (window.FinwiseLanguage && typeof window.FinwiseLanguage.set === 'function') window.FinwiseLanguage.set(v);
+          else { try { localStorage.setItem('finwise_locale', v); } catch (e) {} }
+        } catch (e) {}
+        var hidden = document.getElementById('setxLangHidden');
+        if (hidden) hidden.value = v;
+        setxPaintLang(v);
+        setxSavedFlash();
+        setxSummary();
+      }
+      document.querySelectorAll('[data-setx-lang]').forEach(function (b) {
+        b.addEventListener('click', function () { setxLangPick(b.getAttribute('data-setx-lang')); });
+      });
+      try {
+        var initLang = (window.FinwiseLanguage && window.FinwiseLanguage.current)
+          || document.getElementById('setxLangHidden').value
+          || setxLSGet('finwise_locale', 'en');
+        if ({ en: 1, hi: 1, ta: 1, ne: 1 }[initLang] !== 1) initLang = 'en';
+        document.getElementById('setxLangHidden').value = initLang;
+        setxPaintLang(initLang);
+      } catch (e) {}
+
+      /* ---- Server-backed selects: mark dirty + refresh summary ---- */
+      ['setxCurrency', 'setxDateFormat'].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) el.addEventListener('change', function () { setxSavedFlash(); setxSummary(); });
+      });
+
+      /* ---- Local finance prefs (offline-first, applied instantly) ---- */
+      function bindLocalSelect(id, key, fallback) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.value = setxLSGet(key, fallback);
+        el.addEventListener('change', function () {
+          setxLSSet(key, el.value);
+          setxSavedFlash(false);
+          if (id === 'setxFirstDay') setxWeekPreview();
+          setxSummary();
+        });
+      }
+      bindLocalSelect('setxBudgetCycle', 'finwise_budget_cycle', 'monthly');
+      bindLocalSelect('setxDecimals', 'finwise_decimals', '2');
+      bindLocalSelect('setxNegative', 'finwise_negative', 'minus');
+      bindLocalSelect('setxAutoLock', 'finwise_autolock', 'never');
+      bindLocalSelect('setxTextSize', 'finwise_textsize', 'default');
+      bindLocalSelect('setxFirstDay', 'finwise_first_day', 'sunday');
+
+      /* First-day-of-week: stored pref + live week-range preview (real dates). */
+      function setxWeekPreview() {
+        var el = document.getElementById('setxWeekPreview');
+        if (!el) return;
+        var fd = document.getElementById('setxFirstDay');
+        var first = fd ? fd.value : 'sunday';
+        var startIdx = first === 'monday' ? 1 : first === 'saturday' ? 6 : 0;
+        var now = new Date();
+        var d = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        var diff = (d.getDay() - startIdx + 7) % 7;
+        d.setDate(d.getDate() - diff);
+        var end = new Date(d);
+        end.setDate(end.getDate() + 6);
+        function fmt(x) { return x.getDate() + '/' + (x.getMonth() + 1); }
+        var label = setxT('thisWeek', 'This week') + ': ' + fmt(d) + ' – ' + fmt(end) + ' ' + end.getFullYear();
+        el.textContent = label;
+        el.removeAttribute('data-i18n');
+      }
+      setxWeekPreview();
+
+      /* ---- Accessibility (functional, global, offline-first) ---- */
+      function applyA11y() {
+        var ts = setxLSGet('finwise_textsize', 'default');
+        document.documentElement.setAttribute('data-fw-textsize', ts);
+        var hc = setxLSGet('finwise_contrast', 'off') === 'on';
+        document.documentElement.classList.toggle('fw-high-contrast', hc);
+        var reduce = setxLSGet('finwise_motion', 'on') === 'off';
+        document.documentElement.classList.toggle('fw-no-motion', reduce);
+        var c = document.getElementById('setxContrast');
+        if (c) c.checked = hc;
+        var r = document.getElementById('setxReduceMotion');
+        if (r) r.checked = reduce;
+        var m = document.getElementById('setxMotion');
+        if (m) m.checked = !reduce;
+      }
+      function setMotion(reduce) {
+        setxLSSet('finwise_motion', reduce ? 'off' : 'on');
+        applyA11y();
+        setxSavedFlash(false);
+      }
+      var motion = document.getElementById('setxMotion');
+      if (motion) motion.addEventListener('change', function () { setMotion(!motion.checked); });
+      var reduceMotion = document.getElementById('setxReduceMotion');
+      if (reduceMotion) reduceMotion.addEventListener('change', function () { setMotion(reduceMotion.checked); });
+      var contrast = document.getElementById('setxContrast');
+      if (contrast) {
+        contrast.addEventListener('change', function () {
+          setxLSSet('finwise_contrast', contrast.checked ? 'on' : 'off');
+          applyA11y();
+          setxSavedFlash(false);
+        });
+      }
+      var textSize = document.getElementById('setxTextSize');
+      if (textSize) {
+        textSize.addEventListener('change', function () {
+          setxLSSet('finwise_textsize', textSize.value);
+          applyA11y();
+          setxSavedFlash(false);
+        });
+      }
+      applyA11y();
+
+      /* ---- Dashboard cards (local; dashboard hides disabled cards) ---- */
+      var dashCards = null;
+      try { dashCards = JSON.parse(setxLSGet('finwise_dash_cards', 'null')) || {}; } catch (e) { dashCards = {}; }
+      document.querySelectorAll('[data-dash]').forEach(function (box) {
+        var k = box.getAttribute('data-dash');
+        box.checked = dashCards[k] !== false;
+        box.addEventListener('change', function () {
+          dashCards[k] = box.checked;
+          setxLSSet('finwise_dash_cards', JSON.stringify(dashCards));
+          setxSavedFlash(false);
+        });
+      });
+
+      /* ---- Dirty indicator + search ---- */
+      var search = document.getElementById('setxSearch');
+      if (search) search.addEventListener('input', function () {
+        var q = search.value.trim().toLowerCase();
+        var anyVisible = false;
+        document.querySelectorAll('.setx-cards .setx-card').forEach(function (card) {
+          if (!q) { card.style.display = ''; anyVisible = true; return; }
+          var hit = (card.getAttribute('data-search') || '').toLowerCase().indexOf(q) !== -1;
+          if (!hit) {
+            card.querySelectorAll('[data-search]').forEach(function (row) {
+              if ((row.getAttribute('data-search') || '').toLowerCase().indexOf(q) !== -1
+                || row.textContent.toLowerCase().indexOf(q) !== -1) hit = true;
+            });
+            if (card.textContent.toLowerCase().indexOf(q) !== -1) hit = true;
+          }
+          card.style.display = hit ? '' : 'none';
+          if (hit) anyVisible = true;
+        });
+        var empty = document.getElementById('setxEmpty');
+        if (!empty) {
+          empty = document.createElement('div');
+          empty.id = 'setxEmpty';
+          empty.className = 'setx-empty';
+          empty.setAttribute('data-i18n', 'noSettingsMatch');
+          empty.textContent = setxT('noSettingsMatch', 'No settings match your search.');
+          document.querySelector('.setx-cards').appendChild(empty);
+        }
+        empty.classList.toggle('show', !anyVisible);
+      });
+
+      /* ---- Confirm dialog ---- */
+      var scrim = document.getElementById('setxScrim');
+      var dlgOk = document.getElementById('setxDlgOk');
+      var dlgCancel = document.getElementById('setxDlgCancel');
+      var confirmFn = null;
+      window.setxConfirm = function (title, body, okLabel, fn) {
+        document.getElementById('setxDlgTitle').textContent = title;
+        document.getElementById('setxDlgBody').textContent = body;
+        dlgOk.textContent = okLabel || setxT('confirm', 'Confirm');
+        dlgCancel.textContent = setxT('cancel', 'Cancel');
+        confirmFn = fn;
+        scrim.classList.add('open');
+        dlgCancel.focus();
+      };
+      function closeDlg() { scrim.classList.remove('open'); confirmFn = null; }
+      dlgCancel.addEventListener('click', closeDlg);
+      scrim.addEventListener('click', function (e) { if (e.target === scrim) closeDlg(); });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && scrim.classList.contains('open')) closeDlg(); });
+      dlgOk.addEventListener('click', function () { var fn = confirmFn; closeDlg(); if (fn) fn(); });
+
+      function setxResetLocalPreferences() {
+        var defaults = {
+          finwise_theme: 'light',
+          finwise_locale: 'en',
+          'finwise-language': 'en',
+          finwise_budget_cycle: 'monthly',
+          finwise_decimals: '2',
+          finwise_negative: 'minus',
+          finwise_autolock: 'never',
+          finwise_textsize: 'default',
+          finwise_first_day: 'sunday',
+          finwise_motion: 'on',
+          finwise_contrast: 'off'
+        };
+        Object.keys(defaults).forEach(function (key) { localStorage.setItem(key, defaults[key]); });
+        ['finwise_dash_cards', 'finwise_sidebar', 'finwise_sidebar_collapsed'].forEach(function (key) {
+          localStorage.removeItem(key);
+        });
+        if (typeof window.fwSetTheme === 'function') window.fwSetTheme('light');
+        if (window.FinwiseLanguage && typeof window.FinwiseLanguage.set === 'function') window.FinwiseLanguage.set('en');
+        applyA11y();
+      }
+      function setxResetPreferences() {
+        var form = document.getElementById('setxResetForm');
+        var button = document.getElementById('setxResetBtn');
+        if (!form || !button) return;
+        button.disabled = true;
+        fetch(form.action, { method: 'POST', headers: { 'Accept': 'application/json' } })
+          .then(function (response) {
+            return response.json().then(function (data) {
+              if (!response.ok || !data.success) throw new Error(data.message || 'Unable to reset preferences');
+              return data;
+            });
+          })
+          .then(function () {
+            setxResetLocalPreferences();
+            if (window.fwToast) fwToast(setxT('success', 'Success'), 'Preferences reset to defaults.', 'ok');
+            window.location.reload();
+          })
+          .catch(function (error) {
+            button.disabled = false;
+            if (window.fwToast) fwToast(setxT('error', 'Error'), error.message || 'Unable to reset preferences.', 'error');
+          });
+      }
+      document.getElementById('setxResetBtn').addEventListener('click', function () {
+        setxConfirm(setxT('resetPreferences', 'Reset preferences') + '?',
+          setxT('resetDescription', 'Restores default preferences only. Your financial data is never touched.'),
+          setxT('resetPreferencesBtn', 'Reset Preferences'),
+          setxResetPreferences);
+      });
+      function setxIsCachedKey(key) {
+        return key === 'finwise_offline_queue'
+          || key === 'finwise_last_sync'
+          || key.indexOf('finwise_locale_cache_') === 0
+          || key.indexOf('draft_') === 0;
+      }
+      function setxClearCachedData() {
+        [localStorage, sessionStorage].forEach(function (storage) {
+          Object.keys(storage).forEach(function (key) {
+            if (setxIsCachedKey(key)) storage.removeItem(key);
+          });
+        });
+        var cacheCleanup = Promise.resolve();
+        if (window.caches && typeof window.caches.keys === 'function') {
+          cacheCleanup = window.caches.keys().then(function (keys) {
+            return Promise.all(keys.filter(function (key) { return key.toLowerCase().indexOf('finwise') !== -1; })
+              .map(function (key) { return window.caches.delete(key); }));
+          });
+        }
+        return cacheCleanup;
+      }
+      document.getElementById('setxClearCache').addEventListener('click', function () {
+        setxConfirm(setxT('clearCachedData', 'Clear cached UI data') + '?',
+          setxT('clearCacheDescription', 'Removes offline queues and drafts kept in this browser. Your accounts and settings stay.'),
+          setxT('clearCache', 'Clear Cache'),
+          function () {
+            try {
+              setxClearCachedData().then(function () {
+                if (window.fwToast) fwToast(setxT('success', 'Success'), 'Cached data cleared.', 'ok');
+                setxSummary();
+              }).catch(function (error) {
+                if (window.fwToast) fwToast(setxT('error', 'Error'), error.message || 'Unable to clear cached data.', 'error');
+              });
+            } catch (error) {
+              if (window.fwToast) fwToast(setxT('error', 'Error'), error.message || 'Unable to clear cached data.', 'error');
+            }
+          });
+      });
+      var delBtn = document.getElementById('setxDeleteAllBtn');
+      if (delBtn) delBtn.addEventListener('click', function () {
+        setxConfirm(setxT('deleteAllData', 'Delete all local data') + '?',
+          setxT('deleteDataDescription', 'Permanently remove your account and everything stored on this device.'),
+          setxT('deleteAllDataBtn', 'Delete All Data'),
+          function () {
+            try {
+              if (typeof window.openDeleteAccountModal === 'function') window.openDeleteAccountModal(true);
+              else window.location.href = '/account';
+            } catch (e) { window.location.href = '/account'; }
+          });
+      });
+
+      /* Keep summary + translated bits in sync when language changes elsewhere. */
+      try {
+        if (window.FinwiseLanguage && typeof window.FinwiseLanguage.subscribe === 'function') {
+          window.FinwiseLanguage.subscribe(function () { setxSummary(); setxWeekPreview(); setxPaintLang(window.FinwiseLanguage.current || 'en'); });
+        }
+      } catch (e) {}
+      setxSummary();
+
+      /* ---- Sidebar scrollspy ---- */
+      var links = Array.prototype.slice.call(document.querySelectorAll('.setx-side a'));
+      function spy() {
+        var best = null;
+        links.forEach(function (a) {
+          var el = document.querySelector(a.getAttribute('href'));
+          if (el && el.getBoundingClientRect().top < 160) best = a;
+        });
+        links.forEach(function (a) { a.classList.toggle('active', a === best); });
+      }
+      document.addEventListener('scroll', spy, { passive: true });
+      spy();
+    })();
+    </script>
+</body>
+</html>

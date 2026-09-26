@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <script>
+    /* Early theme paint (no-FOUC). Server pref arrives later via fwScripts;
+       until then follow saved choice, else Light. data-theme is Light|Dark. */
+    (function () {
+      try {
+        var pref = localStorage.getItem('finwise_theme') || 'light';
+        if (pref !== 'light' && pref !== 'dark') pref = 'light';
+        var eff = pref;
+
+        document.documentElement.setAttribute('data-theme', eff);
+        if (document.documentElement.classList) {
+          document.documentElement.classList.toggle('dark', eff === 'dark');
+          document.documentElement.classList.toggle('light', eff === 'light');
+        }
+        try { document.documentElement.style.colorScheme = eff; } catch (e) {}
+        try {
+          var __ts = localStorage.getItem('finwise_textsize') || 'default';
+          document.documentElement.setAttribute('data-fw-textsize', __ts);
+          if (localStorage.getItem('finwise_contrast') === 'on') document.documentElement.classList.add('fw-high-contrast');
+          if (localStorage.getItem('finwise_motion') === 'off') document.documentElement.classList.add('fw-no-motion');
+        } catch (e2) {}
+      } catch (e) {}
+    })();
+  </script>
+    <title>Import Documents - Finwise</title>
+    <link rel="stylesheet" href="/css/3d-dynamic.css">
+  <link rel="stylesheet" href="/css/finwise-tokens.css">
+  <link rel="stylesheet" href="/css/finwise-layout.css">
+  <link rel="stylesheet" href="/css/finwise-components.css">
+  <link rel="stylesheet" href="/css/finwise-responsive.css">
+  <link rel="stylesheet" href="/css/chatbot-widget.css">
+  <link rel="stylesheet" href="/css/finwise-bridge.css">
+  <link rel="stylesheet" href="/css/finwise-theme.css">
+</head>
+<body class="fw-body fw-shell">
+<div th:replace="~{fragments/finwise :: fwSidebar('import', ${user})}"></div>
+<div th:replace="~{fragments/finwise :: fwTopbar('Import', null, ${user}, ${unreadCount})}"></div>
+<div class="fw-scrim" onclick="fwCloseSidebar()"></div>
+
+<div class="fw-content"><main class="fw-wrap" id="main">
+    <div class="fw-page-header fw-animate" style="display: flex; justify-content: space-between; align-items: flex-start; gap: var(--sp-4);">
+        <div>
+            <h1>Import Documents</h1>
+            <p>Upload PDF, Excel, or CSV files to add transactions</p>
+        </div>
+        <a th:href="@{/import/history}" class="fw-btn fw-btn-secondary">Import History</a>
+    </div>
+
+    <div th:if="${not #lists.isEmpty(globalErrorMessages)}" class="fw-alert fw-alert-error">
+        <span th:text="${globalErrorMessages}"></span>
+    </div>
+
+    <div th:if="${successMessage}" class="fw-alert fw-alert-success">
+        <span th:text="${successMessage}"></span>
+    </div>
+
+    <div th:if="${errorMessage}" class="fw-alert fw-alert-error">
+        <span th:text="${errorMessage}"></span>
+    </div>
+
+    <div class="fw-card fw-animate">
+        <div class="fw-card-header">
+            <h2>Upload File</h2>
+        </div>
+        <div class="fw-card-body">
+            <form th:action="@{/import/upload}" method="post" enctype="multipart/form-data" class="fw-form">
+                <div class="fw-form-group">
+                    <label for="file" class="fw-label">Select File</label>
+                    <input type="file" name="file" id="file" class="fw-input" accept=".pdf,.xlsx,.xls,.csv,.png,.jpg,.jpeg" required>
+                </div>
+
+                <div class="fw-form-group fw-form-group-wide">
+                    <button type="submit" class="fw-btn fw-btn-primary fw-btn-large">Import File</button>
+                    <span class="fw-help-text">PDF, Excel (.xlsx, .xls), CSV, JPG/JPEG/PNG, and handwritten-note images are supported. Processing is entirely local.</span>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div th:if="${not #lists.isEmpty(importedRecords)}" class="fw-mt-4">
+        <div class="fw-card fw-animate">
+            <div class="fw-card-header">
+                <h2>Preview - ${importedRecords.size} Records Found</h2>
+            </div>
+            <div class="fw-card-body">
+                <form th:action="@{/import/validate}" method="post">
+                    <div class="fw-table-responsive">
+                        <table class="fw-table">
+                            <thead>
+                            <tr>
+                                <th><input type="checkbox" id="selectAll" onchange="toggleSelect(this)"></th>
+                                <th>Description</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Date</th>
+                                <th>Category</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="record : ${importedRecords}">
+                                <td>
+                                    <input type="checkbox" name="validIds" th:value="${record.id}" class="fw-checkbox"/>
+                                </td>
+                                <td>
+                                    <span th:text="${record.description}">Description</span>
+                                </td>
+                                <td>
+                                    <span th:text="${record.transactionType}">EXPENSE</span>
+                                    <input type="hidden" name="existingTypes" th:value="${record.transactionType}"/>
+                                </td>
+                                <td class="fw-tx-amount" th:text="'$' + ${#numbers.formatDecimal(record.amount, 1, 2)}">$0.00</td>
+                                <td th:text="${#temporals.format(record.transactionDate, 'MMM d, yyyy')}">2024-01-15</td>
+                                <td>
+                                    <span th:text="${record.category}">Uncategorized</span>
+                                    <input type="hidden" name="existingCategories" th:value="${record.category}"/>
+                                </td>
+                                <td>
+                                    <a th:href="@{/import/edit/{id}(id=${record.id})}" class="fw-action-btn small">Edit</a>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="fw-form-group fw-form-group-wide fw-mt-4">
+                        <input type="checkbox" name="editIds" th:if="${#lists.isEmpty(validIds)}" id="selectNone" style="display:none;">
+                        <button type="submit" name="action" value="import" class="fw-btn fw-btn-primary fw-btn-large fw-width-100">Import Selected Records</button>
+                        <button type="submit" name="action" value="cancel" class="fw-btn fw-btn-secondary fw-btn-large fw-width-100 fw-ml-2">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div th:if="${#lists.isEmpty(importedRecords)}" class="fw-mt-4 fw-empty">
+        <div class="fw-empty-icon"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg></div>
+        <h3>No records found</h3>
+        <p>Upload a file to import transactions.</p>
+    </div>
+</main></div>
+
+<div th:replace="~{fragments/finwise :: fwFooter}"></div>
+
+<div th:replace="~{fragments/finwise :: fwScripts}"></div>
+
+<script>
+    function toggleSelect(checkbox) {
+        var checkboxes = document.querySelectorAll('input[name="validIds"]');
+        checkboxes.forEach(function(cb) {
+            cb.checked = checkbox.checked;
+        });
+    }
+</script>
+</body>
+</html>

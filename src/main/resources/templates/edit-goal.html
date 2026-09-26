@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <script>
+    /* Early theme paint (no-FOUC). Server pref arrives later via fwScripts;
+       until then follow saved choice, else Light. data-theme is Light|Dark. */
+    (function () {
+      try {
+        var pref = localStorage.getItem('finwise_theme') || 'light';
+        if (pref !== 'light' && pref !== 'dark') pref = 'light';
+        var eff = pref;
+
+        document.documentElement.setAttribute('data-theme', eff);
+        if (document.documentElement.classList) {
+          document.documentElement.classList.toggle('dark', eff === 'dark');
+          document.documentElement.classList.toggle('light', eff === 'light');
+        }
+        try { document.documentElement.style.colorScheme = eff; } catch (e) {}
+        try {
+          var __ts = localStorage.getItem('finwise_textsize') || 'default';
+          document.documentElement.setAttribute('data-fw-textsize', __ts);
+          if (localStorage.getItem('finwise_contrast') === 'on') document.documentElement.classList.add('fw-high-contrast');
+          if (localStorage.getItem('finwise_motion') === 'off') document.documentElement.classList.add('fw-no-motion');
+        } catch (e2) {}
+      } catch (e) {}
+    })();
+  </script>
+    <title>Edit Goal - Finwise</title>
+    <link rel="stylesheet" href="/css/3d-dynamic.css">
+  <link rel="stylesheet" href="/css/finwise-tokens.css">
+  <link rel="stylesheet" href="/css/finwise-layout.css">
+  <link rel="stylesheet" href="/css/finwise-components.css">
+  <link rel="stylesheet" href="/css/finwise-responsive.css">
+  <link rel="stylesheet" href="/css/chatbot-widget.css">
+  <link rel="stylesheet" href="/css/finwise-bridge.css">
+  <link rel="stylesheet" href="/css/finwise-theme.css">
+</head>
+<body class="fw-body fw-shell">
+    <div th:replace="~{fragments/finwise :: fwSidebar('goals', ${user})}"></div>
+    <div th:replace="~{fragments/finwise :: fwTopbar('Goals', null, ${user}, ${unreadCount})}"></div>
+<div class="fw-scrim" onclick="fwCloseSidebar()"></div>
+
+    <div class="fw-content"><main class="fw-wrap" id="main">
+        <div class="fw-form-wrapper">
+            <div class="fw-form-card fw-animate">
+                <div class="fw-form-header">
+                    <div class="fw-form-icon"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg></div>
+                    <h1>Edit Goal</h1>
+                    <p>Update your financial goal</p>
+                </div>
+
+                <form method="POST" th:action="@{/goals/update/{id}(id=${goal.id})}">
+                    <div class="fw-form-group">
+                        <label for="goalName">Goal Name</label>
+                        <input type="text" id="goalName" name="goalName" th:value="${goal.goalName}" placeholder="e.g., Emergency Fund, Vacation, New Car" required class="fw-form-input">
+                    </div>
+                    <div class="fw-form-group">
+                        <label for="description">Description</label>
+                        <textarea id="description" name="description" rows="3" th:text="${goal.description}" placeholder="What are you saving for?" class="fw-form-input"></textarea>
+                    </div>
+                    <div class="fw-form-row">
+                        <div class="fw-form-group">
+                            <label for="targetAmount">Target Amount ($)</label>
+                            <input type="number" id="targetAmount" name="targetAmount" th:value="${goal.targetAmount}" step="0.01" min="0.01" placeholder="0.00" required class="fw-form-input">
+                        </div>
+                        <div class="fw-form-group">
+                            <label for="targetDate">Target Date</label>
+                            <input type="date" id="targetDate" name="targetDate" th:value="${#temporals.format(goal.targetDate, 'yyyy-MM-dd')}" required class="fw-form-input">
+                        </div>
+                    </div>
+                    <div class="fw-form-group">
+                        <label for="priority">Priority</label>
+                        <select id="priority" name="priority" required class="fw-form-input">
+                            <option value="LOW" th:selected="${goal.priority == 'LOW'}">Low</option>
+                            <option value="MEDIUM" th:selected="${goal.priority == 'MEDIUM'}">Medium</option>
+                            <option value="HIGH" th:selected="${goal.priority == 'HIGH'}">High</option>
+                        </select>
+                    </div>
+                    <div class="fw-btn-group">
+                        <button type="submit" class="fw-btn fw-btn-primary fw-btn-full"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg> Update Goal</button>
+                        <a href="/goals" class="fw-btn fw-btn-secondary fw-btn-full">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main></div>
+
+    <div th:replace="~{fragments/finwise :: fwFooter}"></div>
+
+    <div th:replace="~{fragments/finwise :: fwScripts}"></div>
+</body>
+</html>

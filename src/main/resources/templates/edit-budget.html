@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <script>
+    /* Early theme paint (no-FOUC). Server pref arrives later via fwScripts;
+       until then follow saved choice, else Light. data-theme is Light|Dark. */
+    (function () {
+      try {
+        var pref = localStorage.getItem('finwise_theme') || 'light';
+        if (pref !== 'light' && pref !== 'dark') pref = 'light';
+        var eff = pref;
+
+        document.documentElement.setAttribute('data-theme', eff);
+        if (document.documentElement.classList) {
+          document.documentElement.classList.toggle('dark', eff === 'dark');
+          document.documentElement.classList.toggle('light', eff === 'light');
+        }
+        try { document.documentElement.style.colorScheme = eff; } catch (e) {}
+        try {
+          var __ts = localStorage.getItem('finwise_textsize') || 'default';
+          document.documentElement.setAttribute('data-fw-textsize', __ts);
+          if (localStorage.getItem('finwise_contrast') === 'on') document.documentElement.classList.add('fw-high-contrast');
+          if (localStorage.getItem('finwise_motion') === 'off') document.documentElement.classList.add('fw-no-motion');
+        } catch (e2) {}
+      } catch (e) {}
+    })();
+  </script>
+    <title>Edit Budget - Finwise</title>
+    <link rel="stylesheet" href="/css/3d-dynamic.css">
+  <link rel="stylesheet" href="/css/finwise-tokens.css">
+  <link rel="stylesheet" href="/css/finwise-layout.css">
+  <link rel="stylesheet" href="/css/finwise-components.css">
+  <link rel="stylesheet" href="/css/finwise-responsive.css">
+  <link rel="stylesheet" href="/css/chatbot-widget.css">
+  <link rel="stylesheet" href="/css/finwise-bridge.css">
+  <link rel="stylesheet" href="/css/finwise-theme.css">
+</head>
+<body class="fw-body fw-shell">
+    <div th:replace="~{fragments/finwise :: fwSidebar('budgets', ${user})}"></div>
+    <div th:replace="~{fragments/finwise :: fwTopbar('Budgets', null, ${user}, ${unreadCount})}"></div>
+<div class="fw-scrim" onclick="fwCloseSidebar()"></div>
+
+    <div class="fw-content"><main class="fw-wrap" id="main">
+        <div class="fw-form-wrapper">
+            <div class="fw-form-card fw-animate">
+                <div class="fw-form-header">
+                    <div class="fw-form-icon"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg></div>
+                    <h1>Edit Budget</h1>
+                    <p>Update your budget details</p>
+                </div>
+
+                <form method="POST" th:action="@{/budgets/update/{id}(id=${budget.id})}">
+                    <input type="hidden" name="budgetMonth" th:value="${budget.budgetMonth}"/>
+
+                    <div class="fw-form-group">
+                        <label for="category">Category</label>
+                        <select id="category" name="category" required class="fw-form-input" disabled>
+                            <option value="Food" th:selected="${budget.category == 'Food'}"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg> Food & Dining</option>
+                            <option value="Transportation" th:selected="${budget.category == 'Transportation'}"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg> Transportation</option>
+                            <option value="Utilities" th:selected="${budget.category == 'Utilities'}"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg> Utilities</option>
+                            <option value="Entertainment" th:selected="${budget.category == 'Entertainment'}"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg> Entertainment</option>
+                            <option value="Healthcare" th:selected="${budget.category == 'Healthcare'}"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg> Healthcare</option>
+                            <option value="Shopping" th:selected="${budget.category == 'Shopping'}"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg>️ Shopping</option>
+                            <option value="Education" th:selected="${budget.category == 'Education'}"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg> Education</option>
+                            <option value="Other" th:selected="${budget.category == 'Other'}"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg> Other</option>
+                        </select>
+                        <span class="fw-form-hint">Category cannot be changed</span>
+                    </div>
+                    <div class="fw-form-row">
+                        <div class="fw-form-group">
+                            <label for="limitAmount">Limit Amount ($)</label>
+                            <input type="number" id="limitAmount" name="limitAmount" th:value="${#numbers.formatDecimal(budget.limitAmount, 1, 2)}" step="0.01" min="0.01" placeholder="0.00" required class="fw-form-input">
+                        </div>
+                        <div class="fw-form-group">
+                            <label for="spentAmount">Spent Amount ($)</label>
+                            <input type="number" id="spentAmount" name="spentAmount" th:value="${#numbers.formatDecimal(budget.spentAmount, 1, 2)}" step="0.01" min="0" placeholder="0.00" class="fw-form-input">
+                        </div>
+                    </div>
+                    <div class="fw-form-group">
+                        <label for="notes">Notes</label>
+                        <textarea id="notes" name="notes" rows="3" th:text="${budget.notes}" placeholder="Any additional notes..." class="fw-form-input"></textarea>
+                    </div>
+                    <div class="fw-btn-group">
+                        <button type="submit" class="fw-btn fw-btn-primary fw-btn-full"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg> Update Budget</button>
+                        <a href="/budgets" class="fw-btn fw-btn-secondary fw-btn-full">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main></div>
+
+    <div th:replace="~{fragments/finwise :: fwFooter}"></div>
+
+    <div th:replace="~{fragments/finwise :: fwScripts}"></div>
+</body>
+</html>

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en" th:attr="data-theme=${user != null and user.theme != null ? user.theme : 'light'}">
+<head th:replace="~{fragments/finwise :: fwHead('Dashboard')}">
+  <meta charset="UTF-8">
+  <title>Dashboard — FinWise</title>
+  <link rel="stylesheet" href="/css/chatbot-widget.css">
+  <link rel="stylesheet" href="/css/finwise-theme.css">
+</head>
+<body class="fw-body fw-shell">
+<div th:replace="~{fragments/finwise :: fwSidebar('dashboard', ${user})}"></div>
+<div th:replace="~{fragments/finwise :: fwTopbar('Dashboard', 'Your money at a glance', ${user}, null)}"></div>
+<div class="fw-scrim" onclick="fwCloseSidebar()"></div>
+
+<div class="fw-content">
+<main class="fw-wrap" id="main">
+
+  <div th:if="${successMessage}" data-fw-flash data-fw-kind="ok" th:text="${successMessage}" style="display:none"></div>
+  <div th:if="${errorMessage}" data-fw-flash data-fw-kind="bad" th:text="${errorMessage}" style="display:none"></div>
+
+  <!-- Greeting -->
+  <div class="fw-pagehead">
+    <div>
+      <h1><span data-fw-greeting>Good morning</span>, <span th:text="${user != null ? user.username : 'there'}">there</span></h1>
+      <p>Here's your financial overview for <span th:text="${#temporals.format(#temporals.createNow(), 'MMMM yyyy')}">this month</span></p>
+    </div>
+    <div class="fw-actions">
+      <a href="/expenses/add" class="fw-btn fw-btn-pri">+ Add Expense</a>
+      <a href="/income/add" class="fw-btn fw-btn-sec">+ Add Income</a>
+    </div>
+  </div>
+
+  <!-- Stat cards -->
+  <section class="fw-stats" aria-label="Financial summary" th:with="bal=${totalIncome - totalExpenses}">
+    <article class="fw-card fw-card-hover fw-stat g-blue" data-dash-card="balance">
+      <div class="fw-stat-top"><span class="fw-stat-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/></svg></span>Total Balance</div>
+      <div class="fw-stat-val fw-num" th:attr="data-fw-count=${bal}, data-fw-prefix='₹', data-fw-decimals='0'" th:text="'₹' + ${#numbers.formatDecimal(bal, 1, 0)}">₹0</div>
+      <div class="fw-stat-sub">Income minus expenses · this month</div>
+    </article>
+    <article class="fw-card fw-card-hover fw-stat g-green" data-dash-card="income">
+      <div class="fw-stat-top"><span class="fw-stat-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 16l6-6 4 4 6-8"/><path d="M15 6h5v5"/></svg></span>Total Income</div>
+      <div class="fw-stat-val fw-num" th:attr="data-fw-count=${totalIncome}, data-fw-prefix='₹', data-fw-decimals='0'" th:text="'₹' + ${#numbers.formatDecimal(totalIncome, 1, 0)}">₹0</div>
+      <div class="fw-stat-sub"><span class="fw-pill up" th:if="${totalIncome > 0}">● tracked</span><span class="fw-pill flat" th:if="${totalIncome == 0}">No income yet</span></div>
+    </article>
+    <article class="fw-card fw-card-hover fw-stat g-red" data-dash-card="expenses">
+      <div class="fw-stat-top"><span class="fw-stat-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 8l6 6 4-4 6 8"/></svg></span>Total Expenses</div>
+      <div class="fw-stat-val fw-num" th:attr="data-fw-count=${totalExpenses}, data-fw-prefix='₹', data-fw-decimals='0'" th:text="'₹' + ${#numbers.formatDecimal(totalExpenses, 1, 0)}">₹0</div>
+      <div class="fw-stat-sub"><span class="fw-pill down" th:if="${totalExpenses > 0}">● spending tracked</span><span class="fw-pill flat" th:if="${totalExpenses == 0}">No expenses yet</span></div>
+    </article>
+    <article class="fw-card fw-card-hover fw-stat g-amber" data-dash-card="balance">
+      <div class="fw-stat-top"><span class="fw-stat-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2v20"/><path d="M17 6.5c0-1.5-2.2-2.5-5-2.5s-5 1-5 2.5 2 2.3 5 2.8 5 1.3 5 2.9-2.2 2.8-5 2.8-5-1.2-5-2.7"/></svg></span>Net Savings</div>
+      <div class="fw-stat-val fw-num" th:attr="data-fw-count=${bal > 0 ? bal : 0}, data-fw-prefix='₹', data-fw-decimals='0'" th:text="'₹' + ${#numbers.formatDecimal(bal > 0 ? bal : 0, 1, 0)}">₹0</div>
+      <div class="fw-stat-sub" th:text="${totalIncome > 0 ? 'Saving ' + #numbers.formatDecimal((bal > 0 ? bal : 0) * 100 / totalIncome, 1, 0) + '% of income' : 'Add income to compute savings rate'}">Savings rate</div>
+    </article>
+  </section>
+
+  <!-- Quick actions -->
+  <section class="fw-qa" aria-label="Quick actions" style="margin-top:14px">
+    <a href="/expenses/add"><i>−</i><div><b>Add Expense</b><span>Log spending</span></div></a>
+    <a href="/income/add"><i>+</i><div><b>Add Income</b><span>Log earnings</span></div></a>
+    <a href="/budgets/add"><i>◧</i><div><b>Create Budget</b><span>Set a limit</span></div></a>
+    <a href="/goals/add"><i>◎</i><div><b>Add Goal</b><span>Save for more</span></div></a>
+    <a href="/scan"><i>▣</i><div><b>Scan Receipt</b><span>Auto-fill</span></div></a>
+  </section>
+
+  <!-- Health + charts -->
+  <section class="fw-grid2" style="margin-top:14px">
+    <article class="fw-card fw-card-pad" data-dash-card="insights">
+      <div class="fw-card-h"><div><h2>Financial Health</h2><p>Based on your real savings, budgets &amp; goals</p></div><span class="fw-badge info" id="fwHealthGrade">—</span></div>
+      <div class="fw-health" th:with="bal=${totalIncome - totalExpenses}"
+           th:attr="data-fw-health-income=${totalIncome}, data-fw-health-exp=${totalExpenses}, data-fw-health-nbud=${budgets != null ? budgets.size() : 0}, data-fw-health-ngoal=${goals != null ? goals.size() : 0}, data-fw-health-score=${healthScore.score}, data-fw-health-grade=${healthScore.grade}, data-fw-health-savings=${healthScore.savingsRateScore}, data-fw-health-budget=${healthScore.budgetAdherenceScore}, data-fw-health-spending=${healthScore.expenseIncomeRatioScore}, data-fw-health-goal=${healthScore.goalProgressScore}">
+        <div class="fw-ring" id="fwHealthRing" data-fw-ring="0">
+          <svg width="132" height="132" viewBox="0 0 132 132" role="img" aria-label="Financial health score">
+            <circle cx="66" cy="66" r="54" fill="none" stroke="var(--fw-surface-3)" stroke-width="11"/>
+            <circle class="fw-ring-fg" cx="66" cy="66" r="54" fill="none" stroke="var(--fw-primary)" stroke-width="11" stroke-linecap="round"/>
+          </svg>
+          <div class="fw-ring-t"><div><b id="fwHealthNum">–</b><br><span>/ 100</span></div></div>
+        </div>
+        <ul>
+          <li><i class="fw-dot" style="background:var(--fw-success)"></i>Savings <b id="fwH-Sav">—</b></li>
+          <li><i class="fw-dot" style="background:var(--fw-primary)"></i>Budget discipline <b id="fwH-Bud">—</b></li>
+          <li><i class="fw-dot" style="background:var(--fw-warning)"></i>Spending control <b id="fwH-Spe">—</b></li>
+          <li><i class="fw-dot" style="background:var(--fw-info)"></i>Goal progress <b id="fwH-Goal">—</b></li>
+        </ul>
+      </div>
+      <p class="fw-hint" style="margin-bottom:0">Score = savings rate (40) + budget headroom (25) + spending control (20) + goal progress (15). No data is invented — empty areas score neutrally until you add records.</p>
+    </article>
+
+    <article class="fw-card fw-card-pad" data-dash-card="trends">
+      <div class="fw-card-h"><div><h2>Income vs Expenses</h2><p>Monthly comparison · this month</p></div><a class="fw-link" href="/analytics">Analytics →</a></div>
+      <div class="fw-chartbox sm"><canvas id="fwIvE" aria-label="Income versus expenses chart"></canvas></div>
+      <div class="fw-filters" style="margin-top:10px">
+        <span class="fw-pill up">● Income <b class="fw-num" th:text="'₹' + ${#numbers.formatDecimal(totalIncome, 1, 0)}">₹0</b></span>
+        <span class="fw-pill down">● Expenses <b class="fw-num" th:text="'₹' + ${#numbers.formatDecimal(totalExpenses, 1, 0)}">₹0</b></span>
+      </div>
+    </article>
+  </section>
+
+  <section class="fw-grid2" style="margin-top:14px">
+    <article class="fw-card fw-card-pad" data-dash-card="trends">
+      <div class="fw-card-h"><div><h2>Spending by Category</h2><p>Where your money goes</p></div></div>
+      <div th:if="${categorySummary == null or #lists.isEmpty(categorySummary.?[amount > 0])}" class="fw-empty">
+        <div class="fw-empty-ic">◔</div><h3>No spending yet</h3>
+        <p>Add your first expense to see the category breakdown.</p>
+        <a href="/expenses/add" class="fw-btn fw-btn-pri">Add Transaction</a>
+      </div>
+      <div class="fw-chartbox sm" th:if="${categorySummary != null and not #lists.isEmpty(categorySummary.?[amount > 0])}"><canvas id="fwCat"></canvas></div>
+    </article>
+    <article class="fw-card fw-card-pad" data-dash-card="budgets">
+      <div class="fw-card-h"><div><h2>Budget Usage</h2><p>Limits vs spending</p></div><a class="fw-link" href="/budgets">Manage →</a></div>
+      <div th:if="${budgets == null or budgets.isEmpty()}" class="fw-empty">
+        <div class="fw-empty-ic">◧</div><h3>No budgets yet</h3>
+        <p>Set spending limits to stay on track.</p>
+        <a href="/budgets/add" class="fw-btn fw-btn-pri">Create Budget</a>
+      </div>
+      <div th:if="${budgets != null and not budgets.isEmpty()}" style="display:grid;gap:14px">
+        <div th:each="b : ${budgets}" th:with="pct=${b.limitAmount > 0 ? b.spentAmount * 100 / b.limitAmount : 0}">
+          <div style="display:flex;justify-content:space-between;font-size:.86rem;margin-bottom:6px">
+            <b th:text="${b.category}">Food</b>
+            <span class="fw-num" style="color:var(--fw-text-2)"><span th:text="'₹' + ${#numbers.formatDecimal(b.spentAmount, 1, 0)}">₹0</span> / <span th:text="'₹' + ${#numbers.formatDecimal(b.limitAmount, 1, 0)}">₹0</span></span>
+          </div>
+          <div class="fw-prog" th:classappend="${pct > 100 ? ' bad' : pct > 80 ? ' warn' : ''}"><i th:attr="data-fw-w=${pct > 100 ? 100 : #numbers.formatDecimal(pct, 1, 0)}"></i></div>
+          <div style="font-size:.76rem;color:var(--fw-text-3);margin-top:4px" th:text="${pct > 100 ? 'Over budget — review spending' : pct > 80 ? 'Approaching limit' : 'On track'}">On track</div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <section class="fw-grid2" style="margin-top:14px">
+    <article class="fw-card fw-card-pad" data-dash-card="goals">
+      <div class="fw-card-h"><div><h2>Financial Goals</h2><p>Savings targets</p></div><a class="fw-link" href="/goals">Manage →</a></div>
+      <div th:if="${goals == null or goals.isEmpty()}" class="fw-empty">
+        <div class="fw-empty-ic">◎</div><h3>No goals yet</h3>
+        <p>Create a goal to start tracking your savings.</p>
+        <a href="/goals/add" class="fw-btn fw-btn-pri">New Goal</a>
+      </div>
+      <div th:if="${goals != null and not goals.isEmpty()}" style="display:grid;gap:12px">
+        <div class="fw-card fw-goal" style="box-shadow:none" th:each="g : ${goals}" th:with="pct=${g.targetAmount > 0 ? g.currentAmount * 100 / g.targetAmount : 0}">
+          <div class="fw-goal-top"><b th:text="${g.goalName}">Goal</b><span class="fw-badge" th:classappend="${g.priority == 'HIGH' ? ' bad' : g.priority == 'MEDIUM' ? ' warn' : ' info'}" th:text="${g.priority}">MEDIUM</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:.83rem;color:var(--fw-text-2)">
+            <span class="fw-num"><b th:text="'₹' + ${#numbers.formatDecimal(g.currentAmount, 1, 0)}">₹0</b> of <span th:text="'₹' + ${#numbers.formatDecimal(g.targetAmount, 1, 0)}">₹0</span></span>
+            <b class="fw-num" th:text="${#numbers.formatDecimal(pct, 1, 0)} + '%'">0%</b>
+          </div>
+          <div class="fw-prog pri"><i th:attr="data-fw-w=${pct > 100 ? 100 : #numbers.formatDecimal(pct, 1, 0)}"></i></div>
+          <div style="font-size:.76rem;color:var(--fw-text-3)" th:if="${g.targetDate != null}">Target: <span th:text="${#temporals.format(g.targetDate, 'MMM yyyy')}">Dec 2026</span></div>
+        </div>
+      </div>
+    </article>
+
+  </section>
+
+</main>
+</div>
+<div th:replace="~{fragments/finwise :: fwFooter}"></div>
+<div th:replace="~{fragments/chatbot-widget :: chatbotWidget}"></div>
+<script src="/vendor/chart.js/chart.umd.min.js"></script>
+<div th:replace="~{fragments/finwise :: fwScripts}"></div>
+<script src="/js/chatbot-widget.js"></script>
+<script th:inline="javascript">
+(function () {
+  /* Health score — computed from REAL model values only */
+  var box = document.querySelector('[data-fw-health-income]');
+  if (box) {
+    var inc = parseFloat(box.getAttribute('data-fw-health-income')) || 0;
+    var exp = parseFloat(box.getAttribute('data-fw-health-exp')) || 0;
+    var savRate = inc > 0 ? Math.max(0, (inc - exp) / inc) : 0;
+    var savScore = Math.min(40, savRate * 100 * 0.4 + (inc > 0 && exp <= inc ? 8 : 0));
+    if (inc === 0 && exp === 0) savScore = 20;
+    var spendScore = inc > 0 ? (exp <= inc ? 20 : Math.max(0, 20 - ((exp - inc) / inc) * 40)) : (exp === 0 ? 10 : 4);
+    var budScore = 12.5, goalScore = 7.5;
+    var nBud = parseInt(box.getAttribute('data-fw-health-nbud') || '0', 10);
+    var nGoal = parseInt(box.getAttribute('data-fw-health-ngoal') || '0', 10);
+    if (nBud > 0) budScore = 18; if (nGoal > 0) goalScore = 11;
+    var serverScore = box.getAttribute('data-fw-health-score');
+    var total = serverScore === null ? Math.round(Math.min(100, savScore + spendScore + budScore + goalScore)) : parseInt(serverScore, 10);
+    var ring = document.getElementById('fwHealthRing');
+    if (ring) ring.setAttribute('data-fw-ring', total);
+    var num = document.getElementById('fwHealthNum'); if (num) num.textContent = total;
+    var grade = document.getElementById('fwHealthGrade');
+    if (grade) grade.textContent = box.getAttribute('data-fw-health-grade') || (total >= 80 ? 'Excellent' : total >= 60 ? 'Good' : total >= 40 ? 'Fair' : 'Needs work');
+    var set = function (id, v) { var e = document.getElementById(id); if (e) e.textContent = v; };
+    function factor(id, value, maximum) { var raw = box.getAttribute(id); return raw === null ? value : Math.round(raw) + '/' + maximum; }
+    set('fwH-Sav', factor('data-fw-health-savings', Math.round(savScore), 40)); set('fwH-Bud', factor('data-fw-health-budget', Math.round(budScore), 25));
+    set('fwH-Spe', factor('data-fw-health-spending', Math.round(spendScore), 20)); set('fwH-Goal', factor('data-fw-health-goal', Math.round(goalScore), 15));
+  }
+  if (!window.Chart) return;
+  var inc = /*[[${totalIncome}]]*/ 0, exp = /*[[${totalExpenses}]]*/ 0;
+  var c1 = document.getElementById('fwIvE');
+  var c2 = document.getElementById('fwCat');
+  /* Live re-theme: doughnut segment borders + axes follow Light/Dark toggle */
+  document.addEventListener('finwise:theme', function () {
+    try {
+      if (!window.Chart || typeof window.Chart.getChart !== 'function') return;
+      var surf = ((getComputedStyle(document.documentElement).getPropertyValue('--fw-surface') || '').trim()) || '#fff';
+      [c1, c2].forEach(function (cv) {
+        if (!cv) return;
+        var ch = window.Chart.getChart(cv);
+        if (!ch) return;
+        try {
+          (ch.data.datasets || []).forEach(function (ds) {
+            if (ds && ch.config.type === 'doughnut') { ds.borderColor = surf; }
+          });
+          ch.update();
+        } catch (e) {}
+      });
+    } catch (e) {}
+  });
+  if (c1) new Chart(c1, { type: 'bar',
+    data: { labels: ['Income', 'Expenses'], datasets: [{ data: [inc, exp], backgroundColor: ['#059669', '#dc2626'], borderRadius: 10, barThickness: 54 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: function (c) { return ' ₹' + Number(c.raw).toLocaleString('en-IN'); } } } },
+      scales: { x: { grid: { display: false } }, y: { beginAtZero: true, ticks: { callback: function (v) { return '₹' + Number(v).toLocaleString('en-IN'); } } } } } });
+  var cats = /*[[${categorySummary}]]*/ [];
+  if (c2 && Array.isArray(cats)) {
+    var nz = cats.filter(function (c) { return parseFloat(c.amount) > 0; }).slice(0, 8);
+    if (nz.length) new Chart(c2, { type: 'doughnut',
+      data: { labels: nz.map(function (c) { return c.name; }), datasets: [{ data: nz.map(function (c) { return parseFloat(c.amount); }), backgroundColor: window.fwChartPalette, borderWidth: 2, borderColor: getComputedStyle(document.documentElement).getPropertyValue('--fw-surface') || '#fff' }] },
+      options: { responsive: true, maintainAspectRatio: false, cutout: '62%', plugins: { legend: { position: 'right' }, tooltip: { callbacks: { label: function (c) { return ' ' + c.label + ': ₹' + Number(c.raw).toLocaleString('en-IN'); } } } } } });
+  }
+})();
+</script>
+</body>
+</html>

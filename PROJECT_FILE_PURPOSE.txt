@@ -1,0 +1,1232 @@
+================================================================================================
+FinWise - Offline Personal Finance Manager
+EVERY FILE AND WHAT IT IS FOR (auto-generated)
+Project folder: H:\javaproject
+Generated: 2026-09-26 13:06
+Generator: tools/generate_purpose_report.py  (mode: grouped)
+================================================================================================
+
+Order: tests first, then the main code, then the resources, then the project and runtime files.
+Each entry shows the file, then what it does in plain English.
+
+================================================================================================
+1. TEST SOURCES
+================================================================================================
+
+src/test/java/com/finance/financeplus/service/FinancePlusRecurringServiceTest.java  [74 lines]
+      -> Automated test for FinancePlus repeat bills and income: checks the behaviour is still correct. Part of the FinancePlus workspace, which sits behind its own PIN.  [2 test method(s)]
+
+src/test/java/com/finance/financeplus/web/FinancePlusControllerTest.java  [114 lines]
+      -> Automated test for FinancePlus: checks the behaviour is still correct. Part of the FinancePlus workspace, which sits behind its own PIN.  [1 test method(s)]
+
+src/test/java/com/finance/service/FeatureRegressionTest.java  [347 lines]
+      -> Automated test for feature regression: checks the behaviour is still correct.  [9 test method(s)]
+
+src/test/java/com/finance/service/FinanceFeatureIntegrationTest.java  [514 lines]
+      -> Automated test for finance feature integration: checks the behaviour is still correct.  [12 test method(s)]
+
+src/test/java/com/finance/service/OfflineFeatureTest.java  [350 lines]
+      -> Automated test for offline feature: checks the behaviour is still correct.  [8 test method(s)]
+
+src/test/java/com/finance/service/UserRegistrationLoginTest.java  [97 lines]
+      -> Automated test for the user registration sign-in: checks the behaviour is still correct.  [2 test method(s); handles password hashing]
+
+src/test/resources/fixtures/import/finwise-import-sample.csv  [4 lines]
+      -> Sample list of transactions (194 bytes), used by the automated tests.
+
+src/test/resources/fixtures/import/finwise-import-sample.jpeg  [633 lines]
+      -> Example picture used by the automated tests.
+
+src/test/resources/fixtures/import/finwise-import-sample.jpg  [633 lines]
+      -> Example picture used by the automated tests.
+
+src/test/resources/fixtures/import/finwise-import-sample.pdf  [44 lines]
+      -> Sample PDF statement (733 bytes), used by the automated tests.
+
+src/test/resources/fixtures/import/finwise-import-sample.png  [162 lines]
+      -> Example picture used by the automated tests.
+
+src/test/resources/fixtures/import/finwise-import-sample.xls  [28 lines]
+      -> Sample Excel statement (4 KB), used by the automated tests.
+
+src/test/resources/fixtures/import/finwise-import-sample.xlsx  [18 lines]
+      -> Sample Excel statement (5 KB), used by the automated tests.
+
+src/test/resources/fixtures/import/handwritten-note.jpg  [981 lines]
+      -> Example picture used by the automated tests.
+
+src/test/resources/fixtures/import/handwritten-note.png  [732 lines]
+      -> Example picture used by the automated tests.
+
+================================================================================================
+2. MAIN SOURCES
+================================================================================================
+
+src/main/java/com/finance/app/OfflineFinanceApplication.java  [32 lines]
+      -> The starting point of the program, like the on switch. Starts the web server and turns on the automatic timers (daily backup, daily repeat bills).  [2 public method(s)]
+
+src/main/java/com/finance/chatbot/ChatbotController.java  [160 lines]
+      -> Addresses for the offline assistant: ask a question, read the history, see what it can do.  [4 route(s): POST /api/chatbot/ask; GET /api/chatbot/history; DELETE /api/chatbot/history; GET /api/chatbot/help]
+
+src/main/java/com/finance/chatbot/model/ChatRequest.java  [20 lines]
+      -> The question you asked the chatbot.  [4 public method(s)]
+
+src/main/java/com/finance/chatbot/model/ChatResponse.java  [42 lines]
+      -> The chatbot's reply, with any extra data or suggestions.  [12 public method(s)]
+
+src/main/java/com/finance/chatbot/model/ConversationContext.java  [69 lines]
+      -> Keeps track of the current conversation while you chat.  [23 public method(s)]
+
+src/main/java/com/finance/chatbot/service/ChatbotService.java  [1855 lines]
+      -> The offline assistant. Understands the question and answers it from your own local records (no internet and no external AI service).  [5 public method(s)]
+
+src/main/java/com/finance/config/AppLockInterceptor.java  [40 lines]
+      -> The extra padlock. Redirects to the PIN screen until the app lock has been entered for this session.  [implements HandlerInterceptor; 1 public method(s)]
+
+src/main/java/com/finance/config/ChatbotExceptionHandler.java  [35 lines]
+      -> Does the same for the chatbot, but replies in computer-readable form.  [3 public method(s)]
+
+src/main/java/com/finance/config/GlobalExceptionHandler.java  [60 lines]
+      -> Catches anything that goes wrong and shows the friendly error page.  [implements ErrorController; 1 route(s): /error]
+
+src/main/java/com/finance/config/SecurityConfig.java  [63 lines]
+      -> Decides who is allowed in: password scrambling, which pages are public, which need a sign-in, CSRF protection, and logout.  [3 public method(s); handles password hashing]
+
+src/main/java/com/finance/config/WebConfig.java  [32 lines]
+      -> Web settings: where the browser files are served from, plus the resource handlers.  [implements WebMvcConfigurer; 2 public method(s)]
+
+src/main/java/com/finance/config/WebMvcConfig.java  [21 lines]
+      -> Web settings: registers the extra checks (interceptors) that run before each page opens.  [implements WebMvcConfigurer; 1 public method(s)]
+
+src/main/java/com/finance/controller/AccountController.java  [88 lines]
+      -> Web layer: the pages and addresses for accounts.  [5 route(s): GET /accounts; GET /accounts/add; POST /accounts/add; POST /accounts/update/{id}; POST /accounts/delete/{id}]
+
+src/main/java/com/finance/controller/AnalyticsController.java  [314 lines]
+      -> Web layer: the pages and addresses for analytics.  [1 route(s): GET /analytics]
+
+src/main/java/com/finance/controller/AppLockController.java  [64 lines]
+      -> Web layer: the pages and addresses for the app lock.  [3 route(s): GET /app-lock; POST /app-lock/unlock; POST /app-lock/lock]
+
+src/main/java/com/finance/controller/AuditLogController.java  [133 lines]
+      -> Web layer: the pages and addresses for audit log.  [1 route(s): GET /audit; uses Lombok, so the getters and setters are written for you]
+
+src/main/java/com/finance/controller/AuthController.java  [37 lines]
+      -> The front door: sign up, sign in and sign out.  [1 route(s): POST /auth/register; uses Lombok, so the getters and setters are written for you]
+
+src/main/java/com/finance/controller/BudgetController.java  [135 lines]
+      -> Web layer: the pages and addresses for budgets.  [8 route(s): GET /budgets; GET /budgets/add; POST /budgets/add; GET /budgets/edit/{id}; POST /budgets/update/{id}; POST /budgets/spent/{id}; ... and 2 more; uses Lombok, so the getters and setters are written for you]
+
+src/main/java/com/finance/controller/CategoriesController.java  [92 lines]
+      -> Web layer: the pages and addresses for categories.  [4 route(s): GET /categories; POST /categories/add; POST /categories/update/{id}; POST /categories/delete/{id}; uses Lombok, so the getters and setters are written for you]
+
+src/main/java/com/finance/controller/ControllerExceptionHandler.java  [25 lines]
+      -> Turns problems in the page handlers into clear error messages.  [1 public method(s)]
+
+src/main/java/com/finance/controller/ExpenseController.java  [192 lines]
+      -> Web layer: the pages and addresses for expenses.  [7 route(s): GET /expenses; GET /expenses/add; POST /expenses/add; GET /expenses/edit/{id}; POST /expenses/update/{id}; POST /expenses/delete/{id}; ... and 1 more]
+
+src/main/java/com/finance/controller/FinancialGoalController.java  [142 lines]
+      -> Web layer: the pages and addresses for financial goals.  [8 route(s): GET /goals; GET /goals/add; POST /goals/add; GET /goals/edit/{id}; POST /goals/update/{id}; POST /goals/progress/{id}; ... and 2 more; uses Lombok, so the getters and setters are written for you]
+
+src/main/java/com/finance/controller/HomeController.java  [581 lines]
+      -> The dashboard, plus your own account page: change password, theme, language and alerts, download all your data, or delete the account.  [13 route(s): GET /; GET /dashboard; GET /account/export-data; POST /account/update-profile; POST /account/update-theme; POST /account/update-language; ... and 7 more; uses Lombok, so the getters and setters are written for you]
+
+src/main/java/com/finance/controller/ImportController.java  [268 lines]
+      -> Web layer: the pages and addresses for file import.  [9 route(s): GET /import; POST /import/upload; GET /import/preview; GET /import/history; POST /import/validate; GET /import/edit/{id}; ... and 3 more; uses Lombok, so the getters and setters are written for you]
+
+src/main/java/com/finance/controller/IncomeController.java  [146 lines]
+      -> Web layer: the pages and addresses for income.  [6 route(s): GET /income; GET /income/add; POST /income/add; GET /income/edit/{id}; POST /income/update/{id}; POST /income/delete/{id}]
+
+src/main/java/com/finance/controller/NotificationsController.java  [56 lines]
+      -> Web layer: the pages and addresses for notifications.  [3 route(s): GET /notifications; POST /notifications/mark-read/{id}; POST /notifications/mark-all-read; uses Lombok, so the getters and setters are written for you]
+
+src/main/java/com/finance/controller/ProfileController.java  [124 lines]
+      -> A small internal address the browser uses to read and update your profile and photo.  [3 route(s): GET /api/profile/me; POST /api/profile/image; DELETE /api/profile/image; uses Lombok, so the getters and setters are written for you]
+
+src/main/java/com/finance/controller/ReportController.java  [1203 lines]
+      -> Web layer: the pages and addresses for reports.  [4 route(s): GET /reports; POST /reports/generate; GET /reports/download-current; GET /reports/download/{reportId}; uses Lombok, so the getters and setters are written for you]
+
+src/main/java/com/finance/controller/ScanController.java  [155 lines]
+      -> Web layer: the pages and addresses for receipt scanning.  [3 route(s): GET /scan; POST /scan/extract; POST /scan/save; uses Lombok, so the getters and setters are written for you]
+
+src/main/java/com/finance/controller/SettingsController.java  [293 lines]
+      -> Web layer: the pages and addresses for settings.  [8 route(s): GET /settings; POST /settings/update; POST /settings/security/passcode; POST /settings/security/passcode/disable; POST /settings/reset; POST /settings/backup; ... and 2 more; uses Lombok, so the getters and setters are written for you]
+
+src/main/java/com/finance/financeplus/model/FinancePlusAttachment.java  [52 lines]
+      -> A file stored in the FinancePlus vault, with its details.  [stored in table `finance_plus_attachments`; main fields: id, user, transactionType, transactionId, originalFilename, contentType, contentLength, data; uses Lombok, so the getters and setters are written for you]
+
+src/main/java/com/finance/financeplus/model/FinancePlusBackup.java  [43 lines]
+      -> One FinancePlus backup in the history list.  [stored in table `finance_plus_backups`; main fields: id, user, fileName, filePath, fileSize, backupType, status, createdAt; uses Lombok, so the getters and setters are written for you]
+
+src/main/java/com/finance/financeplus/model/FinancePlusNotification.java  [51 lines]
+      -> An alert raised inside the FinancePlus workspace.  [stored in table `finance_plus_notifications`; main fields: id, user, type, title, message, priority, read, deduplicationKey; uses Lombok, so the getters and setters are written for you]
+
+src/main/java/com/finance/financeplus/model/FinancePlusRecurring.java  [62 lines]
+      -> A FinancePlus repeat rule that the user defined.  [stored in table `finance_plus_recurring`; main fields: id, user, transactionType, description, amount, category, paymentMethod, frequency; uses Lombok, so the getters and setters are written for you]
+
+src/main/java/com/finance/financeplus/model/FinancePlusSettings.java  [74 lines]
+      -> The FinancePlus workspace preferences for one user.  [stored in table `finance_plus_settings`; main fields: id, user, passcodeHash, passcodeEnabled, billRemindersEnabled, billReminderDays, largeExpenseAlertsEnabled, largeExpenseThreshold; uses Lombok, so the getters and setters are written for you]
+
+src/main/java/com/finance/financeplus/repository/FinancePlusAttachmentRepository.java  [16 lines]
+      -> Contract (interface): everything that works with FinancePlus stored files must follow this. Part of the FinancePlus workspace, which sits behind its own PIN.  [extends JpaRepository]
+
+src/main/java/com/finance/financeplus/repository/FinancePlusBackupRepository.java  [15 lines]
+      -> Contract (interface): everything that works with FinancePlus backups must follow this. Part of the FinancePlus workspace, which sits behind its own PIN.  [extends JpaRepository]
+
+src/main/java/com/finance/financeplus/repository/FinancePlusNotificationRepository.java  [17 lines]
+      -> Contract (interface): everything that works with FinancePlus alerts must follow this. Part of the FinancePlus workspace, which sits behind its own PIN.  [extends JpaRepository]
+
+src/main/java/com/finance/financeplus/repository/FinancePlusRecurringRepository.java  [17 lines]
+      -> Contract (interface): everything that works with FinancePlus repeat bills and income must follow this. Part of the FinancePlus workspace, which sits behind its own PIN.  [extends JpaRepository]
+
+src/main/java/com/finance/financeplus/repository/FinancePlusSettingsRepository.java  [13 lines]
+      -> Contract (interface): everything that works with FinancePlus settings must follow this. Part of the FinancePlus workspace, which sits behind its own PIN.  [extends JpaRepository]
+
+src/main/java/com/finance/financeplus/service/FinancePlusAttachmentService.java  [121 lines]
+      -> Stores FinancePlus files and opens them from the locked vault.  [4 public method(s)]
+
+src/main/java/com/finance/financeplus/service/FinancePlusAutomation.java  [77 lines]
+      -> The timer that runs the FinancePlus repeat rules and alerts.  [runs on a timer (cron = "${app.finance-plus.automation-cron:0 10 0 * * *}"); 2 public method(s)]
+
+src/main/java/com/finance/financeplus/service/FinancePlusBackupService.java  [585 lines]
+      -> Makes, lists, restores and deletes FinancePlus backups.  [10 public method(s)]
+
+src/main/java/com/finance/financeplus/service/FinancePlusExportService.java  [76 lines]
+      -> Takes FinancePlus data out to a file.  [1 public method(s)]
+
+src/main/java/com/finance/financeplus/service/FinancePlusImportService.java  [118 lines]
+      -> Brings FinancePlus data in from a file.  [2 public method(s)]
+
+src/main/java/com/finance/financeplus/service/FinancePlusNotificationService.java  [162 lines]
+      -> Creates the FinancePlus alerts.  [5 public method(s)]
+
+src/main/java/com/finance/financeplus/service/FinancePlusRecurringService.java  [139 lines]
+      -> Creates FinancePlus repeat rules and works out what is due.  [7 public method(s)]
+
+src/main/java/com/finance/financeplus/service/FinancePlusSettingsService.java  [130 lines]
+      -> Reads and saves the FinancePlus preferences.  [10 public method(s)]
+
+src/main/java/com/finance/financeplus/web/FinancePlusAccessInterceptor.java  [64 lines]
+      -> Keeps the FinancePlus pages shut until that workspace's own PIN has been entered.  [implements HandlerInterceptor; 1 public method(s)]
+
+src/main/java/com/finance/financeplus/web/FinancePlusController.java  [530 lines]
+      -> Everything the FinancePlus area can do: lock and unlock, settings, repeat rules, alerts, stored files, import and export, the vault, and backup list, download, restore and delete.  [23 route(s): GET /finance-plus; GET /finance-plus/locked; POST /finance-plus/unlock; POST /finance-plus/lock; POST /finance-plus/preferences; POST /finance-plus/backup-preferences; ... and 17 more]
+
+src/main/java/com/finance/habits/AbstractSpendingRule.java  [53 lines]
+      -> Shared code that the individual spending habit checks build on.  [implements SpendingRule]
+
+src/main/java/com/finance/habits/HabitController.java  [43 lines]
+      -> Shows the spending habit results on screen and as data.  [1 route(s): GET /habits]
+
+src/main/java/com/finance/habits/HabitService.java  [79 lines]
+      -> Runs all the spending habit rules and puts the results together.  [2 public method(s)]
+
+src/main/java/com/finance/habits/HostelFoodRule.java  [74 lines]
+      -> Spots repeated spending on food and eating out.  [extends AbstractSpendingRule; 3 public method(s)]
+
+src/main/java/com/finance/habits/NeedWantRule.java  [60 lines]
+      -> Works out how much of the spending was needs and how much was wants.  [extends AbstractSpendingRule; 3 public method(s)]
+
+src/main/java/com/finance/habits/RuleResult.java  [30 lines]
+      -> One habit result: a label, how serious it is, and a tip.  [6 public method(s)]
+
+src/main/java/com/finance/habits/SpendingRule.java  [16 lines]
+      -> The rule that every spending habit check must follow.
+
+src/main/java/com/finance/habits/StreakRule.java  [63 lines]
+      -> Finds patterns such as spending every day for a week.  [extends AbstractSpendingRule; 3 public method(s)]
+
+src/main/java/com/finance/model/dto/ExtractedTransactionDTO.java  [162 lines]
+      -> One record found inside a file or photo, passed along the import steps.  [uses Lombok, so the getters and setters are written for you]
+
+src/main/java/com/finance/model/dto/UserDTO.java  [19 lines]
+      -> Your details in a safe form for display, with no password in it.  [uses Lombok, so the getters and setters are written for you]
+
+src/main/java/com/finance/model/entity/Account.java  [80 lines]
+      -> A bank or cash account and its balance.  [stored in table `accounts`; main fields: id, user, accountName, accountType, balance, institution, notes, isActive; uses Lombok, so the getters and setters are written for you]
+
+src/main/java/com/finance/model/entity/Budget.java  [80 lines]
+      -> A spending limit for one category in one month.  [stored in table `budgets`; main fields: id, user, category, limitAmount, spentAmount, budgetMonth, isActive, notes; uses Lombok, so the getters and setters are written for you]
+
+src/main/java/com/finance/model/entity/ChatMessage.java  [49 lines]
+      -> One message said in the chatbot, kept per user.  [stored in table `chat_history`; main fields: id, user, role, content, createdAt; uses Lombok, so the getters and setters are written for you]
+
+src/main/java/com/finance/model/entity/Expense.java  [106 lines]
+      -> Money going out: amount, date, category, payment method, notes, receipt and repeat rule.  [stored in table `expenses`; main fields: id, user, description, amount, expenseDate, category, paymentMethod, notes; uses Lombok, so the getters and setters are written for you]
+
+src/main/java/com/finance/model/entity/FinancialGoal.java  [87 lines]
+      -> A savings goal: target amount, current amount, target date, priority and status.  [stored in table `financial_goals`; main fields: id, user, goalName, description, targetAmount, currentAmount, targetDate, goalStatus; uses Lombok, so the getters and setters are written for you]
+
+src/main/java/com/finance/model/entity/ImportedTransaction.java  [119 lines]
+      -> A row waiting to be confirmed after an import, with the reason if it was rejected or flagged as a duplicate.  [stored in table `imported_transactions`; main fields: id, user, originalFilename, fileType, sourceImagePath, transactionDate, description, transactionType; uses Lombok, so the getters and setters are written for you]
+
+src/main/java/com/finance/model/entity/Income.java  [97 lines]
+      -> Money coming in: amount, date, category, source, notes, receipt and repeat rule.  [stored in table `income`; main fields: id, user, description, amount, incomeDate, category, incomeSource, notes; uses Lombok, so the getters and setters are written for you]
+
+src/main/java/com/finance/model/entity/User.java  [108 lines]
+      -> A user account: username, scrambled password, email, name, theme, language and alert preferences.  [stored in table `users`; main fields: id, username, password, email, fullName, isActive, profileImage, theme; uses Lombok, so the getters and setters are written for you]
+
+src/main/java/com/finance/repository/AccountRepository.java  [24 lines]
+      -> Contract (interface): everything that works with accounts must follow this.  [extends JpaRepository]
+
+src/main/java/com/finance/repository/BudgetRepository.java  [20 lines]
+      -> Contract (interface): everything that works with budgets must follow this.  [extends JpaRepository]
+
+src/main/java/com/finance/repository/ChatMessageRepository.java  [16 lines]
+      -> Contract (interface): everything that works with the chatbot messages must follow this.  [extends JpaRepository]
+
+src/main/java/com/finance/repository/ExpenseRepository.java  [30 lines]
+      -> Contract (interface): everything that works with expenses must follow this.  [extends JpaRepository]
+
+src/main/java/com/finance/repository/FinancialGoalRepository.java  [20 lines]
+      -> Contract (interface): everything that works with financial goals must follow this.  [extends JpaRepository]
+
+src/main/java/com/finance/repository/ImportedTransactionRepository.java  [36 lines]
+      -> Contract (interface): everything that works with imported transactions must follow this.  [extends JpaRepository]
+
+src/main/java/com/finance/repository/IncomeRepository.java  [30 lines]
+      -> Contract (interface): everything that works with income must follow this.  [extends JpaRepository]
+
+src/main/java/com/finance/repository/UserRepository.java  [15 lines]
+      -> Contract (interface): everything that works with the user must follow this.  [extends JpaRepository]
+
+src/main/java/com/finance/security/UserDetailsServiceImpl.java  [23 lines]
+      -> Loads your details at sign-in so Spring Security knows who is logged in.  [implements UserDetailsService; uses Lombok, so the getters and setters are written for you]
+
+src/main/java/com/finance/security/UserPrincipal.java  [55 lines]
+      -> The signed-in user's record. It carries the user id, so every page can only ever reach that person's own data.  [implements UserDetails; 8 public method(s)]
+
+src/main/java/com/finance/service/AccountService.java  [97 lines]
+      -> Business rules for bank and cash accounts, including the balance maths.  [7 public method(s)]
+
+src/main/java/com/finance/service/AnalyticsEngine.java  [15 lines]
+      -> Contract for working out totals, trends and charts.
+
+src/main/java/com/finance/service/ApachePoiService.java  [13 lines]
+      -> Contract for the Excel reading and writing helpers.
+
+src/main/java/com/finance/service/AppLockService.java  [123 lines]
+      -> Stores and checks the app PIN (scrambled, never written in plain text).  [7 public method(s)]
+
+src/main/java/com/finance/service/BudgetService.java  [119 lines]
+      -> Business rules for budgets: how much of each limit is used, and when a limit is close to or over.  [9 public method(s)]
+
+src/main/java/com/finance/service/CashFlowForecastService.java  [100 lines]
+      -> Builds the 'what is coming' view: bills due soon, the projected balance and the warnings.  [4 public method(s)]
+
+src/main/java/com/finance/service/CategoryEngine.java  [35 lines]
+      -> Contract for guessing which category a purchase belongs to.
+
+src/main/java/com/finance/service/ChatHistoryService.java  [63 lines]
+      -> Remembers what was said in the chatbot, separately for each user.  [5 public method(s)]
+
+src/main/java/com/finance/service/DefaultDocumentProcessor.java  [66 lines]
+      -> Sends each uploaded file to the right reader (PDF, picture, CSV or Excel) and returns the rows it found.  [implements DocumentProcessor; 1 public method(s)]
+
+src/main/java/com/finance/service/DocumentProcessor.java  [11 lines]
+      -> Contract for turning an uploaded file into a list of records.
+
+src/main/java/com/finance/service/DocumentScanService.java  [49 lines]
+      -> Contract for reading documents to get the text out of them.
+
+src/main/java/com/finance/service/DocumentUploadService.java  [11 lines]
+      -> Contract for storing and finding uploaded files.
+
+src/main/java/com/finance/service/DuplicateDetectionService.java  [11 lines]
+      -> Contract for spotting records that have already been imported.
+
+src/main/java/com/finance/service/ExpenseService.java  [213 lines]
+      -> Business rules for expenses: add, edit, delete, search, filter, receipt files and totals.  [14 public method(s)]
+
+src/main/java/com/finance/service/FinancialGoalService.java  [160 lines]
+      -> Business rules for savings goals: progress, target dates and status.  [10 public method(s)]
+
+src/main/java/com/finance/service/ForecastEngine.java  [54 lines]
+      -> Contract for guessing next month's income and spending.  [5 public method(s)]
+
+src/main/java/com/finance/service/ImportCommitService.java  [228 lines]
+      -> Saves the approved imported rows as real records, writes the import history and flags duplicates.  [7 public method(s)]
+
+src/main/java/com/finance/service/ImportFileService.java  [553 lines]
+      -> Checks an uploaded file is the right type and size before reading it.  [uses Lombok, so the getters and setters are written for you]
+
+src/main/java/com/finance/service/IncomeService.java  [200 lines]
+      -> Business rules for income: add, edit, delete, search, filter and totals.  [13 public method(s)]
+
+src/main/java/com/finance/service/LocalAnalyticsEngine.java  [139 lines]
+      -> Works out monthly totals, category shares, trends, and income versus spending.  [implements AnalyticsEngine; 5 public method(s)]
+
+src/main/java/com/finance/service/LocalApachePoiService.java  [95 lines]
+      -> Reads and writes Excel cells.  [implements ApachePoiService; 2 public method(s)]
+
+src/main/java/com/finance/service/LocalCategoryEngine.java  [69 lines]
+      -> Picks a category for a purchase by matching keywords.  [implements CategoryEngine; 2 public method(s)]
+
+src/main/java/com/finance/service/LocalDocumentScanService.java  [232 lines]
+      -> Reads PDFs with PDFBox and pictures with OCR, and falls back to the other route when one of them returns nothing.  [implements DocumentScanService; 4 public method(s)]
+
+src/main/java/com/finance/service/LocalDocumentUploadService.java  [21 lines]
+      -> Stores uploaded files outside the web folder with safe generated names, so only the owner can open them.  [implements DocumentUploadService; uses Lombok, so the getters and setters are written for you]
+
+src/main/java/com/finance/service/LocalDuplicateDetectionService.java  [114 lines]
+      -> Spots records that are already saved or already imported by matching amount, date and description.  [implements DuplicateDetectionService; 2 public method(s)]
+
+src/main/java/com/finance/service/LocalForecastEngine.java  [69 lines]
+      -> Uses the most recent months to project the next month's income and spending.  [implements ForecastEngine; 4 public method(s)]
+
+src/main/java/com/finance/service/LocalOpenCVPreprocessor.java  [119 lines]
+      -> Improves a receipt photo before reading it: greyscale, resize, sharpen, adaptive threshold and straighten.  [implements OpenCVPreprocessor; 1 public method(s)]
+
+src/main/java/com/finance/service/LocalPDFBoxService.java  [29 lines]
+      -> Pulls the words out of a PDF, page by page.  [implements PDFBoxService; 1 public method(s)]
+
+src/main/java/com/finance/service/LocalReportEngine.java  [99 lines]
+      -> Collects everything a report or an export needs.  [implements ReportEngine; 5 public method(s)]
+
+src/main/java/com/finance/service/LocalTess4JOcrService.java  [177 lines]
+      -> Runs the text reader (Tesseract) on the cleaned photo and returns the text plus how sure it is.  [implements Tess4JOcrService; uses Lombok, so the getters and setters are written for you]
+
+src/main/java/com/finance/service/LocalTransactionService.java  [50 lines]
+      -> Adds, edits, searches and filters the signed-in user's own income and expense records.  [implements TransactionService; 3 public method(s)]
+
+src/main/java/com/finance/service/OpenCVPreprocessor.java  [5 lines]
+      -> Contract for cleaning up a picture before the text reader runs.
+
+src/main/java/com/finance/service/PDFBoxService.java  [11 lines]
+      -> Contract for reading text out of a PDF.
+
+src/main/java/com/finance/service/RecurringTransactionScheduler.java  [37 lines]
+      -> Every morning adds the repeat bills and repeat income that are due today, exactly once for each due date.  [runs on a timer (cron = "${app.recurring-transactions.cron:0 15 0 * * *}"); 1 public method(s)]
+
+src/main/java/com/finance/service/ReportEngine.java  [18 lines]
+      -> Contract for building reports.
+
+src/main/java/com/finance/service/ScanTransactionParser.java  [350 lines]
+      -> Finds the amounts, dates, shop names and categories inside scanned text, using patterns.  [uses Lombok, so the getters and setters are written for you]
+
+src/main/java/com/finance/service/Tess4JOcrService.java  [5 lines]
+      -> Contract for reading text out of a picture.
+
+src/main/java/com/finance/service/TransactionExtractor.java  [128 lines]
+      -> Turns the raw text from a file or photo into clean transaction rows.  [5 public method(s)]
+
+src/main/java/com/finance/service/TransactionService.java  [14 lines]
+      -> Contract for everything that can be done with income and expense records.
+
+src/main/java/com/finance/service/UserDataExportService.java  [186 lines]
+      -> Exports everything a user has into a portable file.  [1 public method(s)]
+
+src/main/java/com/finance/service/UserService.java  [386 lines]
+      -> Creating users, scrambling passwords with BCrypt, profile updates, password changes, deleting an account and its data, and creating the very first admin.  [14 public method(s)]
+
+src/main/java/com/finance/service/excel/BackupRestoreService.java  [412 lines]
+      -> Makes a locked (AES-256-GCM) backup of the database and the Excel file, lists past backups and restores them. It checks file names to stop path tricks, and takes a safety backup before restoring.  [uses Lombok, so the getters and setters are written for you]
+
+src/main/java/com/finance/service/excel/BackupScheduler.java  [29 lines]
+      -> Every night at 02:00 it makes an encrypted backup and deletes backups older than the retention period.  [runs on a timer (cron = "${app.backup.cron:0 0 2 * * *}"); 1 public method(s)]
+
+src/main/java/com/finance/service/excel/BudgetExcelService.java  [306 lines]
+      -> Copies budgets into their sheet in the Excel workbook.  [30 public method(s)]
+
+src/main/java/com/finance/service/excel/CategoryExcelService.java  [289 lines]
+      -> Copies categories into their sheet in the Excel workbook.  [18 public method(s)]
+
+src/main/java/com/finance/service/excel/ExcelWorkbookInitializer.java  [357 lines]
+      -> Creates the Excel file and all of its sheets the first time the app runs.  [uses Lombok, so the getters and setters are written for you]
+
+src/main/java/com/finance/service/excel/ExpenseExcelService.java  [414 lines]
+      -> Copies expenses into their sheet in the Excel workbook.  [31 public method(s)]
+
+src/main/java/com/finance/service/excel/FinancialHealthScoreService.java  [204 lines]
+      -> Gives the finances a score out of 100 using real records: saving rate, sticking to budgets, steadiness of spending and goal progress.  [9 public method(s)]
+
+src/main/java/com/finance/service/excel/GoalExcelService.java  [266 lines]
+      -> Copies savings goals into their sheet in the Excel workbook.  [24 public method(s)]
+
+src/main/java/com/finance/service/excel/IncomeExcelService.java  [291 lines]
+      -> Copies income into their sheet in the Excel workbook.  [25 public method(s)]
+
+src/main/java/com/finance/service/excel/LocalExcelStorageService.java  [498 lines]
+      -> Owns the Excel file: creates it and reads and writes its sheets.  [10 public method(s)]
+
+src/main/java/com/finance/service/excel/NotificationService.java  [430 lines]
+      -> Creates the in-app alerts: bills due soon, unusually large purchases, and the weekly and monthly summaries.  [13 public method(s)]
+
+src/main/java/com/finance/service/excel/SmartInsightsService.java  [344 lines]
+      -> Writes plain-English tips, for example 'food spending is up 18% compared with last month'.  [6 public method(s)]
+
+src/main/java/com/finance/util/FinanceValidation.java  [83 lines]
+      -> One place for all the checks: amounts positive, dates sensible, names not empty, and file names safe.  [5 public method(s)]
+
+================================================================================================
+3. RESOURCES (settings, web pages, styles, scripts)
+================================================================================================
+
+src/main/resources/application-e2e.properties  [7 lines]
+      -> Settings used only while testing. Points the database and every file path into the build folder, so tests can never touch real data.
+
+src/main/resources/application.properties  [55 lines]
+      -> Main settings file. Holds the port, the database address, how tables are created, the upload size limit, the default admin login, where files are stored, when backups run and how long they are kept, and where the log file goes.
+
+src/main/resources/static/css/3d-dynamic.css  [7387 lines]
+      -> 3D card and visual effects. 1423 rule block(s) and 173 design value(s).
+
+src/main/resources/static/css/auth.css  [315 lines]
+      -> Styling for the sign-in and sign-up pages. 98 rule block(s) and 1 design value(s).
+
+src/main/resources/static/css/chatbot-widget.css  [1038 lines]
+      -> Styling for the floating chat bubble and chat window. 160 rule block(s).
+
+src/main/resources/static/css/finance-plus.css  [145 lines]
+      -> Styling for the FinancePlus workspace. 118 rule block(s) and 20 design value(s).
+
+src/main/resources/static/css/finwise-bridge.css  [48 lines]
+      -> Keeps older style rules working with the new design values. 6 rule block(s) and 71 design value(s).
+
+src/main/resources/static/css/finwise-components.css  [235 lines]
+      -> Reusable pieces: buttons, cards, tables, forms, pop-ups and labels. 198 rule block(s).
+
+src/main/resources/static/css/finwise-layout.css  [212 lines]
+      -> The page frame: top bar, side menu and column grid. 83 rule block(s).
+
+src/main/resources/static/css/finwise-responsive.css  [48 lines]
+      -> Adjusts the layout for phones and small screens. 39 rule block(s).
+
+src/main/resources/static/css/finwise-theme.css  [392 lines]
+      -> The light and dark colour themes. 154 rule block(s) and 14 design value(s).
+
+src/main/resources/static/css/finwise-tokens.css  [205 lines]
+      -> The design values (colours, spacing, text sizes) that the other stylesheets use. 17 rule block(s) and 130 design value(s).
+
+src/main/resources/static/css/scan-fill.css  [62 lines]
+      -> Styling for the Scan & Fill screen. 10 rule block(s).
+
+src/main/resources/static/css/settings.css  [142 lines]
+      -> Styling for the settings and backup screens. 104 rule block(s).
+
+src/main/resources/static/js/chatbot-widget.js  [679 lines]
+      -> The floating chat bubble: opens the chat, sends questions, shows answers and keeps the history. Defines 30 function(s): addErrorMessage, addMessage, bindChatLinkTriggers, clearChat, createConfidenceIndicator, createSearchBar, elementsReady, escapeHtml.
+
+src/main/resources/static/js/finance-plus.js  [61 lines]
+      -> Runs the FinancePlus screens: the vault, the repeat rules and the backups. Defines 1 function(s): showHash.
+
+src/main/resources/static/js/finwise-ui.js  [483 lines]
+      -> Shared browser behaviour: theme switching, pop-up messages, dialogs and language switching. Defines 28 function(s): animateProg, applyChartThemeToOptions, applySidebarWidth, applyTheme, chartColors, commit, cssWidth, currentEffective.
+
+src/main/resources/static/js/scan-fill.js  [298 lines]
+      -> Runs the Scan & Fill screen: uploads the photo, shows reading progress, fills the form. Defines 12 function(s): init, pick, refreshPreview, refreshState, renderTransactions, setField, setSelect, setTransactionForm.
+
+src/main/resources/static/js/script.js  [2456 lines]
+      -> Older page behaviour that is still in use. Defines 44 function(s): applyTranslations, buildLanguageMenuItems, checkOnlineStatus, clearFinwiseBrowserData, debounce, fetchedLocale, fwApplyLocalPrefs, fwInitAutoLock.
+
+src/main/resources/static/locales/ar.json  [1 lines]
+      -> Arabic translation file with 143 translated text(s). The chosen language is remembered with the user account.
+
+src/main/resources/static/locales/bn.json  [1 lines]
+      -> Bengali translation file with 143 translated text(s). The chosen language is remembered with the user account.
+
+src/main/resources/static/locales/de.json  [1 lines]
+      -> German translation file with 143 translated text(s). The chosen language is remembered with the user account.
+
+src/main/resources/static/locales/en.json  [455 lines]
+      -> English translation file with 453 translated text(s). The chosen language is remembered with the user account.
+
+src/main/resources/static/locales/es.json  [1 lines]
+      -> Spanish translation file with 143 translated text(s). The chosen language is remembered with the user account.
+
+src/main/resources/static/locales/fa.json  [1 lines]
+      -> Persian translation file with 143 translated text(s). The chosen language is remembered with the user account.
+
+src/main/resources/static/locales/fr.json  [1 lines]
+      -> French translation file with 143 translated text(s). The chosen language is remembered with the user account.
+
+src/main/resources/static/locales/gu.json  [1 lines]
+      -> Gujarati translation file with 143 translated text(s). The chosen language is remembered with the user account.
+
+src/main/resources/static/locales/he.json  [1 lines]
+      -> Hebrew translation file with 143 translated text(s). The chosen language is remembered with the user account.
+
+src/main/resources/static/locales/hi.json  [455 lines]
+      -> Hindi translation file with 453 translated text(s). The chosen language is remembered with the user account.
+
+src/main/resources/static/locales/it.json  [1 lines]
+      -> Italian translation file with 143 translated text(s). The chosen language is remembered with the user account.
+
+src/main/resources/static/locales/ja.json  [1 lines]
+      -> Japanese translation file with 143 translated text(s). The chosen language is remembered with the user account.
+
+src/main/resources/static/locales/kn.json  [1 lines]
+      -> Kannada translation file with 143 translated text(s). The chosen language is remembered with the user account.
+
+src/main/resources/static/locales/ko.json  [1 lines]
+      -> Korean translation file with 143 translated text(s). The chosen language is remembered with the user account.
+
+src/main/resources/static/locales/ml.json  [1 lines]
+      -> Malayalam translation file with 143 translated text(s). The chosen language is remembered with the user account.
+
+src/main/resources/static/locales/mr.json  [1 lines]
+      -> Marathi translation file with 143 translated text(s). The chosen language is remembered with the user account.
+
+src/main/resources/static/locales/ne.json  [455 lines]
+      -> Nepali translation file with 453 translated text(s). The chosen language is remembered with the user account.
+
+src/main/resources/static/locales/pa.json  [1 lines]
+      -> Punjabi translation file with 143 translated text(s). The chosen language is remembered with the user account.
+
+src/main/resources/static/locales/pt.json  [1 lines]
+      -> Portuguese translation file with 143 translated text(s). The chosen language is remembered with the user account.
+
+src/main/resources/static/locales/ru.json  [1 lines]
+      -> Russian translation file with 143 translated text(s). The chosen language is remembered with the user account.
+
+src/main/resources/static/locales/ta.json  [455 lines]
+      -> Tamil translation file with 453 translated text(s). The chosen language is remembered with the user account.
+
+src/main/resources/static/locales/te.json  [1 lines]
+      -> Telugu translation file with 143 translated text(s). The chosen language is remembered with the user account.
+
+src/main/resources/static/locales/tr.json  [1 lines]
+      -> Turkish translation file with 143 translated text(s). The chosen language is remembered with the user account.
+
+src/main/resources/static/locales/ur.json  [1 lines]
+      -> Urdu translation file with 143 translated text(s). The chosen language is remembered with the user account.
+
+src/main/resources/static/locales/zh.json  [1 lines]
+      -> Chinese translation file with 143 translated text(s). The chosen language is remembered with the user account.
+
+src/main/resources/static/vendor/chart.js/chart.umd.min.js  [20 lines]
+      -> The bundled chart-drawing library (Chart.js). It is served from this computer so no internet is needed. Defines 272 function(s): Aa, Ae, Ai, Ao, As, At, B, Be.
+
+src/main/resources/templates/account.html  [176 lines]
+      -> Thymeleaf page, title "Account & Settings Finwise". uses shared fragments: finwise :: fwFooter, finwise :: fwSidebar('account', ${user, finwise :: fwTopbar('Account', null, ${user. loads scripts: /js/script.js?v=2. loads styles: /css/3d-dynamic.css, /css/chatbot-widget.css, /css/finwise-bridge.css, /css/finwise-components.css, /css/finwise-layout.css, /css/finwise-responsive.css, /css/finwise-theme.css, /css/finwise-tokens.css.
+
+src/main/resources/templates/accounts.html  [122 lines]
+      -> Thymeleaf page, title "Accounts - Finwise". uses shared fragments: finwise :: fwFooter, finwise :: fwScripts, finwise :: fwSidebar('accounts', ${user, finwise :: fwTopbar('Accounts', null, ${user. loads styles: /css/3d-dynamic.css, /css/chatbot-widget.css, /css/finwise-bridge.css, /css/finwise-components.css, /css/finwise-layout.css, /css/finwise-responsive.css, /css/finwise-theme.css, /css/finwise-tokens.css. form posts to: @{/accounts/delete/{id}(id=${acc.id})}, @{/accounts/update/{id}(id=${acc.id})}.
+
+src/main/resources/templates/add-account.html  [90 lines]
+      -> Thymeleaf page, title "Add Account - Finwise". uses shared fragments: finwise :: fwFooter, finwise :: fwScripts, finwise :: fwSidebar('accounts', ${user, finwise :: fwTopbar('Accounts', null, ${user. loads styles: /css/3d-dynamic.css, /css/chatbot-widget.css, /css/finwise-bridge.css, /css/finwise-components.css, /css/finwise-layout.css, /css/finwise-responsive.css, /css/finwise-theme.css, /css/finwise-tokens.css. form posts to: @{/accounts/add}.
+
+src/main/resources/templates/add-budget.html  [97 lines]
+      -> Thymeleaf page, title "Add Budget - Finwise". uses shared fragments: finwise :: fwFooter, finwise :: fwScripts, finwise :: fwSidebar('budgets', ${user, finwise :: fwTopbar('Budgets', null, ${user. loads styles: /css/3d-dynamic.css, /css/chatbot-widget.css, /css/finwise-bridge.css, /css/finwise-components.css, /css/finwise-layout.css, /css/finwise-responsive.css, /css/finwise-theme.css, /css/finwise-tokens.css. form posts to: @{/budgets/add}.
+
+src/main/resources/templates/add-expense.html  [127 lines]
+      -> Thymeleaf page, title "Add Expense - Finwise". uses shared fragments: finwise :: fwFooter, finwise :: fwScripts, finwise :: fwSidebar('expenses', ${user, finwise :: fwTopbar('Expenses', null, ${user. loads styles: /css/3d-dynamic.css, /css/chatbot-widget.css, /css/finwise-bridge.css, /css/finwise-components.css, /css/finwise-layout.css, /css/finwise-responsive.css, /css/finwise-theme.css, /css/finwise-tokens.css. form posts to: @{/expenses/add}.
+
+src/main/resources/templates/add-goal.html  [95 lines]
+      -> Thymeleaf page, title "Create Goal - Finwise". uses shared fragments: finwise :: fwFooter, finwise :: fwScripts, finwise :: fwSidebar('goals', ${user, finwise :: fwTopbar('Goals', null, ${user. loads styles: /css/3d-dynamic.css, /css/chatbot-widget.css, /css/finwise-bridge.css, /css/finwise-components.css, /css/finwise-layout.css, /css/finwise-responsive.css, /css/finwise-theme.css, /css/finwise-tokens.css. form posts to: @{/goals/add}.
+
+src/main/resources/templates/add-income.html  [121 lines]
+      -> Thymeleaf page, title "Add Income - Finwise". uses shared fragments: finwise :: fwFooter, finwise :: fwScripts, finwise :: fwSidebar('income', ${user, finwise :: fwTopbar('Income', null, ${user. loads styles: /css/3d-dynamic.css, /css/chatbot-widget.css, /css/finwise-bridge.css, /css/finwise-components.css, /css/finwise-layout.css, /css/finwise-responsive.css, /css/finwise-theme.css, /css/finwise-tokens.css. form posts to: @{/income/add}.
+
+src/main/resources/templates/analytics.html  [338 lines]
+      -> Thymeleaf page, title "Analytics - Finwise". uses shared fragments: finwise :: fwFooter, finwise :: fwScripts, finwise :: fwSidebar('analytics', ${user, finwise :: fwTopbar('Analytics', null, ${user. loads scripts: /vendor/chart.js/chart.umd.min.js. loads styles: /css/3d-dynamic.css, /css/chatbot-widget.css, /css/finwise-bridge.css, /css/finwise-components.css, /css/finwise-layout.css, /css/finwise-responsive.css, /css/finwise-theme.css, /css/finwise-tokens.css.
+
+src/main/resources/templates/app-lock.html  [26 lines]
+      -> Thymeleaf page, title "FinWise Locked". loads styles: /css/finwise-components.css, /css/finwise-theme.css, /css/finwise-tokens.css. form posts to: @{/app-lock/unlock}, @{/logout}.
+
+src/main/resources/templates/audit.html  [126 lines]
+      -> Thymeleaf page, title "Audit Log - Finwise". uses shared fragments: finwise :: fwFooter, finwise :: fwScripts, finwise :: fwSidebar('settings', ${user, finwise :: fwTopbar('Settings', null, ${user. loads styles: /css/3d-dynamic.css, /css/chatbot-widget.css, /css/finwise-bridge.css, /css/finwise-components.css, /css/finwise-layout.css, /css/finwise-responsive.css, /css/finwise-theme.css, /css/finwise-tokens.css.
+
+src/main/resources/templates/budgets.html  [116 lines]
+      -> Thymeleaf page, title "Budgets Finwise". uses shared fragments: finwise :: fwFooter, finwise :: fwScripts, finwise :: fwSidebar('budgets', ${user, finwise :: fwTopbar('Budgets', null, ${user. loads styles: /css/3d-dynamic.css, /css/chatbot-widget.css, /css/finwise-bridge.css, /css/finwise-components.css, /css/finwise-layout.css, /css/finwise-responsive.css, /css/finwise-theme.css, /css/finwise-tokens.css. form posts to: @{/budgets/delete/{id}(id=${budget.id})}, @{/budgets/spent/{id}(id=${budget.id})}.
+
+src/main/resources/templates/categories.html  [182 lines]
+      -> Thymeleaf page, title "Categories - Finwise". uses shared fragments: finwise :: fwFooter, finwise :: fwScripts, finwise :: fwSidebar('categories', ${user, finwise :: fwTopbar('Categories', null, ${user. loads styles: /css/3d-dynamic.css, /css/chatbot-widget.css, /css/finwise-bridge.css, /css/finwise-components.css, /css/finwise-layout.css, /css/finwise-responsive.css, /css/finwise-theme.css, /css/finwise-tokens.css. form posts to: @{/categories/add}, @{/categories/delete/{id}(id=${cat.categoryId})}, @{/categories/update/{id}(id=${cat.categoryId})}.
+
+src/main/resources/templates/chatbot.html  [363 lines]
+      -> Thymeleaf page, title "Finwise Offline Finance AI". uses shared fragments: chatbot-widget :: chatbotWidget, finwise :: fwFooter, finwise :: fwScripts, finwise :: fwSidebar('chatbot', ${user, finwise :: fwTopbar('Chatbot', null, ${user. loads scripts: /js/chatbot-widget.js, /vendor/chart.js/chart.umd.min.js. loads styles: /css/3d-dynamic.css, /css/chatbot-widget.css, /css/finwise-bridge.css, /css/finwise-components.css, /css/finwise-layout.css, /css/finwise-responsive.css, /css/finwise-theme.css, /css/finwise-tokens.css.
+
+src/main/resources/templates/dashboard.html  [221 lines]
+      -> Thymeleaf page, title "Dashboard — FinWise". uses shared fragments: chatbot-widget :: chatbotWidget, finwise :: fwFooter, finwise :: fwHead('Dashboard'), finwise :: fwScripts, finwise :: fwSidebar('dashboard', ${user, finwise :: fwTopbar('Dashboard', 'Your money at a glance', ${user. loads scripts: /js/chatbot-widget.js, /vendor/chart.js/chart.umd.min.js. loads styles: /css/chatbot-widget.css, /css/finwise-theme.css.
+
+src/main/resources/templates/edit-budget.html  [99 lines]
+      -> Thymeleaf page, title "Edit Budget - Finwise". uses shared fragments: finwise :: fwFooter, finwise :: fwScripts, finwise :: fwSidebar('budgets', ${user, finwise :: fwTopbar('Budgets', null, ${user. loads styles: /css/3d-dynamic.css, /css/chatbot-widget.css, /css/finwise-bridge.css, /css/finwise-components.css, /css/finwise-layout.css, /css/finwise-responsive.css, /css/finwise-theme.css, /css/finwise-tokens.css. form posts to: @{/budgets/update/{id}(id=${budget.id})}.
+
+src/main/resources/templates/edit-expense.html  [127 lines]
+      -> Thymeleaf page, title "Edit Expense - Finwise". uses shared fragments: finwise :: fwFooter, finwise :: fwScripts, finwise :: fwSidebar('expenses', ${user, finwise :: fwTopbar('Expenses', null, ${user. loads styles: /css/3d-dynamic.css, /css/chatbot-widget.css, /css/finwise-bridge.css, /css/finwise-components.css, /css/finwise-layout.css, /css/finwise-responsive.css, /css/finwise-theme.css, /css/finwise-tokens.css. form posts to: @{/expenses/update/{id}(id=${expense.id})}.
+
+src/main/resources/templates/edit-goal.html  [95 lines]
+      -> Thymeleaf page, title "Edit Goal - Finwise". uses shared fragments: finwise :: fwFooter, finwise :: fwScripts, finwise :: fwSidebar('goals', ${user, finwise :: fwTopbar('Goals', null, ${user. loads styles: /css/3d-dynamic.css, /css/chatbot-widget.css, /css/finwise-bridge.css, /css/finwise-components.css, /css/finwise-layout.css, /css/finwise-responsive.css, /css/finwise-theme.css, /css/finwise-tokens.css. form posts to: @{/goals/update/{id}(id=${goal.id})}.
+
+src/main/resources/templates/edit-income.html  [120 lines]
+      -> Thymeleaf page, title "Edit Income - Finwise". uses shared fragments: finwise :: fwFooter, finwise :: fwScripts, finwise :: fwSidebar('income', ${user, finwise :: fwTopbar('Income', null, ${user. loads styles: /css/3d-dynamic.css, /css/chatbot-widget.css, /css/finwise-bridge.css, /css/finwise-components.css, /css/finwise-layout.css, /css/finwise-responsive.css, /css/finwise-theme.css, /css/finwise-tokens.css. form posts to: @{/income/update/{id}(id=${income.id})}.
+
+src/main/resources/templates/expenses.html  [138 lines]
+      -> Thymeleaf page, title "Expenses Finwise". uses shared fragments: finwise :: fwFooter, finwise :: fwScripts, finwise :: fwSidebar('expenses', ${user, finwise :: fwTopbar('Expenses', null, ${user. loads styles: /css/3d-dynamic.css, /css/chatbot-widget.css, /css/finwise-bridge.css, /css/finwise-components.css, /css/finwise-layout.css, /css/finwise-responsive.css, /css/finwise-theme.css, /css/finwise-tokens.css. form posts to: @{/expenses/delete/{id}(id=${expense.id})}, @{/expenses}.
+
+src/main/resources/templates/finance-plus-locked.html  [27 lines]
+      -> Thymeleaf page, title "Finance Plus Locked - FinWise". loads styles: /css/finance-plus.css, /css/finwise-tokens.css, /webjars/bootstrap/5.3.3/css/bootstrap.min.css, /webjars/font-awesome/6.5.2/css/all.min.css. form posts to: @{/finance-plus/unlock}.
+
+src/main/resources/templates/finance-plus.html  [216 lines]
+      -> Thymeleaf page, title "Finance Plus - FinWise". uses shared fragments: finwise :: fwFooter, finwise :: fwScripts, finwise :: fwSidebar('finance-plus', ${user, finwise :: fwTopbar('Finance Plus', 'Advanced planning, alerts and local data protection', ${user. loads scripts: /js/finance-plus.js, /webjars/bootstrap/5.3.3/js/bootstrap.bundle.min.js. loads styles: /css/3d-dynamic.css, /css/finance-plus.css, /css/finwise-bridge.css, /css/finwise-components.css, /css/finwise-layout.css, /css/finwise-responsive.css, /css/finwise-theme.css, /css/finwise-tokens.css, /webjars/bootstrap/5.3.3/css/bootstrap.min.css, /webjars/font-awesome/6.5.2/css/all.min.css. form posts to: @{/finance-plus/attachments/delete/{id}(id=${file.id})}, @{/finance-plus/attachments}, @{/finance-plus/backup-preferences}, @{/finance-plus/backups/{id}/delete(id=${backup.id})}, @{/finance-plus/backups/{id}/restore(id=${backup.id})}, @{/finance-plus/backups}.
+
+src/main/resources/templates/goals.html  [125 lines]
+      -> Thymeleaf page, title "Goals Finwise". uses shared fragments: finwise :: fwFooter, finwise :: fwScripts, finwise :: fwSidebar('goals', ${user, finwise :: fwTopbar('Goals', null, ${user. loads styles: /css/3d-dynamic.css, /css/chatbot-widget.css, /css/finwise-bridge.css, /css/finwise-components.css, /css/finwise-layout.css, /css/finwise-responsive.css, /css/finwise-theme.css, /css/finwise-tokens.css. form posts to: @{/goals/complete/{id}(id=${goal.id})}, @{/goals/delete/{id}(id=${goal.id})}, @{/goals/progress/{id}(id=${goal.id})}.
+
+src/main/resources/templates/habits.html  [112 lines]
+      -> Thymeleaf page, title "Campus Habits - Finwise". uses shared fragments: finwise :: fwSidebar('habits', ${user, finwise :: fwTopbar('Campus Habits', null, ${user. loads scripts: /js/finwise-ui.js. loads styles: /css/3d-dynamic.css, /css/chatbot-widget.css, /css/finwise-bridge.css, /css/finwise-components.css, /css/finwise-layout.css, /css/finwise-responsive.css, /css/finwise-theme.css, /css/finwise-tokens.css.
+
+src/main/resources/templates/import-edit.html  [112 lines]
+      -> Thymeleaf page, title "Edit Transaction - Finwise". uses shared fragments: finwise :: fwFooter, finwise :: fwScripts, finwise :: fwSidebar('import', ${user, finwise :: fwTopbar('Import', null, ${user. loads styles: /css/3d-dynamic.css, /css/chatbot-widget.css, /css/finwise-bridge.css, /css/finwise-components.css, /css/finwise-layout.css, /css/finwise-responsive.css, /css/finwise-theme.css, /css/finwise-tokens.css. form posts to: /import/update/{id}, @{/import/update/{id}(id=${record.id})}.
+
+src/main/resources/templates/import-history.html  [117 lines]
+      -> Thymeleaf page, title "Import History - Finwise". uses shared fragments: finwise :: fwFooter, finwise :: fwScripts, finwise :: fwSidebar('import', ${user, finwise :: fwTopbar('Import History', null, ${user. loads styles: /css/3d-dynamic.css, /css/chatbot-widget.css, /css/finwise-bridge.css, /css/finwise-components.css, /css/finwise-layout.css, /css/finwise-responsive.css, /css/finwise-theme.css, /css/finwise-tokens.css.
+
+src/main/resources/templates/import-preview.html  [164 lines]
+      -> Thymeleaf page, title "Import Preview - Finwise". uses shared fragments: finwise :: fwFooter, finwise :: fwScripts, finwise :: fwSidebar('import', ${user, finwise :: fwTopbar('Import', null, ${user. loads styles: /css/3d-dynamic.css, /css/chatbot-widget.css, /css/finwise-bridge.css, /css/finwise-components.css, /css/finwise-layout.css, /css/finwise-responsive.css, /css/finwise-theme.css, /css/finwise-tokens.css. form posts to: @{/import/delete/{id}(id=${record.id})}, @{/import/validate}.
+
+src/main/resources/templates/import.html  [162 lines]
+      -> Thymeleaf page, title "Import Documents - Finwise". uses shared fragments: finwise :: fwFooter, finwise :: fwScripts, finwise :: fwSidebar('import', ${user, finwise :: fwTopbar('Import', null, ${user. loads styles: /css/3d-dynamic.css, /css/chatbot-widget.css, /css/finwise-bridge.css, /css/finwise-components.css, /css/finwise-layout.css, /css/finwise-responsive.css, /css/finwise-theme.css, /css/finwise-tokens.css. form posts to: @{/import/upload}, @{/import/validate}.
+
+src/main/resources/templates/income.html  [128 lines]
+      -> Thymeleaf page, title "Income Finwise". uses shared fragments: finwise :: fwFooter, finwise :: fwScripts, finwise :: fwSidebar('income', ${user, finwise :: fwTopbar('Income', null, ${user. loads styles: /css/3d-dynamic.css, /css/chatbot-widget.css, /css/finwise-bridge.css, /css/finwise-components.css, /css/finwise-layout.css, /css/finwise-responsive.css, /css/finwise-theme.css, /css/finwise-tokens.css. form posts to: @{/income/delete/{id}(id=${income.id})}, @{/income}.
+
+src/main/resources/templates/index.html  [378 lines]
+      -> Thymeleaf page, title "Finwise — Premium Personal Finance Management". loads scripts: /js/finwise-ui.js, /js/script.js. loads styles: /css/3d-dynamic.css, /css/chatbot-widget.css, /css/finwise-bridge.css, /css/finwise-components.css, /css/finwise-layout.css, /css/finwise-responsive.css, /css/finwise-theme.css, /css/finwise-tokens.css.
+
+src/main/resources/templates/login.html  [158 lines]
+      -> Thymeleaf page, title "Sign In — FinWise". loads scripts: /js/finwise-ui.js. loads styles: /css/3d-dynamic.css, /css/auth.css, /css/chatbot-widget.css, /css/finwise-bridge.css, /css/finwise-components.css, /css/finwise-layout.css, /css/finwise-responsive.css, /css/finwise-theme.css, /css/finwise-tokens.css. form posts to: @{/login}.
+
+src/main/resources/templates/notifications.html  [112 lines]
+      -> Thymeleaf page, title "Notifications - Finwise". uses shared fragments: finwise :: fwFooter, finwise :: fwScripts, finwise :: fwSidebar('notifications', ${user, finwise :: fwTopbar('Notifications', null, ${user. loads styles: /css/3d-dynamic.css, /css/chatbot-widget.css, /css/finwise-bridge.css, /css/finwise-components.css, /css/finwise-layout.css, /css/finwise-responsive.css, /css/finwise-theme.css, /css/finwise-tokens.css. form posts to: @{/notifications/mark-all-read}, @{/notifications/mark-read/{id}(id=${notif.notificationId})}.
+
+src/main/resources/templates/register.html  [199 lines]
+      -> Thymeleaf page, title "Create Account — FinWise". loads scripts: /js/finwise-ui.js. loads styles: /css/3d-dynamic.css, /css/auth.css, /css/chatbot-widget.css, /css/finwise-bridge.css, /css/finwise-components.css, /css/finwise-layout.css, /css/finwise-responsive.css, /css/finwise-theme.css, /css/finwise-tokens.css. form posts to: @{/auth/register}.
+
+src/main/resources/templates/reports.html  [426 lines]
+      -> Thymeleaf page, title "Reports - Finwise". uses shared fragments: chatbot-widget :: chatbotWidget, finwise :: fwFooter, finwise :: fwScripts, finwise :: fwSidebar('reports', ${user, finwise :: fwTopbar('Reports', null, ${user. loads scripts: /js/chatbot-widget.js, /vendor/chart.js/chart.umd.min.js. loads styles: /css/3d-dynamic.css, /css/chatbot-widget.css, /css/finwise-bridge.css, /css/finwise-components.css, /css/finwise-layout.css, /css/finwise-responsive.css, /css/finwise-theme.css, /css/finwise-tokens.css. form posts to: @{/reports/generate}.
+
+src/main/resources/templates/scan-fill.html  [99 lines]
+      -> Thymeleaf page, title "Scan &amp; Fill — FinWise". uses shared fragments: finwise :: fwFooter, finwise :: fwHead('Scan & Fill'), finwise :: fwScripts, finwise :: fwSidebar('scan', ${user, finwise :: fwTopbar('Scan & Fill', 'Upload a receipt — we extract, you confirm', ${user. loads scripts: /js/scan-fill.js. loads styles: /css/chatbot-widget.css, /css/finwise-theme.css. form posts to: @{/scan/save}.
+
+src/main/resources/templates/settings.html  [915 lines]
+      -> Thymeleaf page, title "Settings - Finwise". uses shared fragments: finwise :: fwFooter, finwise :: fwScripts, finwise :: fwSidebar('settings', ${user, finwise :: fwTopbar('Settings', null, ${user. loads styles: /css/3d-dynamic.css, /css/chatbot-widget.css, /css/finwise-bridge.css, /css/finwise-components.css, /css/finwise-layout.css, /css/finwise-responsive.css, /css/finwise-theme.css, /css/finwise-tokens.css, /css/settings.css. form posts to: @{/app-lock/lock}, @{/settings/backups/delete/{fileName}(fileName=${backup.fileName})}, @{/settings/backups/restore/{fileName}(fileName=${backup.fileName})}, @{/settings/backup}, @{/settings/reset}, @{/settings/security/passcode/disable}.
+
+src/main/resources/templates/error/error.html  [31 lines]
+      -> Thymeleaf page. loads styles: /css/3d-dynamic.css, /css/finwise-bridge.css, /css/finwise-components.css, /css/finwise-layout.css, /css/finwise-responsive.css, /css/finwise-tokens.css.
+
+src/main/resources/templates/fragments/chatbot-widget.html  [83 lines]
+      -> Thymeleaf page. loads scripts: /js/chatbot-widget.js, /vendor/chart.js/chart.umd.min.js.
+
+src/main/resources/templates/fragments/finwise.html  [184 lines]
+      -> Thymeleaf page. loads scripts: /js/finwise-ui.js?v=2, /js/script.js?v=2. loads styles: /css/3d-dynamic.css?v=2, /css/chatbot-widget.css?v=2, /css/finwise-bridge.css?v=2, /css/finwise-components.css?v=2, /css/finwise-layout.css?v=2, /css/finwise-responsive.css?v=2, /css/finwise-theme.css?v=2, /css/finwise-tokens.css?v=2. form posts to: @{/logout}.
+
+src/main/resources/tessdata/eng.traineddata  [29679 lines]
+      -> Tesseract language model. Needed to read text in pictures; without it OCR is switched off.
+
+================================================================================================
+4. PROJECT FILES
+================================================================================================
+
+.gitignore  [49 lines]
+      -> Tells Git which files must never be uploaded: build output, database, uploads, backups and logs.
+
+PROJECT_FILES_SIMPLE.txt  [886 lines]
+      -> A written guide to the project, kept next to the README for reference.
+
+PROJECT_FILE_MAP.txt  [621 lines]
+      -> A written guide to the project, kept next to the README for reference.
+
+PROJECT_FILE_PURPOSE.txt  [1229 lines]
+      -> A written guide to the project, kept next to the README for reference.
+
+PROJECT_PLAIN_LANGUAGE.txt  [574 lines]
+      -> A written guide to the project, kept next to the README for reference.
+
+README.md  [323 lines]
+      -> The project instruction booklet: what the app does, how to install, run, configure, test and troubleshoot it.
+
+SETUP.md  [582 lines]
+      -> Documentation.
+
+fix_mojibake.py  [56 lines]
+      -> Repair tool. Finds text files whose characters were saved in the wrong encoding (broken letters) and rewrites them correctly.
+
+pom.xml  [238 lines]
+      -> Build file for Maven. Lists the project name and version, the Java version, the main class to run, and every library needed (Spring Boot, SQLite, Lombok, OCR, PDF, Excel).
+
+run.bat  [122 lines]
+      -> Windows launcher. Checks Java and Maven, makes the data and logs folders, stops any copy already running, builds the project, starts the program on port 8080, then opens the browser.
+
+run.sh  [61 lines]
+      -> Linux and Mac launcher. Does the same steps as run.bat.
+
+.github/modernize/java-upgrade/.gitignore  [2 lines]
+      -> Ignore rules for the Java upgrade tool folder.
+
+.github/modernize/java-upgrade/hooks/scripts/recordToolUse.ps1  [17 lines]
+      -> Hook script for the GitHub Java upgrade tool: it records which tools were used.
+
+.github/modernize/java-upgrade/hooks/scripts/recordToolUse.sh  [27 lines]
+      -> Hook script for the GitHub Java upgrade tool: it records which tools were used.
+
+.vscode/extensions.json  [5 lines]
+      -> Editor extensions that are recommended for this project.
+
+.vscode/settings.json  [4 lines]
+      -> Editor settings for this project (VS Code / Java).
+
+C/tmp_pom.bat  [3 lines]
+      -> Old scratch file used while checking the build file. Not used by the app.
+
+C/tmp_pom2.bat  [3 lines]
+      -> Old scratch file used while checking the build file. Not used by the app.
+
+tools/generate_purpose_report.py  [1094 lines]
+      -> Python helper script. Used while maintaining the project, not by the running app.
+
+================================================================================================
+5. RUNTIME FOLDERS (data, logs, img, build output)
+================================================================================================
+
+FOLDER data/backups/  (54 file(s))
+      -> Encrypted backup files, one for each backup run, plus the key that locks them.
+         e.g. .backup.key
+         e.g. Finwise_Backup_2026-09-25_17-30-07-253.finwise
+         e.g. Finwise_Backup_2026-09-25_18-02-46-159.finwise
+         e.g. Finwise_Backup_2026-09-25_18-09-55-226.finwise
+         ... and 50 more of the same kind
+
+FOLDER data/import-images/  (14 file(s))
+      -> Receipt and statement images uploaded through import and Scan & Fill.
+         e.g. 25_380f9cf7-3d09-4793-870d-7378264ecb28.jpg
+         e.g. 25_6489e767-1e7b-4a45-8a53-b4792753e71f.png
+         e.g. 27_10812357-479a-4c26-9f8f-9451d2804c43.jpeg
+         e.g. 27_251172a7-6560-41b4-87d3-dbd0fdb80b75.jpeg
+         ... and 10 more of the same kind
+
+FOLDER data/uploads/profile/  (3 file(s))
+      -> Profile pictures uploaded by users.
+         e.g. 12_c631dfc5-f405-4c51-b9a4-c35f1f137798.png
+         e.g. 24_bff7df01-132e-4064-9b14-d582806dc56e.png
+         e.g. 26_c9b223a7-d648-4d8f-963f-756f7fe0d845.png
+
+FOLDER img/imgg/  (20 file(s))
+      -> Made-up sample receipt pictures for testing the reading feature.
+         e.g. expense-01.png
+         e.g. expense-02.png
+         e.g. expense-03.png
+         e.g. expense-04.png
+         ... and 16 more of the same kind
+
+FOLDER logs/  (9 file(s))
+      -> Log files from previous runs.
+         e.g. app-stderr.log
+         e.g. app-stdout.log
+         e.g. finance-e2e.log
+         e.g. finance-live.err.log
+         ... and 5 more of the same kind
+
+Other files in this section:
+
+data/Finwise_Data.xlsx  [88 lines]
+      -> Excel copy of the financial data, one sheet per record type.
+
+data/finance-e2e.db  [219 lines]
+      -> Throwaway database used only by the automated tests.
+
+data/finance.db  [498 lines]
+      -> The live database. Holds every user, account, income, expense, budget, goal, category, alert and setting.
+
+data/tessdata/eng.traineddata  [29679 lines]
+      -> Tesseract language model. Needed to read text in pictures; without it OCR is switched off.
+
+img/finwise-import-sample.csv  [4 lines]
+      -> Sample list of transactions (194 bytes), for trying the import feature.
+
+img/finwise-import-sample.jpeg  [629 lines]
+      -> Example picture for trying the import and receipt-reading features.
+
+img/finwise-import-sample.jpg  [629 lines]
+      -> Example picture for trying the import and receipt-reading features.
+
+img/finwise-import-sample.pdf  [44 lines]
+      -> Sample PDF statement (733 bytes), for trying the import feature.
+
+img/finwise-import-sample.png  [204 lines]
+      -> Example picture for trying the import and receipt-reading features.
+
+img/finwise-import-sample.xls  [28 lines]
+      -> Excel workbook (4 KB). The spreadsheet copy of the financial data.
+
+img/finwise-import-sample.xlsx  [19 lines]
+      -> Excel workbook (5 KB). The spreadsheet copy of the financial data.
+
+img/handwritten-note.jpg  [736 lines]
+      -> Handwriting sample, used to see how well the text reader copes.
+
+img/handwritten-note.png  [590 lines]
+      -> Handwriting sample, used to see how well the text reader copes.
+
+================================================================================================
+FOLDERS (what each folder is for)
+================================================================================================
+
+.github/
+      -> Automation that runs around the code on GitHub.
+
+.github/modernize/
+      -> Helper hooks for the Java upgrade tool.
+
+.github/modernize/java-upgrade/
+      -> The Java upgrade tool's settings and hook scripts.
+
+.github/modernize/java-upgrade/hooks/
+      -> The hook scripts themselves.
+
+.github/modernize/java-upgrade/hooks/scripts/
+      -> Small scripts that record which tools were used.
+
+.vscode/
+      -> Settings and extension recommendations for VS Code.
+
+C/
+      -> Old scratch files from earlier debugging. Not used by the build; safe to delete.
+
+data/
+      -> Everything the app saves. Deleting it resets the app to empty, apart from the first admin login.
+
+data/backups/
+      -> The locked backup files and the key that locks them.
+
+data/finance-plus/
+      -> FinancePlus workspace data.
+
+data/finance-plus/backups/
+      -> FinancePlus workspace backups.
+
+data/import-images/
+      -> Pictures uploaded for import and Scan & Fill.
+
+data/tessdata/
+      -> The language file the text reader needs.
+
+data/uploads/
+      -> Files uploaded by users, such as profile photos.
+
+data/uploads/profile/
+      -> Profile pictures.
+
+img/
+      -> Example files for trying the import and receipt-reading features.
+
+img/imgg/
+      -> Made-up sample receipts.
+
+logs/
+      -> Records of what the app did, kept for troubleshooting.
+
+src/
+      -> Everything the app is made of: the code, the web pages, the styling, the wording files and the tests.
+
+src/main/
+      -> The working parts of the app (as opposed to the tests).
+
+src/main/java/
+      -> The Java code, grouped into packages.
+
+src/main/java/com/
+      -> Part of the package layout.
+
+src/main/java/com/finance/
+      -> The root package. Every class of the app lives under here.
+
+src/main/java/com/finance/app/
+      -> Holds the file that starts the program.
+
+src/main/java/com/finance/chatbot/
+      -> The offline assistant.
+
+src/main/java/com/finance/chatbot/model/
+      -> The data shapes used by the chatbot.
+
+src/main/java/com/finance/chatbot/service/
+      -> The chatbot's answering logic.
+
+src/main/java/com/finance/config/
+      -> Rules for security, web routing, the app lock and error pages.
+
+src/main/java/com/finance/controller/
+      -> One class per screen or group of web addresses.
+
+src/main/java/com/finance/financeplus/
+      -> The FinancePlus workspace, which sits behind its own PIN.
+
+src/main/java/com/finance/financeplus/model/
+      -> The records used inside the FinancePlus workspace.
+
+src/main/java/com/finance/financeplus/repository/
+      -> The database questions for FinancePlus records.
+
+src/main/java/com/finance/financeplus/service/
+      -> The FinancePlus work: rules, alerts, files, backups, import and export.
+
+src/main/java/com/finance/financeplus/web/
+      -> The FinancePlus pages and the check that keeps them behind the PIN.
+
+src/main/java/com/finance/habits/
+      -> The spending habit checks.
+
+src/main/java/com/finance/model/
+      -> The shapes of the data: database records and small data packages.
+
+src/main/java/com/finance/model/dto/
+      -> Small safe packages of data passed between layers.
+
+src/main/java/com/finance/model/entity/
+      -> The records as they are stored in the database.
+
+src/main/java/com/finance/repository/
+      -> Ready-made questions that talk to the database.
+
+src/main/java/com/finance/security/
+      -> Who is signed in, and how that is worked out.
+
+src/main/java/com/finance/service/
+      -> The real work: records, import, receipt reading, forecasting, reports and export.
+
+src/main/java/com/finance/service/excel/
+      -> The Excel copy, the alerts, the health score, the tips and the backups.
+
+src/main/java/com/finance/util/
+      -> Shared validation helpers.
+
+src/main/resources/
+      -> Files copied into the program as they are: settings, web pages, styles and scripts.
+
+src/main/resources/static/
+      -> Files sent to the browser unchanged: styles, scripts, the chart library and translations.
+
+src/main/resources/static/css/
+      -> All the styling, split into design values, theme, layout, pieces and small screens.
+
+src/main/resources/static/images/
+      -> Holds the images files.
+
+src/main/resources/static/js/
+      -> The behaviour that runs in the browser.
+
+src/main/resources/static/locales/
+      -> One translation file per language.
+
+src/main/resources/static/vendor/
+      -> Third-party code copied in so the app works without internet.
+
+src/main/resources/static/vendor/chart.js/
+      -> Holds the chart.js files.
+
+src/main/resources/static/vendor/fonts/
+      -> Holds the fonts files.
+
+src/main/resources/static/vendor/icons/
+      -> Holds the icons files.
+
+src/main/resources/templates/
+      -> The web pages, written in Thymeleaf so the server fills in the blanks.
+
+src/main/resources/templates/error/
+      -> The page shown when something goes wrong.
+
+src/main/resources/templates/fragments/
+      -> Shared pieces of page (menu, footer, chat bubble) reused by many pages.
+
+src/main/resources/tessdata/
+      -> Holds the tessdata files.
+
+src/test/
+      -> The automated checks.
+
+src/test/java/
+      -> The test code, in the same package layout as the main code.
+
+src/test/java/com/
+      -> Part of the package layout.
+
+src/test/java/com/finance/
+      -> Tests for the app package.
+
+src/test/java/com/finance/financeplus/
+      -> Tests for the FinancePlus workspace.
+
+src/test/java/com/finance/financeplus/service/
+      -> The FinancePlus work: rules, alerts, files, backups, import and export.
+
+src/test/java/com/finance/financeplus/web/
+      -> The FinancePlus pages and the check that keeps them behind the PIN.
+
+src/test/java/com/finance/service/
+      -> Tests for the finance, import and offline features.
+
+src/test/resources/
+      -> Extra files the tests need, such as sample statements to import.
+
+src/test/resources/fixtures/
+      -> Sample files the tests feed into the import feature.
+
+src/test/resources/fixtures/import/
+      -> Sample statements (PDF, picture, CSV, Excel, handwriting) used to test importing.
+
+target/
+      -> Everything the build produced. Safe to delete; the next build recreates it.
+
+target/classes/
+      -> The compiled program and the copied resources.
+
+target/classes/com/
+      -> Part of the build output.
+
+target/classes/com/finance/
+      -> The root package. Every class of the app lives under here.
+
+target/classes/com/finance/app/
+      -> Holds the file that starts the program.
+
+target/classes/com/finance/chatbot/
+      -> The offline assistant.
+
+target/classes/com/finance/chatbot/model/
+      -> The data shapes used by the chatbot.
+
+target/classes/com/finance/chatbot/service/
+      -> The chatbot's answering logic.
+
+target/classes/com/finance/config/
+      -> Rules for security, web routing, the app lock and error pages.
+
+target/classes/com/finance/controller/
+      -> One class per screen or group of web addresses.
+
+target/classes/com/finance/financeplus/
+      -> The FinancePlus workspace, which sits behind its own PIN.
+
+target/classes/com/finance/financeplus/model/
+      -> The records used inside the FinancePlus workspace.
+
+target/classes/com/finance/financeplus/repository/
+      -> The database questions for FinancePlus records.
+
+target/classes/com/finance/financeplus/service/
+      -> The FinancePlus work: rules, alerts, files, backups, import and export.
+
+target/classes/com/finance/financeplus/web/
+      -> The FinancePlus pages and the check that keeps them behind the PIN.
+
+target/classes/com/finance/habits/
+      -> The spending habit checks.
+
+target/classes/com/finance/model/
+      -> The shapes of the data: database records and small data packages.
+
+target/classes/com/finance/model/dto/
+      -> Small safe packages of data passed between layers.
+
+target/classes/com/finance/model/entity/
+      -> The records as they are stored in the database.
+
+target/classes/com/finance/repository/
+      -> Ready-made questions that talk to the database.
+
+target/classes/com/finance/security/
+      -> Who is signed in, and how that is worked out.
+
+target/classes/com/finance/service/
+      -> The real work: records, import, receipt reading, forecasting, reports and export.
+
+target/classes/com/finance/service/excel/
+      -> The Excel copy, the alerts, the health score, the tips and the backups.
+
+target/classes/com/finance/util/
+      -> Shared validation helpers.
+
+target/classes/static/
+      -> Part of the build output.
+
+target/classes/static/css/
+      -> Part of the build output.
+
+target/classes/static/js/
+      -> Part of the build output.
+
+target/classes/static/locales/
+      -> Part of the build output.
+
+target/classes/static/vendor/
+      -> Part of the build output.
+
+target/classes/static/vendor/chart.js/
+      -> Part of the build output.
+
+target/classes/templates/
+      -> Part of the build output.
+
+target/classes/templates/error/
+      -> Part of the build output.
+
+target/classes/templates/fragments/
+      -> Part of the build output.
+
+target/classes/tessdata/
+      -> Part of the build output.
+
+target/generated-sources/
+      -> Files produced automatically while compiling.
+
+target/generated-sources/annotations/
+      -> Created by the build (Maven). Safe to delete; the next build recreates it.
+
+target/generated-test-sources/
+      -> Files produced automatically while compiling the tests.
+
+target/generated-test-sources/test-annotations/
+      -> Created by the build (Maven). Safe to delete; the next build recreates it.
+
+target/maven-archiver/
+      -> Created by the build (Maven). Safe to delete; the next build recreates it.
+
+target/maven-status/
+      -> Bookkeeping for faster repeat builds.
+
+target/maven-status/maven-compiler-plugin/
+      -> Created by the build (Maven). Safe to delete; the next build recreates it.
+
+target/maven-status/maven-compiler-plugin/compile/
+      -> Part of the build output.
+
+target/maven-status/maven-compiler-plugin/compile/default-compile/
+      -> Part of the build output.
+
+target/maven-status/maven-compiler-plugin/testCompile/
+      -> Part of the build output.
+
+target/maven-status/maven-compiler-plugin/testCompile/default-testCompile/
+      -> Part of the build output.
+
+target/test-classes/
+      -> The compiled tests.
+
+target/test-classes/com/
+      -> Part of the build output.
+
+target/test-classes/com/finance/
+      -> The root package. Every class of the app lives under here.
+
+target/test-classes/com/finance/financeplus/
+      -> The FinancePlus workspace, which sits behind its own PIN.
+
+target/test-classes/com/finance/financeplus/service/
+      -> The FinancePlus work: rules, alerts, files, backups, import and export.
+
+target/test-classes/com/finance/financeplus/web/
+      -> The FinancePlus pages and the check that keeps them behind the PIN.
+
+target/test-classes/com/finance/service/
+      -> The real work: records, import, receipt reading, forecasting, reports and export.
+
+target/test-classes/fixtures/
+      -> Part of the build output.
+
+target/test-classes/fixtures/import/
+      -> Part of the build output.
+
+tools/
+      -> Helper scripts for working on the project itself (not part of the running app).

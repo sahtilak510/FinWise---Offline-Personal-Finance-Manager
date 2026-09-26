@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <script>
+    /* Early theme paint (no-FOUC). Server pref arrives later via fwScripts;
+       until then follow saved choice, else Light. data-theme is Light|Dark. */
+    (function () {
+      try {
+        var pref = localStorage.getItem('finwise_theme') || 'light';
+        if (pref !== 'light' && pref !== 'dark') pref = 'light';
+        var eff = pref;
+
+        document.documentElement.setAttribute('data-theme', eff);
+        if (document.documentElement.classList) {
+          document.documentElement.classList.toggle('dark', eff === 'dark');
+          document.documentElement.classList.toggle('light', eff === 'light');
+        }
+        try { document.documentElement.style.colorScheme = eff; } catch (e) {}
+        try {
+          var __ts = localStorage.getItem('finwise_textsize') || 'default';
+          document.documentElement.setAttribute('data-fw-textsize', __ts);
+          if (localStorage.getItem('finwise_contrast') === 'on') document.documentElement.classList.add('fw-high-contrast');
+          if (localStorage.getItem('finwise_motion') === 'off') document.documentElement.classList.add('fw-no-motion');
+        } catch (e2) {}
+      } catch (e) {}
+    })();
+  </script>
+    <title>Categories - Finwise</title>
+    <link rel="stylesheet" href="/css/3d-dynamic.css">
+  <link rel="stylesheet" href="/css/finwise-tokens.css">
+  <link rel="stylesheet" href="/css/finwise-layout.css">
+  <link rel="stylesheet" href="/css/finwise-components.css">
+  <link rel="stylesheet" href="/css/finwise-responsive.css">
+  <link rel="stylesheet" href="/css/chatbot-widget.css">
+  <link rel="stylesheet" href="/css/finwise-bridge.css">
+  <link rel="stylesheet" href="/css/finwise-theme.css">
+</head>
+<body class="fw-body fw-shell">
+    <div class="fw-particles">
+        <div class="fw-particle" style="left:10%;animation-duration:20s;animation-delay:0s;top:30%;background:rgba(99,102,241,0.25);"></div>
+        <div class="fw-particle" style="left:40%;animation-duration:24s;animation-delay:-6s;top:70%;background:rgba(139,92,246,0.2);width:5px;height:5px;"></div>
+        <div class="fw-particle" style="left:70%;animation-duration:18s;animation-delay:-12s;top:40%;background:rgba(16,185,129,0.2);"></div>
+    </div>
+
+    <div th:replace="~{fragments/finwise :: fwSidebar('categories', ${user})}"></div>
+
+    <div th:replace="~{fragments/finwise :: fwTopbar('Categories', null, ${user}, ${unreadCount})}"></div>
+<div class="fw-scrim" onclick="fwCloseSidebar()"></div>
+
+    <div class="fw-content"><main class="fw-wrap" id="main">
+        <div th:if="${successMessage}" data-fw-flash data-fw-kind="ok" th:text="${successMessage}" style="display:none"></div>
+        <div th:if="${errorMessage}" data-fw-flash data-fw-kind="bad" th:text="${errorMessage}" style="display:none"></div>
+
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--sp-8); flex-wrap: wrap; gap: var(--sp-4);">
+            <div>
+                <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: var(--sp-2);"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/></svg> Categories</h1>
+                <p style="color: var(--surface-400);">Manage income and expense categories</p>
+            </div>
+            <button onclick="openAddModal()" class="fw-btn fw-btn-primary fw-btn-lg">+ Add Category</button>
+        </div>
+
+        <div style="display: flex; gap: var(--sp-3); margin-bottom: var(--sp-6);">
+            <a href="/categories" class="fw-btn fw-btn-secondary fw-btn-sm" th:classappend="${selectedType == null || selectedType.isEmpty() ? 'active' : ''}">All</a>
+            <a href="/categories?type=INCOME" class="fw-btn fw-btn-success fw-btn-sm" th:classappend="${selectedType == 'INCOME' ? 'active' : ''}">Income</a>
+            <a href="/categories?type=EXPENSE" class="fw-btn fw-btn-danger fw-btn-sm" th:classappend="${selectedType == 'EXPENSE' ? 'active' : ''}">Expense</a>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--sp-5);">
+            <div th:each="cat : ${categories}" style="padding: var(--sp-5); background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-xl); transition: all .3s var(--ease-out);">
+                <div style="display: flex; align-items: center; gap: var(--sp-3); margin-bottom: var(--sp-3);">
+                    <div th:if="${not #strings.isEmpty(cat.color)}" style="width: 12px; height: 12px; border-radius: 50%; background: ${cat.color}; flex-shrink: 0;"></div>
+                    <div th:if="${#strings.isEmpty(cat.color)}" style="width: 12px; height: 12px; border-radius: 50%; background: var(--primary); flex-shrink: 0;"></div>
+                    <h3 style="font-size: 1rem; font-weight: 600; margin: 0;" th:text="${cat.name}">Category Name</h3>
+                </div>
+                <div style="display: flex; gap: var(--sp-2); flex-wrap: wrap; margin-bottom: var(--sp-3);">
+                    <span class="fw-badge" th:classappend="${cat.type == 'INCOME' ? 'fw-badge-success' : 'fw-badge-danger'}" th:text="${cat.type}">TYPE</span>
+                    <span class="fw-badge fw-badge-info" th:if="${cat.isDefault}">Default</span>
+                    <span class="fw-badge" th:if="${not cat.isDefault}">Custom</span>
+                </div>
+                <p style="font-size: .8rem; color: var(--surface-500); margin-bottom: var(--sp-3);" th:if="${not #strings.isEmpty(cat.icon)}">
+                    <span th:text="${cat.icon}"></span>
+                </p>
+                <div style="display: flex; gap: var(--sp-2);">
+                    <details th:if="${not cat.isDefault}" style="flex: 1;">
+                        <summary class="fw-btn fw-btn-secondary fw-btn-sm" style="display:block; text-align:center;">Edit</summary>
+                        <form th:action="@{/categories/update/{id}(id=${cat.categoryId})}" method="post" style="display:grid; gap:var(--sp-3); margin-top:var(--sp-3);">
+                            <div>
+                                <label class="fw-label" th:for="'category-name-' + ${cat.categoryId}">Category name</label>
+                                <input th:id="'category-name-' + ${cat.categoryId}" class="fw-input" type="text" name="name" th:value="${cat.name}" maxlength="100" required>
+                            </div>
+                            <div>
+                                <label class="fw-label" th:for="'category-type-' + ${cat.categoryId}">Type</label>
+                                <select th:id="'category-type-' + ${cat.categoryId}" class="fw-input" name="type" required>
+                                    <option value="EXPENSE" th:selected="${cat.type == 'EXPENSE'}">Expense</option>
+                                    <option value="INCOME" th:selected="${cat.type == 'INCOME'}">Income</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="fw-label" th:for="'category-color-' + ${cat.categoryId}">Color</label>
+                                <input th:id="'category-color-' + ${cat.categoryId}" class="fw-input" type="color" name="color" th:value="${#strings.isEmpty(cat.color) ? '#6366f1' : cat.color}" style="height:44px; padding:4px;">
+                            </div>
+                            <div>
+                                <label class="fw-label" th:for="'category-icon-' + ${cat.categoryId}">Icon</label>
+                                <input th:id="'category-icon-' + ${cat.categoryId}" class="fw-input" type="text" name="icon" th:value="${cat.icon}" maxlength="10">
+                            </div>
+                            <button type="submit" class="fw-btn fw-btn-primary fw-btn-sm">Check &amp; Save</button>
+                        </form>
+                    </details>
+                    <span th:if="${cat.isDefault}" class="fw-btn fw-btn-secondary fw-btn-sm" style="flex: 1; text-align: center; opacity: 0.5; cursor: not-allowed;">Default</span>
+                    <form th:if="${not cat.isDefault}" th:action="@{/categories/delete/{id}(id=${cat.categoryId})}" method="post" style="flex: 1;">
+                        <button type="submit" class="fw-btn fw-btn-danger fw-btn-sm" style="width: 100%;" onclick="return confirm('Delete this category?')">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${#lists.isEmpty(categories)}" class="fw-empty" style="text-align: center; padding: var(--sp-16);">
+            <div class="fw-empty-icon"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/></svg></div>
+            <h3>No categories found</h3>
+            <p>Add categories to organize your income and expenses</p>
+            <button onclick="openAddModal()" class="fw-btn fw-btn-primary fw-btn-lg">Add First Category</button>
+        </div>
+    </main></div>
+
+    <div id="addCategoryModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-xl); padding: var(--sp-8); width: 100%; max-width: 480px; backdrop-filter: blur(20px);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--sp-6);">
+                <h2 style="font-size: 1.5rem; font-weight: 700;">Add Category</h2>
+                <button onclick="closeAddModal()" style="background: none; border: none; color: var(--surface-400); cursor: pointer; padding: var(--sp-2);">
+                    <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <form th:action="@{/categories/add}" method="post">
+                <div style="margin-bottom: var(--sp-4);">
+                    <label class="fw-label">Category Name</label>
+                    <input type="text" name="name" class="fw-input" placeholder="e.g. Groceries" required maxlength="100">
+                </div>
+                <div style="margin-bottom: var(--sp-4);">
+                    <label class="fw-label">Type</label>
+                    <select name="type" class="fw-input" required>
+                        <option value="EXPENSE">Expense</option>
+                        <option value="INCOME">Income</option>
+                    </select>
+                </div>
+                <div style="margin-bottom: var(--sp-4);">
+                    <label class="fw-label">Color (optional)</label>
+                    <input type="color" name="color" class="fw-input" value="#6366f1" style="height: 44px; padding: 4px;">
+                </div>
+                <div style="margin-bottom: var(--sp-6);">
+                    <label class="fw-label">Icon (optional, e.g. &#x1F4B0; or text)</label>
+                    <input type="text" name="icon" class="fw-input" placeholder="e.g. &#x1F4B0; or $ or FOOD" maxlength="10">
+                </div>
+                <div style="display: flex; gap: var(--sp-3);">
+                    <button type="button" onclick="closeAddModal()" class="fw-btn fw-btn-secondary" style="flex: 1;">Cancel</button>
+                    <button type="submit" class="fw-btn fw-btn-primary" style="flex: 1;">Add Category</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/finwise :: fwFooter}"></div>
+
+    <div th:replace="~{fragments/finwise :: fwScripts}"></div>
+    <script>
+        function openAddModal() {
+            document.getElementById('addCategoryModal').style.display = 'flex';
+        }
+        function closeAddModal() {
+            document.getElementById('addCategoryModal').style.display = 'none';
+        }
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeAddModal();
+        });
+        document.getElementById('addCategoryModal').addEventListener('click', function(e) {
+            if (e.target === this) closeAddModal();
+        });
+    </script>
+</body>
+</html>

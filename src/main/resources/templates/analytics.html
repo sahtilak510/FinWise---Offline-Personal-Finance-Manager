@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <script>
+    /* Early theme paint (no-FOUC). Server pref arrives later via fwScripts;
+       until then follow saved choice, else Light. data-theme is Light|Dark. */
+    (function () {
+      try {
+        var pref = localStorage.getItem('finwise_theme') || 'light';
+        if (pref !== 'light' && pref !== 'dark') pref = 'light';
+        var eff = pref;
+
+        document.documentElement.setAttribute('data-theme', eff);
+        if (document.documentElement.classList) {
+          document.documentElement.classList.toggle('dark', eff === 'dark');
+          document.documentElement.classList.toggle('light', eff === 'light');
+        }
+        try { document.documentElement.style.colorScheme = eff; } catch (e) {}
+        try {
+          var __ts = localStorage.getItem('finwise_textsize') || 'default';
+          document.documentElement.setAttribute('data-fw-textsize', __ts);
+          if (localStorage.getItem('finwise_contrast') === 'on') document.documentElement.classList.add('fw-high-contrast');
+          if (localStorage.getItem('finwise_motion') === 'off') document.documentElement.classList.add('fw-no-motion');
+        } catch (e2) {}
+      } catch (e) {}
+    })();
+  </script>
+    <title>Analytics - Finwise</title>
+    <link rel="stylesheet" href="/css/3d-dynamic.css">
+  <link rel="stylesheet" href="/css/finwise-tokens.css">
+  <link rel="stylesheet" href="/css/finwise-layout.css">
+  <link rel="stylesheet" href="/css/finwise-components.css">
+  <link rel="stylesheet" href="/css/finwise-responsive.css">
+  <link rel="stylesheet" href="/css/chatbot-widget.css">
+  <link rel="stylesheet" href="/css/finwise-bridge.css">
+  <link rel="stylesheet" href="/css/finwise-theme.css">
+  <style>
+    .analytics-page .fw-wrap { max-width: 1240px; padding: 26px 26px 40px; }
+    .analytics-page .analytics-chart-row { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 16px !important; margin-bottom: 16px !important; }
+    .analytics-page .analytics-chart-row > div { min-width: 0; min-height: 0; padding: 18px !important; overflow: hidden; }
+    .analytics-page .analytics-chart-row h2 { margin-bottom: 12px !important; }
+    .analytics-page canvas[id$="Chart"] { display: block; width: 100% !important; height: 260px !important; max-height: 260px; }
+    .analytics-page .fw-progress { min-height: 8px; margin-top: 4px; }
+    @media (max-width: 860px) {
+      .analytics-page .fw-wrap { padding: 18px 14px 32px; }
+      .analytics-page .analytics-chart-row { grid-template-columns: 1fr !important; }
+      .analytics-page canvas[id$="Chart"] { height: 240px !important; max-height: 240px; }
+    }
+  </style>
+</head>
+<body class="fw-body fw-shell analytics-page">
+    <div class="fw-particles">
+        <div class="fw-particle" style="left:10%;animation-duration:20s;animation-delay:0s;top:30%;background:rgba(99,102,241,0.25);"></div>
+        <div class="fw-particle" style="left:40%;animation-duration:24s;animation-delay:-6s;top:70%;background:rgba(139,92,246,0.2);width:5px;height:5px;"></div>
+        <div class="fw-particle" style="left:70%;animation-duration:18s;animation-delay:-12s;top:40%;background:rgba(16,185,129,0.2);"></div>
+    </div>
+
+    <div th:replace="~{fragments/finwise :: fwSidebar('analytics', ${user})}"></div>
+
+    <div th:replace="~{fragments/finwise :: fwTopbar('Analytics', null, ${user}, ${unreadCount})}"></div>
+<div class="fw-scrim" onclick="fwCloseSidebar()"></div>
+
+    <div class="fw-content"><main class="fw-wrap" id="main">
+        <div style="margin-bottom: var(--sp-8);">
+            <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: var(--sp-2);"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 16l4-8 4 4 4-6"/></svg> Analytics</h1>
+            <p style="color: var(--surface-400);" data-i18n="analyticsSubtitle">Financial insights and spending trends</p>
+        </div>
+
+        <!-- Filters -->
+        <div style="display: flex; gap: var(--sp-2); flex-wrap: wrap; margin-bottom: var(--sp-6); padding: var(--sp-4); background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-xl);">
+            <a href="/analytics?range=this-month" class="fw-btn" th:classappend="${selectedRange == 'this-month'} ? 'fw-btn-primary' : 'fw-btn-secondary'" data-i18n="thisMonth">This Month</a>
+            <a href="/analytics?range=last-month" class="fw-btn" th:classappend="${selectedRange == 'last-month'} ? 'fw-btn-primary' : 'fw-btn-secondary'" data-i18n="lastMonth">Last Month</a>
+            <a href="/analytics?range=last-3-months" class="fw-btn" th:classappend="${selectedRange == 'last-3-months'} ? 'fw-btn-primary' : 'fw-btn-secondary'" data-i18n="last3Months">Last 3 Months</a>
+            <a href="/analytics?range=last-6-months" class="fw-btn" th:classappend="${selectedRange == 'last-6-months'} ? 'fw-btn-primary' : 'fw-btn-secondary'" data-i18n="last6Months">Last 6 Months</a>
+            <a href="/analytics?range=this-year" class="fw-btn" th:classappend="${selectedRange == 'this-year'} ? 'fw-btn-primary' : 'fw-btn-secondary'" data-i18n="thisYear">This Year</a>
+            <form id="customRangeForm" style="display: inline-flex; gap: var(--sp-2); align-items: center; margin-left: var(--sp-2);">
+                <input type="date" id="customStartDate" name="startDate" th:value="${startDate}" class="fw-input" style="width: auto; padding: var(--sp-2) var(--sp-3); font-size: .85rem;">
+                <span style="color: var(--surface-500);">-</span>
+                <input type="date" id="customEndDate" name="endDate" th:value="${endDate}" class="fw-input" style="width: auto; padding: var(--sp-2) var(--sp-3); font-size: .85rem;">
+                <button type="button" onclick="applyCustomRange()" class="fw-btn fw-btn-secondary" data-i18n="apply">Apply</button>
+            </form>
+        </div>
+
+        <!-- Empty State -->
+        <div th:if="${!hasData}" class="fw-empty" style="margin-bottom: var(--sp-8);">
+            <div class="fw-empty-icon"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 16l4-8 4 4 4-6"/></svg></div>
+            <h3 data-i18n="noDataAvailable">No financial data available yet.</h3>
+            <p data-i18n="noDataHint">Add income or expenses to see your analytics here.</p>
+        </div>
+
+        <div th:if="${hasData}">
+            <!-- KPI Cards -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--sp-4); margin-bottom: var(--sp-8);">
+                <div style="padding: var(--sp-5); background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-xl); border-left: 4px solid var(--success-500);">
+                    <div style="font-size: .8125rem; color: var(--surface-400); margin-bottom: var(--sp-1);" data-i18n="totalIncome">Total Income</div>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--success-400);" th:text="'$' + ${#numbers.formatDecimal(totalIncome, 1, 2)}">$0.00</div>
+                </div>
+                <div style="padding: var(--sp-5); background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-xl); border-left: 4px solid var(--danger-500);">
+                    <div style="font-size: .8125rem; color: var(--surface-400); margin-bottom: var(--sp-1);" data-i18n="totalExpenses">Total Expenses</div>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--danger-400);" th:text="'$' + ${#numbers.formatDecimal(totalExpenses, 1, 2)}">$0.00</div>
+                </div>
+                <div style="padding: var(--sp-5); background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-xl); border-left: 4px solid var(--primary-500);">
+                    <div style="font-size: .8125rem; color: var(--surface-400); margin-bottom: var(--sp-1);" data-i18n="balance">Balance</div>
+                    <div style="font-size: 1.5rem; font-weight: 700;" th:classappend="${netBalance >= 0 ? 'fw-tx-amount positive' : 'fw-tx-amount negative'}" th:text="'$' + ${#numbers.formatDecimal(netBalance, 1, 2)}">$0.00</div>
+                </div>
+                <div style="padding: var(--sp-5); background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-xl); border-left: 4px solid var(--warning-500);">
+                    <div style="font-size: .8125rem; color: var(--surface-400); margin-bottom: var(--sp-1);" data-i18n="previousMonth">Previous Month</div>
+                    <div style="font-size: 1.5rem; font-weight: 700;" th:classappend="${previousMonthComparison >= 0 ? 'fw-tx-amount negative' : 'fw-tx-amount positive'}">
+                        <span th:text="${previousMonthComparison >= 0 ? '+' : ''} + '$' + ${#numbers.formatDecimal(previousMonthComparison, 1, 2)}">+$0.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:var(--sp-6);margin-bottom:var(--sp-6)">
+                <div style="padding:var(--sp-6);background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-xl)">
+                    <h2 style="font-size:1.1rem;font-weight:600;margin-bottom:var(--sp-4)">Next-Month Cash-Flow Forecast</h2>
+                    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px">
+                        <div><small>Predicted income</small><div style="font-weight:700;color:var(--success-400)" th:text="'$' + ${#numbers.formatDecimal(cashFlowForecast.predictedIncome,1,2)}">$0.00</div></div>
+                        <div><small>Predicted expenses</small><div style="font-weight:700;color:var(--danger-400)" th:text="'$' + ${#numbers.formatDecimal(cashFlowForecast.predictedExpense,1,2)}">$0.00</div></div>
+                        <div><small>Predicted net</small><div style="font-weight:700" th:text="'$' + ${#numbers.formatDecimal(cashFlowForecast.predictedNet,1,2)}">$0.00</div></div>
+                    </div>
+                    <p style="margin:16px 0 0;color:var(--fw-text-2)" th:text="'For ' + ${cashFlowForecast.month} + ' · ' + ${cashFlowForecast.trend} + ' · ' + ${cashFlowForecast.confidence} + '% confidence based on ' + ${cashFlowForecast.monthsUsed} + ' recent months'">Forecast details</p>
+                </div>
+                <div style="padding:var(--sp-6);background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-xl)">
+                    <h2 style="font-size:1.1rem;font-weight:600;margin-bottom:var(--sp-4)">Upcoming Bills</h2>
+                    <p th:if="${#lists.isEmpty(upcomingBills)}" style="color:var(--fw-text-2);margin:0">No recurring bills are due in the next 30 days.</p>
+                    <div th:unless="${#lists.isEmpty(upcomingBills)}" style="display:grid;gap:10px">
+                        <div th:each="bill : ${upcomingBills}" style="display:flex;justify-content:space-between;gap:12px;padding-bottom:10px;border-bottom:1px solid var(--glass-border)"><span th:text="${bill.description}">Bill</span><span><b th:text="'$' + ${#numbers.formatDecimal(bill.amount,1,2)}">$0</b> · <span th:text="${#temporals.format(bill.dueDate,'MMM d')}">date</span></span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row 1 -->
+            <div class="analytics-chart-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: var(--sp-6); margin-bottom: var(--sp-6);">
+                <!-- Income vs Expenses Chart -->
+                <div style="padding: var(--sp-6); background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-xl);">
+                    <h2 style="font-size: 1.1rem; font-weight: 600; margin-bottom: var(--sp-4);" data-i18n="incomeVsExpenses">Income vs Expenses</h2>
+                    <canvas id="incomeVsExpensesChart" height="250"></canvas>
+                </div>
+
+                <!-- Category Spending Chart -->
+                <div style="padding: var(--sp-6); background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-xl);">
+                    <h2 style="font-size: 1.1rem; font-weight: 600; margin-bottom: var(--sp-4);" data-i18n="categorySpending">Category Spending</h2>
+                    <canvas id="categorySpendingChart" height="250"></canvas>
+                </div>
+            </div>
+
+            <!-- Charts Row 2 -->
+            <div class="analytics-chart-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: var(--sp-6); margin-bottom: var(--sp-6);">
+                <!-- Monthly Trend -->
+                <div style="padding: var(--sp-6); background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-xl);">
+                    <h2 style="font-size: 1.1rem; font-weight: 600; margin-bottom: var(--sp-4);" data-i18n="spendingTrends">Spending Trends</h2>
+                    <canvas id="monthlyTrendChart" height="250"></canvas>
+                </div>
+
+                <!-- Budget Usage -->
+                <div style="padding: var(--sp-6); background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-xl);">
+                    <h2 style="font-size: 1.1rem; font-weight: 600; margin-bottom: var(--sp-4);" data-i18n="budgetUsage">Budget Usage</h2>
+                    <div th:if="${budgetUsage.isEmpty()}" class="fw-empty" style="padding: var(--sp-6);">
+                        <p data-i18n="noBudgetsYet">No budgets yet</p>
+                    </div>
+                    <div th:if="${!budgetUsage.isEmpty()}" style="display: flex; flex-direction: column; gap: var(--sp-4);">
+                        <div th:each="budget : ${budgetUsage}" style="display: flex; flex-direction: column; gap: var(--sp-2);">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-weight: 600; font-size: .95rem;" th:text="${budget.category}">Category</span>
+                                <span style="font-size: .85rem; color: var(--surface-400);">
+                                    <span th:text="'$' + ${#numbers.formatDecimal(budget.spent, 1, 2)}">$0</span> /
+                                    <span th:text="'$' + ${#numbers.formatDecimal(budget.limit, 1, 2)}">$0</span>
+                                </span>
+                            </div>
+                            <div class="fw-progress">
+                                <div class="fw-progress__track" th:classappend="${budget.percentage > 100 ? 'danger' : budget.percentage > 80 ? 'warning' : 'safe'}" th:style="'width:' + ${#numbers.formatDecimal(budget.percentage > 100 ? 100 : budget.percentage, 1, 0) + '%;'} + 'max-width:100%;'"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Insights Row -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--sp-6); margin-bottom: var(--sp-6);">
+                <div style="padding: var(--sp-6); background: rgba(99,102,241,.06); border: 1px solid var(--glass-border); border-radius: var(--radius-xl);">
+                    <div style="font-size: .85rem; color: var(--surface-400); margin-bottom: var(--sp-2);" data-i18n="highestSpending">Highest Spending</div>
+                    <div style="font-size: 1.3rem; font-weight: 700;" th:text="${highestSpendingCategory}">N/A</div>
+                    <div style="font-size: 1rem; color: var(--danger-400); font-weight: 600; margin-top: var(--sp-1);" th:text="'$' + ${#numbers.formatDecimal(highestSpendingAmount, 1, 2)}">$0.00</div>
+                </div>
+                <div style="padding: var(--sp-6); background: rgba(139,92,246,.06); border: 1px solid var(--glass-border); border-radius: var(--radius-xl);">
+                    <div style="font-size: .85rem; color: var(--surface-400); margin-bottom: var(--sp-2);" data-i18n="highestMerchant">Highest Merchant</div>
+                    <div style="font-size: 1.3rem; font-weight: 700;" th:text="${highestSpendingMerchant}">N/A</div>
+                </div>
+            </div>
+        </div>
+    </main></div>
+
+    <div th:replace="~{fragments/finwise :: fwFooter}"></div>
+
+    <script src="/vendor/chart.js/chart.umd.min.js"></script>
+    <div th:replace="~{fragments/finwise :: fwScripts}"></div>
+    <script th:inline="javascript">
+    function applyCustomRange() {
+        var start = document.getElementById('customStartDate').value;
+        var end = document.getElementById('customEndDate').value;
+        if (start && end) {
+            window.location.href = '/analytics?range=custom&startDate=' + start + '&endDate=' + end;
+        }
+    }
+
+    (function() {
+        var catSpending = /*[[${categorySpending}]]*/ {};
+        var catIncome = /*[[${categoryIncome}]]*/ {};
+        var monthlyTrend = /*[[${monthlyTrend}]]*/ {};
+        var hasData = /*[[${hasData}]]*/ false;
+
+        if (!hasData) return;
+
+        var accentColors = [
+            '#6366f1','#818cf8','#a78bfa','#c084fc','#38bdf8',
+            '#34d399','#fbbf24','#fb923c','#f87171','#a3e635',
+            '#22d3ee','#e879f9','#f472b6','#facc15','#4ade80'
+        ];
+
+        function getLabels(data) {
+            return Object.keys(data);
+        }
+        function getValues(data) {
+            return Object.values(data).map(function(v) { return parseFloat(v) || 0; });
+        }
+
+        /* Theme-aware chart colors (ticks, grids, legends stay readable in
+           both Light and Dark mode) + live re-style on theme toggle. */
+        var fwCharts = [];
+        function fwThemeC() {
+            if (typeof window.fwChartThemeColors === 'function') return window.fwChartThemeColors();
+            var dark = document.documentElement.getAttribute('data-theme') !== 'light';
+            return {
+                tick: dark ? '#8ea0bb' : '#52627A',
+                grid: dark ? 'rgba(148,163,184,.14)' : 'rgba(15,23,42,.10)',
+                legend: dark ? '#CBD5E1' : '#52627A'
+            };
+        }
+        function fwRestyleCharts() {
+            var c = fwThemeC();
+            fwCharts.forEach(function (ch) {
+                try {
+                    var o = ch.options || {};
+                    if (o.plugins && o.plugins.legend && o.plugins.legend.labels) o.plugins.legend.labels.color = c.legend;
+                    ['x', 'y'].forEach(function (ax) {
+                        if (o.scales && o.scales[ax]) {
+                            if (o.scales[ax].ticks) o.scales[ax].ticks.color = c.tick;
+                            if (o.scales[ax].grid) o.scales[ax].grid.color = c.grid;
+                        }
+                    });
+                    ch.update();
+                } catch (e) {}
+            });
+        }
+        document.addEventListener('finwise:theme', fwRestyleCharts);
+
+        /* Income vs Expenses Bar */
+        var ivLabels = [];
+        var ivIncome = [];
+        var ivExpenses = [];
+        var monthKeys = Object.keys(monthlyTrend).map(function(k) { return k.replace(/-income|-expense/g, ''); });
+        var uniqueMonths = monthKeys.filter(function(v, i, a) { return a.indexOf(v) === i; });
+        uniqueMonths.forEach(function(m) {
+            ivLabels.push(m);
+            ivIncome.push(parseFloat(monthlyTrend[m + '-income']) || 0);
+            ivExpenses.push(parseFloat(monthlyTrend[m + '-expense']) || 0);
+        });
+        if (ivLabels.length > 0) {
+            var barC = fwThemeC();
+            fwCharts.push(new Chart(document.getElementById('incomeVsExpensesChart'), {
+                type: 'bar',
+                data: {
+                    labels: ivLabels,
+                    datasets: [
+                        { label: 'Income', data: ivIncome, backgroundColor: 'rgba(52,211,153,.7)', borderColor: '#34d399', borderWidth: 1, borderRadius: 6 },
+                        { label: 'Expenses', data: ivExpenses, backgroundColor: 'rgba(248,113,113,.7)', borderColor: '#f87171', borderWidth: 1, borderRadius: 6 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: barC.legend } } },
+                    scales: {
+                        x: { ticks: { color: barC.tick }, grid: { color: barC.grid } },
+                        y: { ticks: { color: barC.tick }, grid: { color: barC.grid } }
+                    }
+                }
+            }));
+        }
+
+        /* Category Doughnut */
+        var csLabels = getLabels(catSpending);
+        var csValues = getValues(catSpending);
+        if (csLabels.length > 0) {
+            var doughC = fwThemeC();
+            fwCharts.push(new Chart(document.getElementById('categorySpendingChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: csLabels,
+                    datasets: [{ data: csValues, backgroundColor: accentColors.slice(0, csLabels.length), borderWidth: 0 }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { position: 'right', labels: { color: doughC.legend, padding: 12 } } },
+                    cutout: '65%'
+                }
+            }));
+        }
+
+        /* Monthly Trend Line */
+        if (ivLabels.length > 0) {
+            var lineC = fwThemeC();
+            fwCharts.push(new Chart(document.getElementById('monthlyTrendChart'), {
+                type: 'line',
+                data: {
+                    labels: ivLabels,
+                    datasets: [
+                        { label: 'Income', data: ivIncome, borderColor: '#34d399', backgroundColor: 'rgba(52,211,153,.1)', fill: true, tension: .4, pointRadius: 4 },
+                        { label: 'Expenses', data: ivExpenses, borderColor: '#f87171', backgroundColor: 'rgba(248,113,113,.1)', fill: true, tension: .4, pointRadius: 4 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: lineC.legend } } },
+                    scales: {
+                        x: { ticks: { color: lineC.tick }, grid: { color: lineC.grid } },
+                        y: { ticks: { color: lineC.tick }, grid: { color: lineC.grid } }
+                    }
+                }
+            }));
+        }
+    })();
+    </script>
+</body>
+</html>

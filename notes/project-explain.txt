@@ -1,0 +1,556 @@
+FINWISE PROJECT - OPEN EACH FOLDER AND EXPLAIN ITS CONTENTS
+==========================================================
+
+This guide follows the VS Code Explorer like this:
+  1. Start at the javaproject folder.
+  2. Open the first folder.
+  3. Explain its child folders and files. If a child is a folder, open it and
+     explain its contents before returning to the parent folder.
+  4. Then move to the next folder or file.
+
+Backslash (\) means "inside this folder". Example:
+  .github\modernize\java-upgrade\hooks\scripts\
+means open .github, then modernize, then java-upgrade, then hooks, then
+scripts.
+
+JAVAPROJECT\
+============
+This is the main project folder. It contains the source code, setup guides,
+launch scripts, local data, and files Maven uses to build FinWise.
+
+FOLDERS (OPENED ONE AT A TIME)
+------------------------------
+
+.git\
+  Hidden Git bookkeeping folder. Git uses it to remember project history and
+  changes. Do not edit its internal files manually.
+
+.github\
+  GitHub-related settings and helpers. Open its folders in this order:
+
+  modernize\
+    Files for optional Java upgrade tooling.
+
+    java-upgrade\
+      Optional Java-upgrade helper configuration.
+
+      hooks\
+        Scripts that can be called by the Java-upgrade tooling.
+
+        scripts\
+          recordToolUse.ps1
+            PowerShell helper for recording Java-upgrade tool use.
+          recordToolUse.sh
+            Shell helper for recording Java-upgrade tool use.
+
+      .gitignore
+        Tells Git which generated files in this helper folder to ignore.
+
+.vscode\
+  Optional Visual Studio Code project settings.
+  extensions.json recommends editor extensions.
+  settings.json contains editor settings for this project.
+
+C\
+  Old helper scripts; they are not needed to build or run FinWise.
+  tmp_pom.bat searches an old computer-specific pom.xml path.
+  tmp_pom2.bat prints selected Maven settings from that old path.
+
+data\
+  Local application data. It can contain personal finance records and files.
+  Protect this folder; do not casually delete or share it.
+
+  backups\
+    Application backup files and the local .backup.key file used by some
+    backups. Keep the key safe if you need to restore those backups.
+
+  finance-plus\
+    Local files belonging to the Finance Plus feature.
+
+    backups\
+      Encrypted Finance Plus backup files.
+
+  import-images\
+    Images uploaded during document imports. Database records refer to them.
+
+  tessdata\
+    Local OCR language data used to recognize text in documents.
+
+  uploads\
+    User-uploaded files stored outside the public web pages.
+
+    profile\
+      Profile picture image files.
+
+  finance.db
+    Main SQLite database containing core application records.
+
+  finance-e2e.db
+    Database used for end-to-end testing, not ordinary user data.
+
+  Finwise_Data.xlsx
+    Local Excel workbook used by workbook-based application features.
+
+  Other files in these data folders
+    Names and numbers vary as the app is used. They are runtime records,
+    images, keys, or backups, not Java source files. Stop FinWise before
+    manually copying these files.
+
+img\
+  Sample documents and images for trying import and scanning features.
+
+  imgg\
+    expense-01.png through expense-10.png are sample expense images.
+    income-01.png through income-10.png are sample income images.
+
+  finwise-import-sample.csv
+    Example transaction data in CSV format.
+  finwise-import-sample.jpeg
+  finwise-import-sample.jpg
+  finwise-import-sample.png
+    Sample receipt/document images in different image formats.
+  finwise-import-sample.pdf
+    Sample PDF for import and text extraction.
+  finwise-import-sample.xls
+    Sample older Excel spreadsheet.
+  finwise-import-sample.xlsx
+    Sample newer Excel spreadsheet.
+  handwritten-note.jpg
+  handwritten-note.png
+    Handwriting samples for trying scan and OCR features.
+
+logs\
+  Text files containing output from the app and its tests. They can help
+  diagnose a problem. Logs may include computer-specific technical details.
+
+  app-stderr.log and app-stdout.log
+    Error output and normal output from an app run.
+  finance-e2e.log
+    Output from end-to-end testing.
+  finance-live.err.log and finance-live.out.log
+    Error and normal output from a live run.
+  finance.log
+    Main application log.
+  finance.log.2026-10-21.0.gz
+    An older compressed application log.
+  live-preview.err.log and live-preview.out.log
+    Error and normal output from a preview run.
+  smoke-err.log and smoke-out.log
+    Error and normal output from quick smoke checks.
+
+notes\
+  Human-readable project notes. The application does not need these files.
+
+  project-explain.txt
+    This folder-by-folder project explanation.
+  setup.txt
+    Simple setup steps and explanations of Java, Maven, and running FinWise.
+
+src\
+  Main project source code and tests. Open main first, then test.
+
+  main\
+    Files used to build and run the application. Open java first, then
+    resources.
+
+    java\
+      Java source code for the application server.
+
+      com\
+        finance\
+          Main application packages. Open each package and its child folders
+          before moving to the next package.
+
+          app\
+            OfflineFinanceApplication.java starts Spring Boot, scans app
+            components, and enables scheduled work.
+
+          chatbot\
+            ChatbotController.java receives chatbot page/API requests.
+
+            model\
+              ChatRequest.java describes a chatbot question.
+              ChatResponse.java describes a chatbot answer.
+              ConversationContext.java carries conversation context.
+
+            service\
+              ChatbotService.java creates offline chatbot responses.
+
+          config\
+            AppLockInterceptor.java checks whether a page is behind app lock.
+            ChatbotExceptionHandler.java handles chatbot-specific errors.
+            GlobalExceptionHandler.java handles application-wide errors.
+            SecurityConfig.java configures login, access permissions, and CSRF.
+            WebConfig.java configures web resources.
+            WebMvcConfig.java configures Spring MVC behavior.
+
+          controller\
+            AccountController.java handles account pages and actions.
+            AdminController.java handles admin pages and user administration.
+            AnalyticsController.java handles analytics pages.
+            AppLockController.java handles app-lock actions.
+            AuditLogController.java handles audit pages.
+            AuthController.java handles registration and login pages.
+            BudgetController.java handles budgets.
+            CategoriesController.java handles categories.
+            ControllerExceptionHandler.java prepares controller error pages
+            and shared view information.
+            ExpenseController.java handles expenses and receipt access.
+            FinancialGoalController.java handles savings goals.
+            HomeController.java handles the home page and dashboard.
+            ImportController.java handles file import, review, and history.
+            IncomeController.java handles income records.
+            NotificationsController.java handles notification pages.
+            PasswordResetController.java handles password-reset links/forms.
+            ProfileController.java handles profile details and images.
+            ReportController.java handles report pages and downloads.
+            ScanController.java handles scan-and-fill requests.
+            SettingsController.java handles user settings.
+
+          financeplus\
+            Code for the additional Finance Plus workspace. Its folders are
+            opened in this order: model, repository, service, web.
+
+            model\
+              FinancePlusAttachment.java describes a saved attachment.
+              FinancePlusBackup.java describes a backup record.
+              FinancePlusNotification.java describes a notification record.
+              FinancePlusRecurring.java describes a recurring transaction.
+              FinancePlusSettings.java describes workspace preferences.
+
+            repository\
+              FinancePlusAttachmentRepository.java accesses attachment rows.
+              FinancePlusBackupRepository.java accesses backup rows.
+              FinancePlusNotificationRepository.java accesses notification rows.
+              FinancePlusRecurringRepository.java accesses recurring rows.
+              FinancePlusSettingsRepository.java accesses settings rows.
+
+            service\
+              FinancePlusAttachmentService.java manages attachments.
+              FinancePlusAutomation.java runs automatic workspace tasks.
+              FinancePlusBackupService.java creates/restores encrypted backups.
+              FinancePlusExportService.java exports workspace data.
+              FinancePlusImportService.java imports workspace data.
+              FinancePlusNotificationService.java manages notifications.
+              FinancePlusRecurringService.java manages recurring items.
+              FinancePlusSettingsService.java manages workspace settings.
+
+            web\
+              FinancePlusAccessInterceptor.java checks workspace access.
+              FinancePlusController.java handles Finance Plus web requests.
+
+          habits\
+            Spending-habit rules and the page/service that runs them.
+            AbstractSpendingRule.java is shared rule support.
+            HabitController.java serves habit requests.
+            HabitService.java runs the rules.
+            HostelFoodRule.java checks a hostel-food pattern.
+            NeedWantRule.java categorizes spending as needs or wants.
+            RuleResult.java represents a rule result.
+            SpendingRule.java defines the shared rule interface.
+            StreakRule.java checks spending streaks.
+
+          model\
+            Data objects used by the application. Open dto, then entity.
+
+            dto\
+              ExtractedTransactionDTO.java carries details extracted from a
+              scan.
+              UserDTO.java carries user information between code layers.
+
+            entity\
+              Account.java represents a saved account.
+              Budget.java represents a saved budget.
+              ChatMessage.java represents saved chatbot history.
+              Expense.java represents an expense and optional receipt.
+              FinancialGoal.java represents a savings goal.
+              ImportedTransaction.java represents an imported transaction.
+              Income.java represents an income record.
+              User.java represents a user account and profile.
+
+          repository\
+            Interfaces used to read and write database records.
+            AccountRepository.java accesses accounts.
+            BudgetRepository.java accesses budgets.
+            ChatMessageRepository.java accesses chatbot history.
+            ExpenseRepository.java accesses expenses.
+            FinancialGoalRepository.java accesses goals.
+            ImportedTransactionRepository.java accesses imported records.
+            IncomeRepository.java accesses income.
+            UserRepository.java accesses user accounts.
+
+          security\
+            AdminAuthenticationProvider.java checks configured admin login.
+            UserDetailsServiceImpl.java loads a registered user's login data.
+            UserPrincipal.java represents the signed-in user.
+
+          service\
+            Services contain the rules and work behind web features.
+
+            AccountService.java manages accounts.
+            AdminPasswordResetService.java creates and validates reset links.
+            AdminUserDeletionService.java removes users and related records.
+            AdminUserExportService.java creates user Excel/ZIP exports.
+            AnalyticsEngine.java defines analytics operations.
+            ApachePoiService.java defines spreadsheet operations.
+            AppLockService.java manages app-lock behavior.
+            BudgetService.java manages budgets.
+            CashFlowForecastService.java prepares cash-flow forecasts.
+            CategoryEngine.java defines transaction categorization.
+            ChatHistoryService.java manages chatbot history.
+            DefaultDocumentProcessor.java provides default document processing.
+            DocumentProcessor.java defines document-processing operations.
+            DocumentScanService.java defines document scanning operations.
+            DocumentUploadService.java defines file parsing operations.
+            DuplicateDetectionService.java defines duplicate checks.
+            ExpenseService.java manages expenses.
+            FinancialGoalService.java manages goals.
+            ForecastEngine.java defines forecasting operations.
+            ImportCommitService.java validates and saves selected imports.
+            ImportFileService.java processes uploaded import files.
+            IncomeService.java manages income.
+            LocalAnalyticsEngine.java calculates analytics locally.
+            LocalApachePoiService.java performs spreadsheet work locally.
+            LocalCategoryEngine.java categorizes records locally.
+            LocalDocumentScanService.java implements local scanning.
+            LocalDocumentUploadService.java implements local document parsing.
+            LocalDuplicateDetectionService.java implements local duplicate checks.
+            LocalForecastEngine.java calculates forecasts locally.
+            LocalOpenCVPreprocessor.java prepares images for OCR.
+            LocalPDFBoxService.java reads PDF files locally.
+            LocalReportEngine.java generates reports locally.
+            LocalTess4JOcrService.java recognizes text with local OCR.
+            LocalTransactionService.java performs local transaction operations.
+            OpenCVPreprocessor.java defines image preparation.
+            PDFBoxService.java defines PDF reading.
+            RecurringTransactionScheduler.java creates due recurring records.
+            ReportEngine.java defines report creation.
+            ScanTransactionParser.java converts scan text into transaction data.
+            Tess4JOcrService.java defines OCR text recognition.
+            TransactionExtractor.java extracts transaction details from files.
+            TransactionService.java provides shared transaction operations.
+            UserDataExportService.java exports a user's core records to Excel.
+            UserService.java handles users, passwords, and profiles.
+
+            excel\
+              BackupRestoreService.java creates/restores local application backups.
+              BackupScheduler.java runs scheduled backups.
+              BudgetExcelService.java handles workbook budget data.
+              CategoryExcelService.java handles workbook category data.
+              ExcelWorkbookInitializer.java creates/checks workbook sheets.
+              ExpenseExcelService.java handles workbook expense data.
+              FinancialHealthScoreService.java calculates the health score.
+              GoalExcelService.java handles workbook goal data.
+              IncomeExcelService.java handles workbook income data.
+              LocalExcelStorageService.java reads/writes the Excel workbook.
+              NotificationService.java manages workbook-based notifications.
+              SmartInsightsService.java creates financial insights.
+
+          util\
+            FinanceValidation.java contains shared input checks.
+
+    resources\
+      Settings and browser-facing files used by the application.
+
+      static\
+        Browser files: styles, JavaScript, images, translations, and libraries.
+
+        css\
+          3d-dynamic.css visual effects.
+          auth.css login and registration styles.
+          chatbot-widget.css chatbot widget styles.
+          finance-plus.css Finance Plus styles.
+          finwise-bridge.css compatibility between styles.
+          finwise-components.css reusable component styles.
+          finwise-layout.css page layout styles.
+          finwise-responsive.css small-screen layout styles.
+          finwise-theme.css theme colors/styles.
+          finwise-tokens.css shared design values.
+          scan-fill.css scan page styles.
+          settings.css settings page styles.
+
+        images\
+          Images used in the application interface.
+
+        js\
+          chatbot-widget.js chatbot interactions.
+          finance-plus.js Finance Plus interactions.
+          finwise-ui.js shared layout and interface behavior.
+          scan-fill.js scan-and-fill interactions.
+          script.js shared browser and profile interactions.
+
+        locales\
+          Translation JSON files for the interface:
+          ar.json Arabic; bn.json Bengali; de.json German; en.json English;
+          es.json Spanish; fa.json Persian; fr.json French; gu.json Gujarati;
+          he.json Hebrew; hi.json Hindi; it.json Italian; ja.json Japanese;
+          kn.json Kannada; ko.json Korean; ml.json Malayalam; mr.json Marathi;
+          ne.json Nepali; pa.json Punjabi; pt.json Portuguese; ru.json Russian;
+          ta.json Tamil; te.json Telugu; tr.json Turkish; ur.json Urdu;
+          zh.json Chinese.
+
+        vendor\
+          Bundled browser libraries/assets, so they can be served locally.
+
+          chart.js\
+            chart.umd.min.js is the Chart.js library used for graphs.
+
+          fonts\
+            Bundled fonts used by the interface.
+
+          icons\
+            Bundled icons used by the interface.
+
+      templates\
+        Thymeleaf HTML pages displayed by the browser.
+
+        admin\
+          dashboard.html is the admin console page.
+
+        error\
+          error.html is the general error page.
+
+        fragments\
+          chatbot-widget.html is the shared chatbot widget.
+          finwise.html contains shared page layout/navigation/scripts.
+
+        Page files:
+          account.html user profile.
+          accounts.html account list.
+          add-account.html form to add an account.
+          add-budget.html form to add a budget.
+          add-expense.html form to add an expense.
+          add-goal.html form to add a savings goal.
+          add-income.html form to add income.
+          analytics.html analytics and charts.
+          app-lock.html app-lock screen.
+          audit.html audit history.
+          budgets.html budget list.
+          categories.html category manager.
+          chatbot.html chatbot page.
+          dashboard.html finance overview.
+          edit-budget.html edit a budget.
+          edit-expense.html edit an expense.
+          edit-goal.html edit a goal.
+          edit-income.html edit income.
+          expenses.html expense list.
+          finance-plus-locked.html locked Finance Plus screen.
+          finance-plus.html Finance Plus workspace.
+          goals.html goal list.
+          habits.html spending habits.
+          import-edit.html edit an imported transaction.
+          import-history.html imported record history.
+          import-preview.html review imported records.
+          import.html upload a document.
+          income.html income list.
+          index.html landing page.
+          login.html sign-in page.
+          notifications.html notifications page.
+          register.html registration page.
+          reports.html reports page.
+          reset-password.html choose a new password.
+          scan-fill.html scan and fill a transaction.
+          settings.html settings page.
+
+      tessdata\
+        eng.traineddata is the English OCR language model for reading scans.
+
+      application-e2e.properties
+        Isolated test settings and file paths, separate from normal user data.
+      application.properties
+        Normal application settings, including database and local file paths.
+
+  test\
+    Automated tests and their sample files. These check that app behavior
+    works and do not contain the production database.
+
+    java\
+      com\finance\
+        controller\
+          AdminControllerIntegrationTest.java tests admin web features.
+          HomeControllerDashboardTest.java tests dashboard calculations.
+
+        financeplus\
+          service\
+            FinancePlusRecurringServiceTest.java tests recurring items.
+          web\
+            FinancePlusControllerTest.java tests Finance Plus web requests.
+
+        security\
+          AdminAuthenticationProviderTest.java tests admin authentication.
+
+        service\
+          FeatureRegressionTest.java checks previously fixed behaviors.
+          FinanceFeatureIntegrationTest.java tests connected finance features.
+          OfflineFeatureTest.java tests local/offline features.
+          UserRegistrationLoginTest.java tests registration and login.
+
+    resources\
+      fixtures\
+        import\
+          Sample documents used by import tests:
+          finwise-import-sample.csv transaction text.
+          finwise-import-sample.jpeg and finwise-import-sample.jpg image samples.
+          finwise-import-sample.pdf PDF sample.
+          finwise-import-sample.png image sample.
+          finwise-import-sample.xls and finwise-import-sample.xlsx spreadsheets.
+          handwritten-note.jpg and handwritten-note.png handwriting samples.
+
+target\
+  Maven-generated build and test output. It contains compiled classes,
+  generated sources, test reports, temporary test data, and the runnable JAR.
+  Maven recreates it; do not put your only copy of important data here.
+
+tools\
+  Developer helper scripts; not needed for ordinary app use.
+
+  generate_purpose_report.py
+    Creates a report about project files.
+
+FILES AT THE JAVAPROJECT ROOT
+-----------------------------
+After the folders, these are the individual files directly inside javaproject:
+
+.gitignore
+  Tells Git to leave local data, logs, and generated build files out of source
+  changes.
+
+csrfprobe2.py
+  A local web-request/CSRF test script. Not used when running FinWise normally.
+
+fix_mojibake.py
+  A text repair helper with an old computer-specific path. It can change files;
+  do not run it without checking its target path first.
+
+null
+  An empty extra file. FinWise does not use it.
+
+pom.xml
+  Maven's project recipe: Java version, libraries, and build instructions.
+
+README.md
+  Main project overview, features, and quick-start guide.
+
+run.bat
+  Windows launcher that builds and starts FinWise.
+
+run.sh
+  macOS/Linux launcher that builds and starts FinWise.
+
+SETUP.md
+  Detailed installation and troubleshooting guide.
+
+HOW THE PROJECT RUNS
+--------------------
+1. Run run.bat on Windows or run.sh on macOS/Linux.
+2. Maven reads pom.xml and builds the Java application.
+3. Java starts a local web server.
+4. Open http://localhost:8080 in a browser.
+5. Browser pages come from src\main\resources\templates\ and use files from
+   src\main\resources\static\.
+6. Java controllers receive requests and call services to do the work.
+7. Services use repositories to save and read records in data\finance.db.
+8. Some features also use data\Finwise_Data.xlsx and other folders under data\.
+
+Protect the data\ folder because it can contain private financial details.
+Stop FinWise before manually copying its data.

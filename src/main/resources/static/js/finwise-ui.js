@@ -314,7 +314,8 @@
   document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('[data-fw-flash]').forEach(function (el) {
       var kind = el.getAttribute('data-fw-kind') || '';
-      var title = kind === 'ok' ? 'Success' : kind === 'bad' ? 'Something went wrong' : 'Notice';
+      var title = kind === 'ok' ? 'Success' : kind === 'bad' ? 'Something went wrong'
+        : kind === 'warn' ? 'Warning' : 'Notice';
       if (el.textContent.trim()) window.fwToast(title, el.textContent.trim(), kind);
     });
   });
@@ -390,6 +391,99 @@
       });
     });
   };
+
+  /* ---------- Global navigation search ---------- */
+  document.addEventListener('DOMContentLoaded', function () {
+    var input = document.getElementById('fwGlobalSearch');
+    var wrapper = input && input.closest('.fw-top-search');
+    var sidebar = document.getElementById('fwSidebar');
+    if (!input || !wrapper || !sidebar) return;
+
+    var aliases = {
+      '/income': ['earnings', 'revenue'],
+      '/expenses': ['spending', 'transactions', 'expense'],
+      '/budgets': ['budget'],
+      '/goals': ['goal', 'savings'],
+      '/analytics': ['insights', 'charts'],
+      '/reports': ['report'],
+      '/chatbot': ['chat', 'assistant'],
+      '/scan': ['receipt', 'scan receipt'],
+      '/account': ['profile'],
+      '/finance-plus': ['finance plus']
+    };
+    var pages = Array.from(sidebar.querySelectorAll('.fw-sb-link')).map(function (link) {
+      var label = link.querySelector('.lbl');
+      return {
+        label: (label ? label.textContent : link.textContent).trim(),
+        href: link.getAttribute('href'),
+        aliases: aliases[link.getAttribute('href')] || []
+      };
+    }).filter(function (page) { return page.label && page.href; });
+
+    var results = document.createElement('div');
+    results.id = 'fwGlobalSearchResults';
+    results.className = 'fw-search-results';
+    results.setAttribute('role', 'listbox');
+    results.setAttribute('aria-label', 'Pages');
+    results.hidden = true;
+    wrapper.appendChild(results);
+
+    function closeResults() {
+      results.hidden = true;
+      input.setAttribute('aria-expanded', 'false');
+    }
+
+    function renderResults() {
+      var query = input.value.trim().toLowerCase();
+      results.replaceChildren();
+      if (!query) { closeResults(); return; }
+
+      var matches = pages.map(function (page) {
+        var terms = [page.label].concat(page.aliases).map(function (term) { return term.toLowerCase(); });
+        var score = terms.reduce(function (best, term) {
+          if (term === query) return Math.max(best, 3);
+          if (term.indexOf(query) === 0) return Math.max(best, 2);
+          if (term.indexOf(query) !== -1) return Math.max(best, 1);
+          return best;
+        }, 0);
+        return { page: page, score: score };
+      }).filter(function (match) { return match.score > 0; })
+        .sort(function (a, b) { return b.score - a.score || a.page.label.localeCompare(b.page.label); })
+        .slice(0, 6);
+
+      if (!matches.length) {
+        var empty = document.createElement('p');
+        empty.textContent = 'No pages found';
+        results.appendChild(empty);
+      } else {
+        matches.forEach(function (match) {
+          var link = document.createElement('a');
+          link.href = match.page.href;
+          link.textContent = match.page.label;
+          link.setAttribute('role', 'option');
+          results.appendChild(link);
+        });
+      }
+      results.hidden = false;
+      input.setAttribute('aria-expanded', 'true');
+    }
+
+    input.addEventListener('input', renderResults);
+    input.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape') { closeResults(); return; }
+      if (event.key === 'ArrowDown' && !results.hidden) {
+        var first = results.querySelector('a');
+        if (first) { event.preventDefault(); first.focus(); }
+      }
+      if (event.key === 'Enter' && !results.hidden) {
+        var firstMatch = results.querySelector('a');
+        if (firstMatch) { event.preventDefault(); window.location.assign(firstMatch.href); }
+      }
+    });
+    document.addEventListener('click', function (event) {
+      if (!wrapper.contains(event.target)) closeResults();
+    });
+  });
 
   /* ---------- Chart.js premium defaults (theme-aware) ----------
      Single helper for every chart so ticks, grids, legends, titles and

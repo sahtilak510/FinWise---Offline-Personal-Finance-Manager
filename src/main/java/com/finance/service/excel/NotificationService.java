@@ -11,6 +11,8 @@ import com.finance.repository.FinancialGoalRepository;
 import com.finance.repository.IncomeRepository;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -22,10 +24,13 @@ import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
 public class NotificationService {
+
+    private static final Logger logger = LoggerFactory.getLogger(NotificationService.class);
 
     private final LocalExcelStorageService storageService;
     private final BudgetRepository budgetRepository;
@@ -209,8 +214,21 @@ public class NotificationService {
         storageService.appendRow("Notifications", rowData);
     }
 
+    public boolean recordActivity(User user, String title, String message) {
+        if (!Boolean.TRUE.equals(user.getNotificationsEnabled())) {
+            return true;
+        }
+        try {
+            saveNotification(user, new Notification("ACTIVITY", "LOW", title, message));
+            return true;
+        } catch (RuntimeException exception) {
+            logger.error("Failed to save activity notification for user {}", user.getId(), exception);
+            return false;
+        }
+    }
+
     public List<Notification> getUserNotifications(User user, boolean unreadOnly) {
-        return storageService.readSheet("Notifications", row -> {
+        List<Notification> notifications = storageService.readSheet("Notifications", row -> {
             if (!user.getId().toString().equals(getCellString(row, "UserID"))) {
                 return null;
             }
@@ -219,6 +237,9 @@ public class NotificationService {
             }
             return mapRowToNotification(row);
         });
+        notifications.sort(Comparator.comparing(Notification::getCreatedAt,
+                Comparator.nullsLast(Comparator.reverseOrder())));
+        return notifications;
     }
 
     public void markAsRead(User user, String notificationId) {

@@ -64,6 +64,8 @@
         <span th:text="${errorMessage}"></span>
     </div>
 
+    <div th:if="${warningMessage}" data-fw-flash data-fw-kind="warn" th:text="${warningMessage}" style="display:none"></div>
+
     <div class="fw-card fw-animate">
         <div class="fw-card-header">
             <h2 th:text="|Preview - ${records.size} Records Found|">Preview - 0 Records Found</h2>

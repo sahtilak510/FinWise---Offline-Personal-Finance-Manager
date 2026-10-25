@@ -3,6 +3,7 @@ package com.finance.controller;
 import com.finance.model.entity.User;
 import com.finance.repository.UserRepository;
 import com.finance.service.AccountService;
+import com.finance.service.excel.NotificationService;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,10 +18,13 @@ public class AccountController {
 
     private final AccountService accountService;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
-    public AccountController(AccountService accountService, UserRepository userRepository) {
+    public AccountController(AccountService accountService, UserRepository userRepository,
+                             NotificationService notificationService) {
         this.accountService = accountService;
         this.userRepository = userRepository;
+        this.notificationService = notificationService;
     }
 
     @GetMapping
@@ -52,6 +56,7 @@ public class AccountController {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         try {
             accountService.createAccount(user, accountName, accountType, balance, institution);
+            recordActivity(user, "Account created", accountName, redirectAttributes);
             redirectAttributes.addFlashAttribute("successMessage", "Account created successfully!");
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
@@ -71,6 +76,7 @@ public class AccountController {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         try {
             accountService.updateAccount(user, id, accountName, accountType, balance, institution);
+            recordActivity(user, "Account updated", accountName, redirectAttributes);
             redirectAttributes.addFlashAttribute("successMessage", "Account updated successfully!");
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Error updating account: " + e.getMessage());
@@ -79,10 +85,24 @@ public class AccountController {
     }
 
     @PostMapping("/delete/{id}")
-    public String deleteAccount(Authentication auth, @PathVariable Long id) {
+    public String deleteAccount(Authentication auth, @PathVariable Long id,
+                                RedirectAttributes redirectAttributes) {
         User user = userRepository.findByUsername(auth.getName())
                 .orElseThrow(() -> new RuntimeException("User not found"));
+        var account = accountService.getByIdAndUser(id, user);
         accountService.deleteAccount(id, user);
+        account.ifPresent(deleted -> {
+            recordActivity(user, "Account deleted", deleted.getAccountName(), redirectAttributes);
+            redirectAttributes.addFlashAttribute("successMessage", "Account deleted successfully!");
+        });
         return "redirect:/accounts";
+    }
+
+    private void recordActivity(User user, String title, String description,
+                                RedirectAttributes redirectAttributes) {
+        if (!notificationService.recordActivity(user, title, description)) {
+            redirectAttributes.addFlashAttribute("warningMessage",
+                    "The action completed, but its notification could not be recorded.");
+        }
     }
 }

@@ -46,6 +46,7 @@
     <div class="fw-content"><main class="fw-wrap" id="main">
         <div th:if="${successMessage}" data-fw-flash data-fw-kind="ok" th:text="${successMessage}" style="display:none"></div>
         <div th:if="${errorMessage}" data-fw-flash data-fw-kind="bad" th:text="${errorMessage}" style="display:none"></div>
+        <div th:if="${warningMessage}" data-fw-flash data-fw-kind="warn" th:text="${warningMessage}" style="display:none"></div>
 
         <div class="fw-page-header fw-animate">
             <h1>Accounts</h1>

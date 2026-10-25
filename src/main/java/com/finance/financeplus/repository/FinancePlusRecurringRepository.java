@@ -14,4 +14,5 @@ public interface FinancePlusRecurringRepository extends JpaRepository<FinancePlu
     List<FinancePlusRecurring> findByActiveTrueAndAutoPostTrueAndNextDueDateLessThanEqual(LocalDate dueDate);
     Optional<FinancePlusRecurring> findByIdAndUser(Long id, User user);
     long countByUserAndActiveTrue(User user);
+    void deleteByUser(User user);
 }

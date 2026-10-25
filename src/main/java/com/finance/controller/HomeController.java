@@ -67,19 +67,18 @@ public class HomeController {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        YearMonth currentMonth = YearMonth.now();
-        LocalDate startOfMonth = currentMonth.atDay(1);
-        LocalDate endOfMonth = currentMonth.atEndOfMonth();
         List<Income> recentIncome = incomeService.getUserIncome(user);
         BigDecimal totalIncome = recentIncome.stream()
-                .filter(income -> YearMonth.from(income.getIncomeDate()).equals(currentMonth))
                 .map(Income::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal totalExpenses = expenseService.getUserExpenses(user).stream()
+                .map(Expense::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         model.addAttribute("user", user);
-         model.addAttribute("totalExpenses", expenseService.getTotalExpensesByDateRange(user, startOfMonth, endOfMonth));
-         model.addAttribute("totalIncome", totalIncome);
-         model.addAttribute("recentIncome", recentIncome);
+        model.addAttribute("totalExpenses", totalExpenses);
+        model.addAttribute("totalIncome", totalIncome);
+        model.addAttribute("recentIncome", recentIncome);
         model.addAttribute("budgets", budgetService.getUserActiveBudgets(user));
         model.addAttribute("activeBudgets", budgetService.getUserActiveBudgets(user));
         model.addAttribute("goals", financialGoalService.getUserGoals(user));

@@ -61,6 +61,7 @@
 
         <div th:if="${successMessage}" data-fw-flash data-fw-kind="ok" th:text="${successMessage}" style="display:none"></div>
         <div th:if="${errorMessage}" data-fw-flash data-fw-kind="bad" th:text="${errorMessage}" style="display:none"></div>
+        <div th:if="${warningMessage}" data-fw-flash data-fw-kind="warn" th:text="${warningMessage}" style="display:none"></div>
 
         <div th:if="${#lists.isEmpty(goals)}" class="fw-empty">
             <div class="fw-empty-icon"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg></div>

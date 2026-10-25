@@ -68,15 +68,23 @@ public class UserDataExportService {
         addRow(sheet, "Email", user.getEmail());
         addRow(sheet, "Full name", user.getFullName());
         addRow(sheet, "Created at", format(user.getCreatedAt()));
+        addRow(sheet, "Theme", user.getTheme());
+        addRow(sheet, "Language", user.getLanguage());
+        addRow(sheet, "Notifications enabled", user.getNotificationsEnabled());
+        addRow(sheet, "Budget alerts enabled", user.getBudgetAlertsEnabled());
+        addRow(sheet, "Daily summary enabled", user.getDailySummaryEnabled());
+        addRow(sheet, "Goal updates enabled", user.getGoalUpdatesEnabled());
         autoSize(sheet);
     }
 
     private void addAccounts(Workbook workbook, CellStyle headerStyle, java.util.List<Account> accounts) {
         Sheet sheet = workbook.createSheet("Accounts");
-        header(sheet, headerStyle, "ID", "Name", "Type", "Balance", "Institution");
+        header(sheet, headerStyle, "ID", "Name", "Type", "Balance", "Institution", "Notes", "Active",
+                "Created", "Updated");
         for (Account account : accounts) {
             addRow(sheet, account.getId(), account.getAccountName(), account.getAccountType(),
-                    account.getBalance(), account.getInstitution());
+                    account.getBalance(), account.getInstitution(), account.getNotes(), account.getIsActive(),
+                    account.getCreatedAt(), account.getUpdatedAt());
         }
         autoSize(sheet);
     }
@@ -88,7 +96,8 @@ public class UserDataExportService {
         for (Income income : incomes) {
             addRow(sheet, income.getId(), income.getIncomeDate(), income.getDescription(), income.getAmount(),
                     income.getCategory(), income.getIncomeSource(), income.getNotes(), income.isRecurring(),
-                    income.getRecurrenceFrequency(), income.getNextOccurrence());
+                    income.getRecurrenceFrequency(), income.getNextOccurrence(), income.getCreatedAt(),
+                    income.getUpdatedAt());
         }
         autoSize(sheet);
     }
@@ -96,21 +105,24 @@ public class UserDataExportService {
     private void addExpenses(Workbook workbook, CellStyle headerStyle, java.util.List<Expense> expenses) {
         Sheet sheet = workbook.createSheet("Expenses");
         header(sheet, headerStyle, "ID", "Date", "Description", "Amount", "Category", "Payment method",
-                "Notes", "Recurring", "Frequency", "Next occurrence", "Receipt attached");
+                "Notes", "Recurring", "Frequency", "Next occurrence", "Receipt attached", "Created", "Updated");
         for (Expense expense : expenses) {
             addRow(sheet, expense.getId(), expense.getExpenseDate(), expense.getDescription(), expense.getAmount(),
                     expense.getCategory(), expense.getPaymentMethod(), expense.getNotes(), expense.isRecurring(),
-                    expense.getRecurrenceFrequency(), expense.getNextOccurrence(), expense.getReceiptImage() != null);
+                    expense.getRecurrenceFrequency(), expense.getNextOccurrence(), expense.getReceiptImage() != null,
+                    expense.getCreatedAt(), expense.getUpdatedAt());
         }
         autoSize(sheet);
     }
 
     private void addBudgets(Workbook workbook, CellStyle headerStyle, java.util.List<Budget> budgets) {
         Sheet sheet = workbook.createSheet("Budgets");
-        header(sheet, headerStyle, "ID", "Category", "Month", "Limit", "Spent", "Active", "Notes");
+        header(sheet, headerStyle, "ID", "Category", "Month", "Limit", "Spent", "Active", "Notes",
+                "Created", "Updated");
         for (Budget budget : budgets) {
             addRow(sheet, budget.getId(), budget.getCategory(), budget.getBudgetMonth(), budget.getLimitAmount(),
-                    budget.getSpentAmount(), budget.getIsActive(), budget.getNotes());
+                    budget.getSpentAmount(), budget.getIsActive(), budget.getNotes(), budget.getCreatedAt(),
+                    budget.getUpdatedAt());
         }
         autoSize(sheet);
     }
@@ -121,7 +133,8 @@ public class UserDataExportService {
                 "Status", "Priority");
         for (FinancialGoal goal : goals) {
             addRow(sheet, goal.getId(), goal.getGoalName(), goal.getDescription(), goal.getTargetAmount(),
-                    goal.getCurrentAmount(), goal.getTargetDate(), goal.getGoalStatus(), goal.getPriority());
+                    goal.getCurrentAmount(), goal.getTargetDate(), goal.getGoalStatus(), goal.getPriority(),
+                    goal.getCreatedAt(), goal.getUpdatedAt());
         }
         autoSize(sheet);
     }
@@ -129,11 +142,13 @@ public class UserDataExportService {
     private void addImports(Workbook workbook, CellStyle headerStyle, java.util.List<ImportedTransaction> imports) {
         Sheet sheet = workbook.createSheet("Imported Transactions");
         header(sheet, headerStyle, "ID", "File", "Type", "Date", "Description", "Amount", "Category",
-                "Transaction type", "Status");
+                "Transaction type", "Balance", "Extracted text", "Status", "Created", "Updated");
         for (ImportedTransaction transaction : imports) {
             addRow(sheet, transaction.getId(), transaction.getOriginalFilename(), transaction.getFileType(),
                     transaction.getTransactionDate(), transaction.getDescription(), transaction.getAmount(),
-                    transaction.getCategory(), transaction.getTransactionType(), transaction.getImportStatus());
+                    transaction.getCategory(), transaction.getTransactionType(), transaction.getBalance(),
+                    transaction.getExtractedText(), transaction.getImportStatus(), transaction.getCreatedAt(),
+                    transaction.getUpdatedAt());
         }
         autoSize(sheet);
     }

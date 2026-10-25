@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface FinancePlusBackupRepository extends JpaRepository<FinancePlusBackup, Long> {
+    List<FinancePlusBackup> findByUserOrderByCreatedAtDesc(User user);
     List<FinancePlusBackup> findTop50ByUserOrderByCreatedAtDesc(User user);
     Optional<FinancePlusBackup> findByIdAndUser(Long id, User user);
     long countByUser(User user);

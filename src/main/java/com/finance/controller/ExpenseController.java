@@ -4,6 +4,7 @@ import com.finance.model.entity.Expense;
 import com.finance.model.entity.User;
 import com.finance.repository.UserRepository;
 import com.finance.service.ExpenseService;
+import com.finance.service.excel.NotificationService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -22,10 +23,13 @@ import java.time.LocalDate;
 public class ExpenseController {
     private final ExpenseService expenseService;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
-    public ExpenseController(ExpenseService expenseService, UserRepository userRepository) {
+    public ExpenseController(ExpenseService expenseService, UserRepository userRepository,
+                             NotificationService notificationService) {
         this.expenseService = expenseService;
         this.userRepository = userRepository;
+        this.notificationService = notificationService;
     }
 
     @GetMapping
@@ -79,7 +83,7 @@ public class ExpenseController {
                     .orElseThrow(() -> new RuntimeException("User not found"));
             expenseService.addExpense(user, description, amount, LocalDate.parse(expenseDate),
                     category, paymentMethod, notes, readReceipt(receipt), recurring, recurrenceFrequency);
-            
+            recordActivity(user, "Expense added", description, redirectAttributes);
             redirectAttributes.addFlashAttribute("successMessage", "Expense added successfully!");
             return "redirect:/expenses";
         } catch (Exception e) {
@@ -128,6 +132,7 @@ public class ExpenseController {
                 existing.setReceiptImage(receiptImage);
                 expenseService.saveExpense(existing);
             }
+            recordActivity(user, "Expense updated", description, redirectAttributes);
             redirectAttributes.addFlashAttribute("successMessage", "Expense updated successfully!");
             return "redirect:/expenses";
         } catch (Exception e) {
@@ -141,12 +146,23 @@ public class ExpenseController {
         try {
             User user = userRepository.findByUsername(authentication.getName())
                     .orElseThrow(() -> new RuntimeException("User not found"));
+            Expense expense = expenseService.getExpenseById(id, user)
+                    .orElseThrow(() -> new IllegalArgumentException("Expense not found"));
             expenseService.deleteExpense(user, id);
+            recordActivity(user, "Expense deleted", expense.getDescription(), redirectAttributes);
             redirectAttributes.addFlashAttribute("successMessage", "Expense deleted successfully!");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Error deleting expense: " + e.getMessage());
         }
         return "redirect:/expenses";
+    }
+
+    private void recordActivity(User user, String title, String description,
+                                RedirectAttributes redirectAttributes) {
+        if (!notificationService.recordActivity(user, title, description)) {
+            redirectAttributes.addFlashAttribute("warningMessage",
+                    "The action completed, but its notification could not be recorded.");
+        }
     }
 
     @GetMapping("/receipt/{id}")

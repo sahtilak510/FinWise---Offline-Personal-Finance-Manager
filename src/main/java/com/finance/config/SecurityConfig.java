@@ -1,5 +1,6 @@
 package com.finance.config;
 
+import com.finance.security.AdminAuthenticationProvider;
 import com.finance.security.UserDetailsServiceImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,14 +30,18 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, DaoAuthenticationProvider authenticationProvider) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http,
+                                           DaoAuthenticationProvider authenticationProvider,
+                                           AdminAuthenticationProvider adminAuthenticationProvider) throws Exception {
         CookieCsrfTokenRepository csrfTokenRepository = new CookieCsrfTokenRepository();
         csrfTokenRepository.setCookieCustomizer(cookie -> cookie.sameSite("Lax"));
         http
+                .authenticationProvider(adminAuthenticationProvider)
                 .authenticationProvider(authenticationProvider)
                 .authorizeHttpRequests(authorize ->
                         authorize
-                                 .requestMatchers("/", "/register", "/auth/register", "/login", "/css/**", "/js/**", "/static/**", "/vendor/**", "/webjars/**", "/locales/**", "/uploads/**").permitAll()
+                                 .requestMatchers("/", "/register", "/auth/register", "/login", "/reset-password", "/css/**", "/js/**", "/static/**", "/vendor/**", "/webjars/**", "/locales/**", "/uploads/**").permitAll()
+                                 .requestMatchers("/admin/**").hasRole("ADMIN")
                                  .requestMatchers("/api/chatbot/help").permitAll()
                                  .requestMatchers("/api/chatbot/**", "/chatbot").authenticated()
                                  .anyRequest().authenticated()
@@ -44,7 +49,11 @@ public class SecurityConfig {
                 .formLogin(login ->
                         login
                                 .loginPage("/login")
-                                .defaultSuccessUrl("/dashboard", true)
+                                .successHandler((request, response, authentication) -> {
+                                    boolean isAdmin = authentication.getAuthorities().stream()
+                                            .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
+                                    response.sendRedirect(request.getContextPath() + (isAdmin ? "/admin" : "/dashboard"));
+                                })
                                 .permitAll()
                 )
                 .logout(logout ->

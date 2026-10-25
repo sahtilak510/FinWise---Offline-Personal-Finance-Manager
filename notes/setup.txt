@@ -1,0 +1,127 @@
+FINWISE SETUP - IN SIMPLE WORDS
+===============================
+
+WHAT IS FINWISE?
+---------------
+FinWise is a personal finance program. You enter it through a web browser,
+but the program runs on your own computer. It can keep track of income,
+expenses, accounts, budgets, and savings goals.
+
+WHAT DO JAVA AND MAVEN DO?
+--------------------------
+Java is the language/runtime needed to run FinWise. Think of Java as the
+engine that runs the application.
+
+Maven is a project-building tool. It reads the project's pom.xml file,
+downloads the libraries FinWise needs (on the first build), and puts the
+application together. You do not need to download each library yourself.
+
+Git is a tool that can download a project from GitHub using a command.
+You do not need Git if you download the project as a ZIP file instead.
+
+Command Prompt (CMD) and PowerShell are places where you type commands.
+Either can run the FinWise Windows launcher, run.bat.
+
+WHAT HAPPENS WHEN I RUN run.bat?
+--------------------------------
+The launcher checks that Java and Maven are available, builds FinWise using
+Maven, starts the program, and tries to open your browser. The first build
+needs internet so Maven can download the required libraries. After the build,
+the app works locally; your finance records are not sent to a cloud service.
+
+INSTALL ON WINDOWS - SIMPLE STEPS
+---------------------------------
+1. Install Java 17 or newer.
+   Open Command Prompt and run:
+     winget install --id EclipseAdoptium.Temurin.17.JDK -e
+   Close and reopen Command Prompt afterwards.
+
+2. Install Maven 3.8 or newer.
+   If Chocolatey is already installed, run:
+     choco install maven -y
+   Otherwise, download the Binary zip archive from:
+     https://maven.apache.org/download.cgi
+   Extract it and add its "bin" folder to the Windows Path. See SETUP.md for
+   more detailed instructions.
+
+3. Get the project files. Choose one method:
+
+   METHOD A - DOWNLOAD ZIP (Git is not needed)
+   Open this project page:
+     https://github.com/sahtilak510/FinWise---Offline-Personal-Finance-Manager
+   Click Code, then Download ZIP. Extract the ZIP to a folder.
+
+   METHOD B - USE GIT
+   Install Git if necessary, open Command Prompt where you want the project,
+   then run:
+     git clone https://github.com/sahtilak510/FinWise---Offline-Personal-Finance-Manager.git
+     cd FinWise---Offline-Personal-Finance-Manager
+
+4. Open Command Prompt in the project folder.
+   This is the folder containing pom.xml and run.bat.
+
+5. Check that Java and Maven work:
+     java -version
+     mvn -version
+   If Windows says a command is not recognized, install that tool, check its
+   Path setting, and open a new Command Prompt.
+
+6. Build and start FinWise:
+     run.bat
+   Wait for it to finish building. Keep this window open while using FinWise.
+   Press Ctrl+C in this window when you want to stop the application.
+
+7. Open this address in your browser:
+     http://localhost:8080
+   If the browser does not open automatically, type the address yourself.
+
+The default admin sign-in is:
+  Username: admin
+  Password: admin123
+
+Change the default password before entering real financial information.
+
+OTHER WAYS TO START
+-------------------
+You can start from the project folder without run.bat:
+  mvn spring-boot:run
+
+You can build a runnable JAR file with:
+  mvn clean package -DskipTests
+Then start it with:
+  java -jar target\offline-finance-manager-1.0.0.jar
+
+To run the automated tests:
+  mvn clean verify
+
+An IDE such as IntelliJ IDEA or VS Code can open the project folder. Java and
+Maven are still needed; the IDE can use Maven to download libraries and build
+the project.
+
+WHERE FINWISE KEEPS INFORMATION
+-------------------------------
+The app creates a data folder beside the project:
+  data\finance.db                 Main database of finance records
+  data\Finwise_Data.xlsx          Workbook used by some features
+  data\import-images\             Imported images
+  data\uploads\profile\           Profile pictures
+  data\backups\                   Application backup files
+  data\finance-plus\backups\      Finance Plus backup files
+  logs\finance.log                Application log
+
+Some items, including expense receipts and Finance Plus attachments, are kept
+inside the database. Stop the app before manually copying its data. Keep the
+database, workbook, image folders, backups, and any backup keys/passphrases
+together in a safe place.
+
+MAC AND LINUX
+-------------
+Install Java 17+ and Maven with your system's software installer. Download and
+extract the ZIP or clone the project, open a terminal in the project folder,
+then run:
+  ./run.sh
+Or start with Maven:
+  mvn spring-boot:run
+Open http://localhost:8080 in your browser.
+
+For complete setup, download, and troubleshooting instructions, read SETUP.md.

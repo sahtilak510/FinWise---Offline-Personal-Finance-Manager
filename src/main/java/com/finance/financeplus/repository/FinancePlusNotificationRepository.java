@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface FinancePlusNotificationRepository extends JpaRepository<FinancePlusNotification, Long> {
+    List<FinancePlusNotification> findByUserOrderByCreatedAtDesc(User user);
     List<FinancePlusNotification> findTop50ByUserOrderByCreatedAtDesc(User user);
     List<FinancePlusNotification> findByUserAndReadFalseOrderByCreatedAtDesc(User user);
     Optional<FinancePlusNotification> findByIdAndUser(Long id, User user);

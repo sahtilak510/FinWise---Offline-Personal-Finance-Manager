@@ -812,7 +812,7 @@
               , openMenu: 'Open menu'
               , switchToDark: 'Switch to dark mode'
               , switchToLight: 'Switch to light mode'
-              , searchPage: 'Search this page…'
+              , searchPage: 'Search pages…'
               , footerOffline: '© 2026 FinWise • 100% offline — your data stays on this device'
               , footerLocal: 'Local SQLite • No tracking'
               , somethingWentWrong: 'Something went wrong'
@@ -1245,8 +1245,8 @@
           'Your full name': 'fullNamePh',
           'Min. 6 characters': 'min6Ph',
           'Repeat password': 'repeatPh',
-          'Search this page…  ( / )': 'searchPage',
-          'Search this page…': 'searchPage',
+          'Search pages…  ( / )': 'searchPage',
+          'Search pages…': 'searchPage',
           'Search language': 'searchLanguage',
           'Search settings...': 'searchSettings',
           'Search messages... (Ctrl+K)': 'chatSearch',
@@ -1509,7 +1509,7 @@
     }
 
     function updateNavUserAvatar(imageUrl, fullName) {
-        const avatarEls = document.querySelectorAll('.fw-nav-avatar, .fw-nav__avatar, .fw-nav-name');
+        const avatarEls = document.querySelectorAll('.fw-avatar, .fw-nav-avatar, .fw-nav__avatar, .fw-nav-name');
         avatarEls.forEach((el) => {
             if (el.classList.contains('fw-nav-name')) {
                 el.textContent = getUserInitials(fullName);
@@ -1541,7 +1541,13 @@
                 method: 'POST',
                 body: formData
             })
-            .then((res) => res.json())
+            .then(async (res) => {
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) {
+                    throw new Error(data.message || 'Upload failed. Please try again.');
+                }
+                return data;
+            })
             .then((data) => {
                 if (data && data.avatarUrl) {
                     if (preview) {
@@ -1556,13 +1562,19 @@
                     showToast(data && data.message ? data.message : 'Unable to update profile image', 'error');
                 }
             })
-            .catch(() => showToast('Unable to save the profile image while offline', 'error'));
+            .catch((error) => showToast(error.message || 'Unable to save the profile image', 'error'));
         });
 
         if (removeBtn) {
             removeBtn.addEventListener('click', function () {
                 fetch('/api/profile/image', { method: 'DELETE' })
-                    .then((res) => res.json())
+                    .then(async (res) => {
+                        const data = await res.json().catch(() => ({}));
+                        if (!res.ok) {
+                            throw new Error(data.message || 'Unable to remove the profile image.');
+                        }
+                        return data;
+                    })
                     .then((data) => {
                         if (preview) {
                             preview.src = '';
@@ -1570,9 +1582,10 @@
                         }
                         if (fallback) fallback.style.display = 'block';
                         updateNavUserAvatar('', document.querySelector('h1') ? document.querySelector('h1').textContent : 'A');
+                        if (removeBtn) removeBtn.style.display = 'none';
                         showToast(data && data.message ? data.message : 'Profile image removed', 'success');
                     })
-                    .catch(() => showToast('Unable to remove the profile image', 'error'));
+                    .catch((error) => showToast(error.message || 'Unable to remove the profile image', 'error'));
             });
         }
     }
@@ -2254,19 +2267,28 @@
             <div id="password-error" style="color: var(--danger-400); margin-bottom: var(--sp-4); display: none; padding: var(--sp-3); background: rgba(239,68,68,0.1); border-radius: var(--radius-lg); font-size: 0.85rem;"></div>
             <form onsubmit="submitPasswordChange(event)" style="display: flex; flex-direction: column; gap: var(--sp-4);">
                 <div>
-                    <label style="display: block; font-size: 0.85rem; color: var(--surface-400); margin-bottom: var(--sp-2); font-weight: 600;">Current Password</label>
-                    <input type="password" id="current-password" placeholder="Enter current password" required
-                        style="width: 100%; padding: var(--sp-3); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); background: rgba(0,0,0,0.2); color: inherit; font-size: .95rem;">
+                    <label for="current-password" style="display: block; font-size: 0.85rem; color: var(--surface-400); margin-bottom: var(--sp-2); font-weight: 600;">Current Password</label>
+                    <div style="display:flex;gap:8px">
+                      <input type="password" id="current-password" placeholder="Enter current password" required autocomplete="current-password"
+                          style="min-width:0;flex:1;padding:var(--sp-3);border:1px solid var(--glass-border);border-radius:var(--radius-lg);background:rgba(0,0,0,0.2);color:inherit;font-size:.95rem;">
+                      <button type="button" class="fw-btn fw-btn-secondary" data-password-toggle="current-password">Show</button>
+                    </div>
                 </div>
                 <div>
-                    <label style="display: block; font-size: 0.85rem; color: var(--surface-400); margin-bottom: var(--sp-2); font-weight: 600;">New Password</label>
-                    <input type="password" id="new-password" placeholder="Enter new password" required
-                        style="width: 100%; padding: var(--sp-3); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); background: rgba(0,0,0,0.2); color: inherit; font-size: .95rem;">
+                    <label for="new-password" style="display: block; font-size: 0.85rem; color: var(--surface-400); margin-bottom: var(--sp-2); font-weight: 600;">New Password</label>
+                    <div style="display:flex;gap:8px">
+                      <input type="password" id="new-password" placeholder="Enter new password" required autocomplete="new-password"
+                          style="min-width:0;flex:1;padding:var(--sp-3);border:1px solid var(--glass-border);border-radius:var(--radius-lg);background:rgba(0,0,0,0.2);color:inherit;font-size:.95rem;">
+                      <button type="button" class="fw-btn fw-btn-secondary" data-password-toggle="new-password">Show</button>
+                    </div>
                 </div>
                 <div>
-                    <label style="display: block; font-size: 0.85rem; color: var(--surface-400); margin-bottom: var(--sp-2); font-weight: 600;">Confirm New Password</label>
-                    <input type="password" id="confirm-password" placeholder="Confirm new password" required
-                        style="width: 100%; padding: var(--sp-3); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); background: rgba(0,0,0,0.2); color: inherit; font-size: .95rem;">
+                    <label for="confirm-password" style="display: block; font-size: 0.85rem; color: var(--surface-400); margin-bottom: var(--sp-2); font-weight: 600;">Confirm New Password</label>
+                    <div style="display:flex;gap:8px">
+                      <input type="password" id="confirm-password" placeholder="Confirm new password" required autocomplete="new-password"
+                          style="min-width:0;flex:1;padding:var(--sp-3);border:1px solid var(--glass-border);border-radius:var(--radius-lg);background:rgba(0,0,0,0.2);color:inherit;font-size:.95rem;">
+                      <button type="button" class="fw-btn fw-btn-secondary" data-password-toggle="confirm-password">Show</button>
+                    </div>
                 </div>
                 <div style="display: flex; gap: var(--sp-3); margin-top: var(--sp-2);">
                     <button type="button" onclick="document.getElementById('password-modal').remove()" class="fw-btn fw-btn-secondary" style="flex:1;">Cancel</button>
@@ -2277,6 +2299,15 @@
         
         modal.appendChild(modalContent);
         document.body.appendChild(modal);
+        modal.querySelectorAll('[data-password-toggle]').forEach(function(button) {
+            const input = document.getElementById(button.dataset.passwordToggle);
+            button.addEventListener('click', function() {
+                const show = input.type === 'password';
+                input.type = show ? 'text' : 'password';
+                button.textContent = show ? 'Hide' : 'Show';
+                button.setAttribute('aria-label', (show ? 'Hide' : 'Show') + ' password');
+            });
+        });
     };
     
     window.submitPasswordChange = function(e) {

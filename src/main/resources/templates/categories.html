@@ -53,6 +53,7 @@
     <div class="fw-content"><main class="fw-wrap" id="main">
         <div th:if="${successMessage}" data-fw-flash data-fw-kind="ok" th:text="${successMessage}" style="display:none"></div>
         <div th:if="${errorMessage}" data-fw-flash data-fw-kind="bad" th:text="${errorMessage}" style="display:none"></div>
+        <div th:if="${warningMessage}" data-fw-flash data-fw-kind="warn" th:text="${warningMessage}" style="display:none"></div>
 
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--sp-8); flex-wrap: wrap; gap: var(--sp-4);">
             <div>

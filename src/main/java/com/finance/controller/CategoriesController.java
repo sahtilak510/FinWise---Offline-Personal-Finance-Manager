@@ -3,6 +3,7 @@ package com.finance.controller;
 import com.finance.model.entity.User;
 import com.finance.repository.UserRepository;
 import com.finance.service.excel.CategoryExcelService;
+import com.finance.service.excel.NotificationService;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -17,6 +18,7 @@ public class CategoriesController {
 
     private final UserRepository userRepository;
     private final CategoryExcelService categoryExcelService;
+    private final NotificationService notificationService;
 
     @GetMapping
     public String viewCategories(Authentication authentication, Model model,
@@ -50,6 +52,7 @@ public class CategoriesController {
 
         try {
             categoryExcelService.createCategory(user, name, type, parentId, icon, color);
+            recordActivity(user, "Category added", name, redirectAttributes);
             redirectAttributes.addFlashAttribute("successMessage", "Category added successfully.");
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
@@ -69,6 +72,7 @@ public class CategoriesController {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         try {
             categoryExcelService.updateCategory(user, id, name, type, icon, color);
+            recordActivity(user, "Category updated", name, redirectAttributes);
             redirectAttributes.addFlashAttribute("successMessage", "Category updated successfully.");
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
@@ -82,11 +86,23 @@ public class CategoriesController {
         User user = userRepository.findByUsername(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         try {
+            var category = categoryExcelService.getCategoryById(id)
+                    .filter(existing -> existing.getUserId().equals(user.getId().toString()))
+                    .orElseThrow(() -> new IllegalArgumentException("Category not found"));
             categoryExcelService.deleteCategory(user, id);
+            recordActivity(user, "Category deleted", category.getName(), redirectAttributes);
             redirectAttributes.addFlashAttribute("successMessage", "Category deleted successfully.");
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
         return "redirect:/categories";
+    }
+
+    private void recordActivity(User user, String title, String description,
+                                RedirectAttributes redirectAttributes) {
+        if (!notificationService.recordActivity(user, title, description)) {
+            redirectAttributes.addFlashAttribute("warningMessage",
+                    "The action completed, but its notification could not be recorded.");
+        }
     }
 }

@@ -202,7 +202,8 @@
   right: 8px;
   top: 50%;
   transform: translateY(-50%);
-  width: 36px;
+  min-width: 54px;
+  padding: 0 8px;
   height: 36px;
   display: grid;
   place-items: center;
@@ -216,7 +217,6 @@
 .authx-control .fi-eye:hover { color: var(--fw-text); background: var(--fw-hover); }
 .authx-control .fi-eye:active { transform: translateY(-50%) scale(.92); }
 .authx-control .fi-eye:focus-visible { outline: 2px solid var(--fw-primary); outline-offset: 1px; }
-.authx-control .fi-eye svg { width: 18px; height: 18px; }
 .authx .fw-input--error { border-color: var(--fw-danger-text); }
 .authx .fw-input--error:focus { box-shadow: 0 0 0 3px var(--fw-danger-soft); }
 .authx-err { display: none; align-items: flex-start; gap: 8px; margin: 10px 0 0; font-size: .83rem; color: var(--fw-danger-text); }

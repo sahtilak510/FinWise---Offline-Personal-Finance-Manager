@@ -5,6 +5,7 @@ import com.finance.model.entity.User;
 import com.finance.repository.UserRepository;
 import com.finance.service.CategoryEngine;
 import com.finance.service.DocumentScanService;
+import com.finance.service.excel.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -42,6 +43,7 @@ public class ScanController {
     private final DocumentScanService documentScanService;
     private final CategoryEngine categoryEngine;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     /** Renders the Scan &amp; Fill page (Dashboard → Scan &amp; Fill). */
     @GetMapping
@@ -128,6 +130,12 @@ public class ScanController {
             dto.setCategory(category);
 
             String savedType = documentScanService.saveTransaction(dto, user);
+            String notificationTitle = "INCOME".equalsIgnoreCase(savedType)
+                    ? "Income added" : "Expense added";
+            if (!notificationService.recordActivity(user, notificationTitle, dto.getMerchant())) {
+                redirectAttributes.addFlashAttribute("warningMessage",
+                        "The transaction was saved, but its notification could not be recorded.");
+            }
             redirectAttributes.addFlashAttribute("successMessage",
                     "Transaction saved successfully from Scan & Fill!");
 

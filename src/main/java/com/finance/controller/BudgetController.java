@@ -4,6 +4,7 @@ import com.finance.model.entity.Budget;
 import com.finance.model.entity.User;
 import com.finance.repository.UserRepository;
 import com.finance.service.BudgetService;
+import com.finance.service.excel.NotificationService;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -19,6 +20,7 @@ import java.math.BigDecimal;
 public class BudgetController {
     private final BudgetService budgetService;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     @GetMapping
     public String viewBudgets(Authentication authentication, Model model) {
@@ -50,7 +52,7 @@ public class BudgetController {
                     .orElseThrow(() -> new RuntimeException("User not found"));
             
             budgetService.createBudget(user, category, limitAmount, budgetMonth, notes);
-            
+            recordActivity(user, "Budget created", category, redirectAttributes);
             redirectAttributes.addFlashAttribute("successMessage", "Budget created successfully!");
             return "redirect:/budgets";
         } catch (Exception e) {
@@ -81,7 +83,10 @@ public class BudgetController {
         try {
             User user = userRepository.findByUsername(authentication.getName())
                     .orElseThrow(() -> new RuntimeException("User not found"));
+            Budget budget = budgetService.getBudgetById(id, user)
+                    .orElseThrow(() -> new IllegalArgumentException("Budget not found"));
             budgetService.updateBudget(user, id, limitAmount, spentAmount, notes);
+            recordActivity(user, "Budget updated", budget.getCategory(), redirectAttributes);
             redirectAttributes.addFlashAttribute("successMessage", "Budget updated successfully!");
             return "redirect:/budgets";
         } catch (Exception e) {
@@ -99,7 +104,10 @@ public class BudgetController {
         try {
             User user = userRepository.findByUsername(authentication.getName())
                     .orElseThrow(() -> new RuntimeException("User not found"));
+            Budget budget = budgetService.getBudgetById(id, user)
+                    .orElseThrow(() -> new IllegalArgumentException("Budget not found"));
             budgetService.updateSpentAmount(user, id, spentAmount);
+            recordActivity(user, "Budget spending updated", budget.getCategory(), redirectAttributes);
             redirectAttributes.addFlashAttribute("successMessage", "Budget spending updated!");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Error updating spending: " + e.getMessage());
@@ -112,7 +120,10 @@ public class BudgetController {
         try {
             User user = userRepository.findByUsername(authentication.getName())
                     .orElseThrow(() -> new RuntimeException("User not found"));
+            Budget budget = budgetService.getBudgetById(id, user)
+                    .orElseThrow(() -> new IllegalArgumentException("Budget not found"));
             budgetService.deleteBudget(user, id);
+            recordActivity(user, "Budget deleted", budget.getCategory(), redirectAttributes);
             redirectAttributes.addFlashAttribute("successMessage", "Budget deleted successfully!");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Error deleting budget: " + e.getMessage());
@@ -125,11 +136,22 @@ public class BudgetController {
         try {
             User user = userRepository.findByUsername(authentication.getName())
                     .orElseThrow(() -> new RuntimeException("User not found"));
+            Budget budget = budgetService.getBudgetById(id, user)
+                    .orElseThrow(() -> new IllegalArgumentException("Budget not found"));
             budgetService.toggleBudgetActive(user, id);
+            recordActivity(user, "Budget status updated", budget.getCategory(), redirectAttributes);
             redirectAttributes.addFlashAttribute("successMessage", "Budget status updated!");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Error updating budget: " + e.getMessage());
         }
         return "redirect:/budgets";
+    }
+
+    private void recordActivity(User user, String title, String description,
+                                RedirectAttributes redirectAttributes) {
+        if (!notificationService.recordActivity(user, title, description)) {
+            redirectAttributes.addFlashAttribute("warningMessage",
+                    "The action completed, but its notification could not be recorded.");
+        }
     }
 }

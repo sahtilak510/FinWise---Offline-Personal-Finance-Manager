@@ -14,6 +14,7 @@ import com.finance.repository.IncomeRepository;
 import com.finance.service.excel.CategoryExcelService;
 import com.finance.service.excel.ExcelWorkbookInitializer;
 import com.finance.service.excel.LocalExcelStorageService;
+import com.finance.service.excel.NotificationService;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.poi.ss.usermodel.Row;
@@ -149,6 +150,51 @@ class FeatureRegressionTest {
             assertTrue(categoryService.getCategoryById(categoryId).isPresent());
             categoryService.deleteCategory(owner, categoryId);
             assertTrue(categoryService.getCategoryById(categoryId).isEmpty());
+        } finally {
+            FileSystemUtils.deleteRecursively(directory.toFile());
+        }
+    }
+
+    @Test
+    void notificationReadUpdatesPreserveNotificationDetails() throws Exception {
+        Path directory = Files.createTempDirectory("finwise-notification-test-");
+        try {
+            TestInitializer initializer = new TestInitializer(directory.resolve("Finwise_Data.xlsx"));
+            initializer.initializeWorkbook();
+            LocalExcelStorageService storageService = new LocalExcelStorageService(initializer);
+            NotificationService service = new NotificationService(storageService, mock(BudgetRepository.class),
+                    mock(ExpenseRepository.class), mock(IncomeRepository.class), mock(FinancialGoalRepository.class));
+            User user = user(9L, "notification-user");
+
+            service.saveNotification(user, new NotificationService.Notification(
+                    "TEST", "LOW", "Single notification", "Single notification details"));
+            String notificationId = service.getUserNotifications(user, false).get(0).getNotificationId();
+            service.markAsRead(user, notificationId);
+
+            var singleNotification = service.getUserNotifications(user, false).get(0);
+            assertTrue(singleNotification.isRead());
+            assertEquals("Single notification", singleNotification.getTitle());
+            assertEquals("Single notification details", singleNotification.getMessage());
+
+            service.saveNotification(user, new NotificationService.Notification(
+                    "TEST", "LOW", "First notification", "First notification details"));
+            service.saveNotification(user, new NotificationService.Notification(
+                    "TEST", "LOW", "Second notification", "Second notification details"));
+            service.markAllAsRead(user);
+
+            var notifications = service.getUserNotifications(user, false);
+            assertEquals(3, notifications.size());
+            assertTrue(notifications.stream().allMatch(NotificationService.Notification::isRead));
+            assertTrue(notifications.stream().anyMatch(n -> "First notification".equals(n.getTitle())
+                    && "First notification details".equals(n.getMessage())));
+            assertTrue(notifications.stream().anyMatch(n -> "Second notification".equals(n.getTitle())
+                    && "Second notification details".equals(n.getMessage())));
+
+            assertTrue(service.recordActivity(user, "Expense added", "Grocery shopping"));
+            var unreadNotifications = service.getUserNotifications(user, true);
+            assertEquals(1, unreadNotifications.size());
+            assertEquals("Expense added", unreadNotifications.get(0).getTitle());
+            assertEquals("Grocery shopping", unreadNotifications.get(0).getMessage());
         } finally {
             FileSystemUtils.deleteRecursively(directory.toFile());
         }

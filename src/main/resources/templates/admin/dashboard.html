@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Console — FinWise</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <link rel="stylesheet" href="/css/3d-dynamic.css">
+  <link rel="stylesheet" href="/css/finwise-tokens.css">
+  <link rel="stylesheet" href="/css/finwise-layout.css">
+  <link rel="stylesheet" href="/css/finwise-components.css">
+  <link rel="stylesheet" href="/css/finwise-responsive.css">
+  <link rel="stylesheet" href="/css/finwise-bridge.css">
+  <link rel="stylesheet" href="/css/finwise-theme.css">
+  <style>
+    .admin-wrap { max-width: 1180px; margin: 0 auto; padding: 28px 22px; }
+    .admin-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 22px; }
+    .admin-header h1 { margin: 0 0 5px; }
+    .admin-header p { margin: 0; color: var(--fw-text-2); }
+    .admin-actions { display: flex; align-items: center; gap: 10px; }
+    .admin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin: 0 0 18px; }
+    .admin-stat { padding: 18px; }
+    .admin-stat span { display: block; color: var(--fw-text-2); font-size: .9rem; }
+    .admin-stat strong { display: block; margin-top: 6px; font-size: 1.8rem; }
+    .admin-columns { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; align-items: start; }
+    .admin-panel { padding: 20px; min-width: 0; }
+    .admin-panel h2 { margin: 0 0 14px; font-size: 1.1rem; }
+    .admin-table { width: 100%; border-collapse: collapse; }
+    .admin-table th, .admin-table td { padding: 11px 9px; border-bottom: 1px solid var(--fw-border); text-align: left; }
+    .admin-table th { color: var(--fw-text-2); font-size: .84rem; }
+    .admin-table td:last-child, .admin-table th:last-child { text-align: right; }
+    .admin-users { table-layout: fixed; }
+    .admin-users th:nth-child(1) { width: 18%; }
+    .admin-users th:nth-child(2) { width: 22%; }
+    .admin-users th:nth-child(3) { width: 12%; }
+    .admin-users th:nth-child(4) { width: 10%; }
+    .admin-users th:nth-child(5) { width: 38%; }
+    .admin-users td { overflow-wrap: anywhere; }
+    .admin-user-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+    .admin-user-actions .fw-btn { white-space: nowrap; }
+    .admin-reset-link { overflow-wrap: anywhere; }
+    .admin-delete { color: var(--fw-danger, #b42318); }
+    .admin-empty { color: var(--fw-text-2); padding: 15px 0; }
+    .admin-alert { margin-bottom: 16px; }
+    @media (max-width: 760px) {
+      .admin-wrap { padding: 20px 14px; }
+      .admin-header { align-items: flex-start; flex-direction: column; }
+      .admin-panel { overflow-x: auto; }
+    }
+  </style>
+</head>
+<body class="fw-body">
+<main class="admin-wrap">
+  <header class="admin-header">
+    <div>
+      <h1>Admin console</h1>
+      <p>Database overview and user management</p>
+    </div>
+    <div class="admin-actions">
+      <a class="fw-btn fw-btn-sec" href="/">Open FinWise</a>
+      <form method="post" action="/logout">
+        <button class="fw-btn fw-btn-pri" type="submit">Sign out</button>
+      </form>
+    </div>
+  </header>
+
+  <div th:if="${successMessage}" class="fw-alert ok admin-alert" role="status" th:text="${successMessage}"></div>
+  <div th:if="${errorMessage}" class="fw-alert bad admin-alert" role="alert" th:text="${errorMessage}"></div>
+  <div th:if="${resetUrl}" class="fw-alert ok admin-alert" role="status">
+    <strong th:text="${'Password reset link for ' + resetUsername}">Password reset link</strong>
+    <span> Share this one-time link with the user. It expires in 30 minutes.</span>
+    <a class="admin-reset-link" th:href="${resetUrl}" th:text="${resetUrl}">Open reset link</a>
+  </div>
+
+  <section class="admin-grid" aria-label="Database totals">
+    <article class="fw-card admin-stat">
+      <span>Registered users</span>
+      <strong th:text="${userCount}">0</strong>
+    </article>
+    <article class="fw-card admin-stat">
+      <span>Application records</span>
+      <strong th:text="${recordCount}">0</strong>
+    </article>
+    <article class="fw-card admin-stat">
+      <span>Database tables</span>
+      <strong th:text="${tables.size()}">0</strong>
+    </article>
+  </section>
+
+  <div class="admin-columns">
+    <section class="fw-card admin-panel" aria-labelledby="tables-heading">
+      <h2 id="tables-heading">Database tables</h2>
+      <table class="admin-table">
+        <thead><tr><th scope="col">Table</th><th scope="col">Records</th></tr></thead>
+        <tbody>
+          <tr th:each="table : ${tables}">
+            <td th:text="${table.name}">Users</td>
+            <td th:text="${table.records}">0</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="fw-card admin-panel" aria-labelledby="users-heading">
+      <h2 id="users-heading">Users</h2>
+      <div class="admin-empty" th:if="${#lists.isEmpty(users)}">No registered users.</div>
+      <table class="admin-table admin-users" th:unless="${#lists.isEmpty(users)}">
+        <thead>
+          <tr>
+            <th scope="col">User</th>
+            <th scope="col">Email</th>
+            <th scope="col">Joined</th>
+            <th scope="col">Status</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="user : ${users}">
+            <td>
+              <strong th:text="${user.fullName != null and !user.fullName.isBlank() ? user.fullName : user.username}">User</strong>
+              <br><small th:text="${user.username}">username</small>
+            </td>
+            <td th:text="${user.email}">user@example.com</td>
+            <td th:text="${user.createdAt != null ? #temporals.format(user.createdAt, 'dd MMM yyyy') : '—'}">—</td>
+            <td th:text="${user.isActive ? 'Active' : 'Disabled'}">Active</td>
+            <td>
+              <div class="admin-user-actions">
+                <a class="fw-btn fw-btn-sec" th:href="@{/admin/users/{id}/export.xlsx(id=${user.id})}">Excel</a>
+                <a class="fw-btn fw-btn-sec" th:href="@{/admin/users/{id}/export.zip(id=${user.id})}">ZIP + files</a>
+                <form th:action="@{/admin/users/{id}/password-reset(id=${user.id})}" method="post"
+                      onsubmit="return confirm('Create a one-time password reset link for this user?');">
+                  <button class="fw-btn fw-btn-sec" type="submit">Reset password</button>
+                </form>
+                <form th:action="@{/admin/users/{id}/delete(id=${user.id})}" method="post"
+                      onsubmit="return confirm('Permanently delete this user and all of their saved data?');">
+                  <button class="fw-btn fw-btn-sec admin-delete" type="submit">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="fw-hint">Excel downloads the user’s records in worksheets (Profile, Accounts, Income, Expenses, Budgets, Goals, Imports, categories, chat history and Finance Plus data). ZIP includes that workbook plus available profile images, receipts, imported images, attachments, and encrypted backups. Password hashes and reset tokens are never exported.</p>
+    </section>
+  </div>
+</main>
+</body>
+</html>

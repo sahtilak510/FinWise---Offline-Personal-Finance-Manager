@@ -4,6 +4,7 @@ import com.finance.model.entity.Income;
 import com.finance.model.entity.User;
 import com.finance.repository.UserRepository;
 import com.finance.service.IncomeService;
+import com.finance.service.excel.NotificationService;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,10 +19,13 @@ import java.time.LocalDate;
 public class IncomeController {
     private final IncomeService incomeService;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
-    public IncomeController(IncomeService incomeService, UserRepository userRepository) {
+    public IncomeController(IncomeService incomeService, UserRepository userRepository,
+                            NotificationService notificationService) {
         this.incomeService = incomeService;
         this.userRepository = userRepository;
+        this.notificationService = notificationService;
     }
 
     @GetMapping
@@ -74,7 +78,7 @@ public class IncomeController {
                     .orElseThrow(() -> new RuntimeException("User not found"));
             incomeService.addIncome(user, description, amount, LocalDate.parse(incomeDate),
                     category, incomeSource, notes, recurring, recurrenceFrequency);
-            
+            recordActivity(user, "Income added", description, redirectAttributes);
             redirectAttributes.addFlashAttribute("successMessage", "Income added successfully!");
             return "redirect:/income";
         } catch (Exception e) {
@@ -112,6 +116,7 @@ public class IncomeController {
                     .orElseThrow(() -> new RuntimeException("User not found"));
             incomeService.updateIncome(user, id, description, amount, LocalDate.parse(incomeDate),
                     category, incomeSource, notes, recurring, recurrenceFrequency);
+            recordActivity(user, "Income updated", description, redirectAttributes);
             redirectAttributes.addFlashAttribute("successMessage", "Income updated successfully!");
             return "redirect:/income";
         } catch (Exception e) {
@@ -125,12 +130,23 @@ public class IncomeController {
         try {
             User user = userRepository.findByUsername(authentication.getName())
                     .orElseThrow(() -> new RuntimeException("User not found"));
+            Income income = incomeService.getIncomeById(id, user)
+                    .orElseThrow(() -> new IllegalArgumentException("Income not found"));
             incomeService.deleteIncome(user, id);
+            recordActivity(user, "Income deleted", income.getDescription(), redirectAttributes);
             redirectAttributes.addFlashAttribute("successMessage", "Income deleted successfully!");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Error deleting income: " + e.getMessage());
         }
         return "redirect:/income";
+    }
+
+    private void recordActivity(User user, String title, String description,
+                                RedirectAttributes redirectAttributes) {
+        if (!notificationService.recordActivity(user, title, description)) {
+            redirectAttributes.addFlashAttribute("warningMessage",
+                    "The action completed, but its notification could not be recorded.");
+        }
     }
 
     private LocalDate parseDate(String value) {

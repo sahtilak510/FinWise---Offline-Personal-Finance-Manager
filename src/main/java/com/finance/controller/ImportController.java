@@ -9,6 +9,7 @@ import com.finance.service.ExpenseService;
 import com.finance.service.ImportCommitService;
 import com.finance.service.ImportFileService;
 import com.finance.service.IncomeService;
+import com.finance.service.excel.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -47,6 +48,7 @@ public class ImportController {
     private final IncomeService incomeService;
     private final ExpenseService expenseService;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     @GetMapping
     public String importForm(Authentication authentication, Model model) {
@@ -149,6 +151,13 @@ public class ImportController {
                 redirectAttributes.addFlashAttribute("errorMessage", message);
             } else {
                 redirectAttributes.addFlashAttribute("successMessage", message);
+                if (result.importedCount() > 0
+                        && !notificationService.recordActivity(user, "Import completed",
+                        result.importedCount() + (result.importedCount() == 1
+                                ? " transaction imported." : " transactions imported."))) {
+                    redirectAttributes.addFlashAttribute("warningMessage",
+                            "The import completed, but its notification could not be recorded.");
+                }
             }
             return "redirect:/import/preview";
         } catch (Exception e) {
@@ -219,6 +228,10 @@ public class ImportController {
                     .orElseThrow(() -> new RuntimeException("User not found"));
             importService.updateRecord(id, user, description, amount, LocalDate.parse(transactionDate),
                     transactionType, category);
+            if (!notificationService.recordActivity(user, "Imported record updated", description)) {
+                redirectAttributes.addFlashAttribute("warningMessage",
+                        "The record update completed, but its notification could not be recorded.");
+            }
             redirectAttributes.addFlashAttribute("successMessage", "Record updated successfully!");
         return "redirect:/import/preview";
         } catch (Exception e) {

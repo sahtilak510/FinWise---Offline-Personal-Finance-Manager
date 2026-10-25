@@ -4,6 +4,7 @@ import com.finance.model.entity.FinancialGoal;
 import com.finance.model.entity.User;
 import com.finance.repository.UserRepository;
 import com.finance.service.FinancialGoalService;
+import com.finance.service.excel.NotificationService;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -20,6 +21,7 @@ import java.time.LocalDate;
 public class FinancialGoalController {
     private final FinancialGoalService financialGoalService;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     @GetMapping
     public String viewGoals(Authentication authentication, Model model) {
@@ -53,7 +55,7 @@ public class FinancialGoalController {
             
             financialGoalService.createGoal(user, goalName, description, targetAmount,
                     LocalDate.parse(targetDate), priority);
-            
+            recordActivity(user, "Goal created", goalName, redirectAttributes);
             redirectAttributes.addFlashAttribute("successMessage", "Financial goal created successfully!");
             return "redirect:/goals";
         } catch (Exception e) {
@@ -88,6 +90,7 @@ public class FinancialGoalController {
                     .orElseThrow(() -> new RuntimeException("User not found"));
             financialGoalService.updateGoal(user, id, goalName, description, targetAmount,
                     LocalDate.parse(targetDate), priority);
+            recordActivity(user, "Goal updated", goalName, redirectAttributes);
             redirectAttributes.addFlashAttribute("successMessage", "Goal updated successfully!");
             return "redirect:/goals";
         } catch (Exception e) {
@@ -105,7 +108,10 @@ public class FinancialGoalController {
         try {
             User user = userRepository.findByUsername(authentication.getName())
                     .orElseThrow(() -> new RuntimeException("User not found"));
+            FinancialGoal goal = financialGoalService.getGoalById(id, user)
+                    .orElseThrow(() -> new IllegalArgumentException("Goal not found"));
             financialGoalService.updateGoalProgress(user, id, currentAmount);
+            recordActivity(user, "Goal progress updated", goal.getGoalName(), redirectAttributes);
             redirectAttributes.addFlashAttribute("successMessage", "Goal progress updated!");
             return "redirect:/goals";
         } catch (Exception e) {
@@ -119,7 +125,10 @@ public class FinancialGoalController {
         try {
             User user = userRepository.findByUsername(authentication.getName())
                     .orElseThrow(() -> new RuntimeException("User not found"));
+            FinancialGoal goal = financialGoalService.getGoalById(id, user)
+                    .orElseThrow(() -> new IllegalArgumentException("Goal not found"));
             financialGoalService.markGoalAsCompleted(user, id);
+            recordActivity(user, "Goal completed", goal.getGoalName(), redirectAttributes);
             redirectAttributes.addFlashAttribute("successMessage", "Goal marked as completed!");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Error completing goal: " + e.getMessage());
@@ -132,11 +141,22 @@ public class FinancialGoalController {
         try {
             User user = userRepository.findByUsername(authentication.getName())
                     .orElseThrow(() -> new RuntimeException("User not found"));
+            FinancialGoal goal = financialGoalService.getGoalById(id, user)
+                    .orElseThrow(() -> new IllegalArgumentException("Goal not found"));
             financialGoalService.deleteGoal(user, id);
+            recordActivity(user, "Goal deleted", goal.getGoalName(), redirectAttributes);
             redirectAttributes.addFlashAttribute("successMessage", "Goal deleted successfully!");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Error deleting goal: " + e.getMessage());
         }
         return "redirect:/goals";
+    }
+
+    private void recordActivity(User user, String title, String description,
+                                RedirectAttributes redirectAttributes) {
+        if (!notificationService.recordActivity(user, title, description)) {
+            redirectAttributes.addFlashAttribute("warningMessage",
+                    "The action completed, but its notification could not be recorded.");
+        }
     }
 }

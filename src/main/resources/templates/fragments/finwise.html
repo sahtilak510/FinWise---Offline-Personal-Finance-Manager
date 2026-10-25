@@ -122,7 +122,10 @@
   </nav>
   <div class="fw-sb-foot">
     <a class="fw-sb-user" href="/account" th:if="${user != null}">
-      <span class="fw-avatar" th:text="${user.username != null ? #strings.substring(user.username, 0, 1).toUpperCase() : 'F'}">F</span>
+      <span class="fw-avatar">
+        <img th:if="${user.profileImage != null and !user.profileImage.isBlank()}" th:src="${user.profileImage}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:inherit">
+        <span th:unless="${user.profileImage != null and !user.profileImage.isBlank()}" th:text="${user.username != null ? #strings.substring(user.username, 0, 1).toUpperCase() : 'F'}">F</span>
+      </span>
       <div><b th:text="${user.username}">User</b><span th:text="${user.email}">email</span></div>
     </a>
     <form th:action="@{/logout}" method="post" style="margin:0">
@@ -138,13 +141,16 @@
   <button class="fw-iconbtn" onclick="fwToggleSidebar()" data-i18n-aria-label="collapseSidebar" aria-label="Collapse sidebar" title="Collapse sidebar" style="font-size:.85rem">⇆</button>
   <div class="fw-top-title"><span th:text="${pageTitle}" th:attr="data-fw-page-title=${pageTitle}">Page</span><small th:if="${pageSub != null}" th:text="${pageSub}" data-fw-page-sub>Subtitle</small></div>
   <div class="fw-top-search" role="search">
-    <input id="fwGlobalSearch" type="search" placeholder="Search this page…" data-i18n-placeholder="searchPage" data-i18n-aria-label="searchPage" aria-label="Search this page">
+    <input id="fwGlobalSearch" type="search" placeholder="Search pages…" data-i18n-placeholder="searchPage" data-i18n-aria-label="searchPage" aria-label="Search pages" aria-autocomplete="list" aria-expanded="false" aria-controls="fwGlobalSearchResults">
   </div>
   <div class="fw-top-actions">
     <button class="fw-iconbtn fw-theme-toggle" data-fw-theme-btn onclick="fwToggleTheme()" aria-label="Switch to dark mode" title="Switch to dark mode"><span data-fw-theme-icon aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg></span></button>
     <a class="fw-iconbtn fw-bell" href="/notifications" data-i18n-aria-label="notifications" aria-label="Notifications">🔔<i th:if="${unreadCount != null and unreadCount > 0}" th:text="${unreadCount > 9 ? '9+' : unreadCount}">0</i></a>
     <a class="fw-userchip" href="/account" th:if="${user != null}">
-      <span class="fw-avatar" th:text="${user.username != null ? #strings.substring(user.username, 0, 1).toUpperCase() : 'F'}">F</span>
+      <span class="fw-avatar">
+        <img th:if="${user.profileImage != null and !user.profileImage.isBlank()}" th:src="${user.profileImage}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:inherit">
+        <span th:unless="${user.profileImage != null and !user.profileImage.isBlank()}" th:text="${user.username != null ? #strings.substring(user.username, 0, 1).toUpperCase() : 'F'}">F</span>
+      </span>
       <b th:text="${user.username}">User</b>
     </a>
   </div>

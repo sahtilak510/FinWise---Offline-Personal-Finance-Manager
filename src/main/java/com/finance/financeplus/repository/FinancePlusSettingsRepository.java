@@ -10,4 +10,5 @@ import java.util.Optional;
 public interface FinancePlusSettingsRepository extends JpaRepository<FinancePlusSettings, Long> {
     Optional<FinancePlusSettings> findByUser(User user);
     List<FinancePlusSettings> findByAutoBackupEnabledTrue();
+    void deleteByUser(User user);
 }

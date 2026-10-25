@@ -57,7 +57,7 @@
             <div style="display: flex; justify-content: center; margin-bottom: var(--sp-5);">
                 <div id="profile-image-preview-wrapper" style="position: relative; width: 96px; height: 96px; border-radius: 50%; overflow: hidden; border: 3px solid rgba(255,255,255,0.2); background: rgba(15,23,42,0.7); display: flex; align-items: center; justify-content: center;">
                     <img id="profile-image-preview" th:src="${user.profileImage != null ? user.profileImage : ''}" alt="Profile image" style="width: 100%; height: 100%; object-fit: cover; display: block;" th:style="${user.profileImage == null ? 'display: none;' : 'display: block;'}" />
-                    <div id="profile-image-fallback" th:if="${user.profileImage == null}" style="font-size: 2rem; font-weight: 700; color: var(--surface-50);">A</div>
+                    <div id="profile-image-fallback" style="font-size: 2rem; font-weight: 700; color: var(--surface-50);" th:style="${user.profileImage == null ? '' : 'display: none;'}">A</div>
                 </div>
             </div>
             <div style="display: flex; gap: var(--sp-3); justify-content: center; margin-bottom: var(--sp-4); flex-wrap: wrap;">
@@ -65,7 +65,7 @@
                     <span data-i18n="uploadPhoto">Upload photo</span>
                 </label>
                 <input id="profile-image-input" type="file" accept="image/*" style="display: none;" />
-                <button type="button" id="remove-profile-image" class="fw-btn fw-btn-secondary fw-btn-sm" data-i18n="removePhoto" th:if="${user.profileImage != null}">Remove photo</button>
+                <button type="button" id="remove-profile-image" class="fw-btn fw-btn-secondary fw-btn-sm" data-i18n="removePhoto" th:style="${user.profileImage == null ? 'display: none;' : ''}">Remove photo</button>
             </div>
             <h1 style="font-size: 1.75rem; font-weight: 700; margin-bottom: var(--sp-2);" th:text="${user.fullName}">User Name</h1>
             <p style="color: var(--surface-400); margin-bottom: var(--sp-6);" th:text="${user.email}">user@mail.com</p>
@@ -171,6 +171,6 @@
 
     <div th:replace="~{fragments/finwise :: fwFooter}"></div>
 
-    <script src="/js/script.js?v=2"></script>
+    <div th:replace="~{fragments/finwise :: fwScripts}"></div>
 </body>
 </html>

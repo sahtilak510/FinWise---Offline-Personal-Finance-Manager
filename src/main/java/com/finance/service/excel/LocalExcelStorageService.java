@@ -173,6 +173,7 @@ public class LocalExcelStorageService {
                         Cell headerCell = headerRow.getCell(i);
                         if (headerCell == null) continue;
                         String columnName = headerCell.getStringCellValue();
+                        if (!rowData.containsKey(columnName)) continue;
                         Cell cell = row.getCell(i, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
                         Object value = rowData.get(columnName);
                         setCellValue(cell, value);

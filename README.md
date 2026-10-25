@@ -40,6 +40,11 @@ FinWise is a complete, offline-first personal finance management system for Wind
 - **Search and filters** across text, category, date range, amount, and recurrence
 - **Receipt images** uploaded per transaction and downloaded by the owner only
 
+### Administration
+- Role-protected admin console with user and supported-table record counts
+- Admin user management, including account deletion and per-user Excel or ZIP exports
+- Single-use password-reset links that expire after 30 minutes; users choose their own new password
+
 ### Import, OCR, and Scan & Fill
 - Import from **PDF**, **image**, **CSV**, and **Excel** (`.xls` / `.xlsx`)
 - OCR pipeline: OpenCV preprocessing (grayscale, threshold, deskew) → Tess4J text extraction
@@ -92,35 +97,42 @@ A separately passcode-locked workspace inside the app:
 
 ## Build and run
 
-### One-command start (Windows)
+### Easiest install (Windows)
 
-```powershell
-.\run.bat
-```
+1. Install **Java 17 or newer**. In PowerShell, you can use:
 
-`run.bat` verifies Java and Maven, creates `data/` and `logs/`, stops any running instance, builds with `mvn clean install -DskipTests`, launches the JAR on port 8080, and opens the browser once the port accepts connections.
+   ```powershell
+   winget install --id EclipseAdoptium.Temurin.17.JDK -e
+   ```
 
-### One-command start (Linux / macOS)
+   Close and reopen PowerShell after installation.
 
-```bash
-./run.sh
-```
+2. Install **Maven 3.8 or newer** from the [Apache Maven download page](https://maven.apache.org/download.cgi). Extract it and add its `bin` folder to your Windows `Path`, then open a new PowerShell window.
 
-### Manual
+3. Download the project ZIP from the [FinWise GitHub page](https://github.com/sahtilak510/FinWise---Offline-Personal-Finance-Manager) using **Code → Download ZIP**, then extract the ZIP.
 
-```powershell
-mvn clean verify          # compile + run the test suite
-mvn spring-boot:run       # run from source
-```
+4. Open PowerShell in the extracted project folder. Check Java and Maven are available:
 
-Or build and run the executable JAR:
+   ```powershell
+   java -version
+   mvn -version
+   ```
 
-```powershell
-mvn clean package
-java -jar target/offline-finance-manager-1.0.0.jar
-```
+5. Build and start FinWise:
 
-Then open <http://localhost:8080>.
+   ```powershell
+   .\run.bat
+   ```
+
+   The first build needs an internet connection so Maven can download dependencies. The launcher builds the app, starts it, and opens your browser at <http://localhost:8080>. Keep the terminal window open while using FinWise; press **Ctrl+C** to stop it.
+
+6. Sign in with the default admin credentials: `admin` / `admin123`. Change the default password before storing personal financial data.
+
+For the project overview and a short explanation of where FinWise stores data, see [notes/setup.txt](notes/setup.txt). For detailed setup, backup, security, and troubleshooting information, see [SETUP.md](SETUP.md).
+
+### Other start options
+
+From the project folder, you can also run `mvn spring-boot:run` to start from source. On Linux or macOS, use `./run.sh`. Run tests with `mvn clean verify`.
 
 > Stop any running FinWise process before `mvn clean`, otherwise Maven cannot replace the JAR on Windows.
 
@@ -131,7 +143,9 @@ Then open <http://localhost:8080>.
 - Username: `admin`
 - Password: `admin123`
 
-Change the default password before storing real financial data.
+The admin account can open the admin console at `/admin` after sign-in. The console shows record counts for supported core and FinancePlus tables, manages users, and provides per-user Excel and ZIP exports. ZIP exports include the workbook plus available user files and attachments. An admin can issue a single-use password-reset link that expires after 30 minutes and share it with the user, who chooses a new password. Existing passwords are one-way hashed and cannot be viewed. Password hashes and reset tokens are excluded from exports.
+
+Change the default password before storing real financial data. You can override the admin credentials using `SPRING_SECURITY_USER_NAME` and `SPRING_SECURITY_USER_PASSWORD` environment variables before starting FinWise.
 
 ---
 
@@ -140,6 +154,8 @@ Change the default password before storing real financial data.
 | Area | Route | What it does |
 | --- | --- | --- |
 | Dashboard | `/dashboard` | Monthly overview, category breakdown, charts |
+| Admin console | `/admin` | Database table counts and user management (admin only) |
+| Password reset | `/reset-password` | Set a new password using an admin-issued, time-limited link |
 | Accounts | `/accounts` | Bank and cash accounts, balances |
 | Income | `/income` | Income records, filters, export |
 | Expenses | `/expenses` | Expense records, filters, receipts |
@@ -223,6 +239,7 @@ Language/theme preferences are stored per user in the database, not in propertie
 ## Security model
 
 - CSRF protection is enabled for browser forms and AJAX requests.
+- Admin routes require the admin role; password-reset links are single-use and expire after 30 minutes.
 - Destructive operations use authenticated `POST` endpoints, never `GET`.
 - Every record query is scoped to the authenticated user.
 - Category deletion verifies ownership and blocks default categories.

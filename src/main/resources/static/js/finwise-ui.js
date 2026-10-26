@@ -573,5 +573,5 @@
   // before DOMContentLoaded) and again once the DOM is ready.
   try { window.__fwChartsTheme(); } catch (e) {}
   document.addEventListener('DOMContentLoaded', function () { window.__fwChartsTheme(); });
-  window.fwChartPalette = ['#4f46e5', '#059669', '#0284c7', '#d97706', '#dc2626', '#7c3aed', '#0d9488', '#e11d48', '#65a30d', '#9333ea'];
+  window.fwChartPalette = ['#0b806e', '#7459ce', '#0284c7', '#d97706', '#dc2626', '#8b6be8', '#0d9488', '#e11d48', '#65a30d', '#ab68d1'];
 })();

@@ -40,6 +40,7 @@
   <link rel="stylesheet" href="/css/chatbot-widget.css">
   <link rel="stylesheet" href="/css/finwise-bridge.css">
   <link rel="stylesheet" href="/css/finwise-theme.css">
+  <link rel="stylesheet" href="/css/landing.css">
 </head>
 <body class="landing-page">
     <div class="fw-particles">
@@ -75,58 +76,76 @@
         </div>
     </nav>
 
-    <main class="landing-main" style="margin-left: 0; padding: 0;">
-        <!-- Hero Section -->
-        <section style="padding: var(--sp-16) var(--sp-6); text-align: center; margin-bottom: var(--sp-12);">
-            <div style="max-width: 900px; margin: 0 auto;">
-                <div style="display: inline-flex; align-items: center; gap: var(--sp-2); padding: var(--sp-2) var(--sp-4); background: rgba(99,102,241,.12); border: 1px solid rgba(99,102,241,.3); border-radius: var(--radius-full); margin-bottom: var(--sp-6); font-size: .85rem; color: var(--primary-400);">
-                    <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg> The Premium Finance Dashboard You've Been Waiting For
+    <main class="landing-main">
+        <section class="landing-hero">
+            <div class="landing-hero-inner">
+                <div class="landing-hero-copy">
+                    <div class="landing-eyebrow">
+                        <span class="landing-eyebrow-dot" aria-hidden="true"></span>
+                        Your money, in focus
+                    </div>
+                    <h1>Make confident moves with <span>money clarity.</span></h1>
+                    <p class="landing-hero-lede">
+                        A private, offline-first space to understand your spending, build better habits, and make every financial goal feel within reach.
+                    </p>
+                    <div class="landing-hero-actions">
+                        <a href="/register" class="fw-btn fw-btn-primary fw-btn-lg">
+                            Get started for free
+                            <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                        </a>
+                        <a href="/login" class="landing-text-link">Sign in to your account <span aria-hidden="true">↗</span></a>
+                    </div>
+                    <p id="installFinWiseStatus" class="landing-install-status" role="status" aria-live="polite"></p>
+                    <button id="installFinWise" type="button" class="landing-install-link">Install Finwise on this computer</button>
+                    <div class="landing-trust-row" aria-label="Privacy highlights">
+                        <span><i aria-hidden="true">✓</i> Private by design</span>
+                        <span><i aria-hidden="true">✓</i> No data collection</span>
+                        <span><i aria-hidden="true">✓</i> Works offline</span>
+                    </div>
                 </div>
-                
-                <h1 style="font-size: 3.5rem; font-weight: 800; line-height: 1.2; margin-bottom: var(--sp-4); letter-spacing: -.02em;">
-                    <span style="background: linear-gradient(135deg, var(--primary-400), var(--accent-400)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
-                        Master Your Money
-                    </span>
-                    <br>
-                    with Intelligent Insights
-                </h1>
-                
-                <p style="font-size: 1.25rem; color: var(--surface-400); margin-bottom: var(--sp-8); max-width: 700px; margin-left: auto; margin-right: auto; line-height: 1.6;">
-                    Finwise is your personal finance command center. Track every transaction, visualize your spending patterns, set meaningful goals, and make smarter financial decisions — all with complete privacy and offline-first data storage.
-                </p>
-                
-                <div style="display: flex; gap: var(--sp-4); justify-content: center; flex-wrap: wrap; margin-bottom: var(--sp-10);">
-                    <a href="/register" class="fw-btn fw-btn-primary fw-btn-lg" style="min-width: 200px;">
-                        <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg> Create Free Account
-                    </a>
-                    <a href="/login" class="fw-btn fw-btn-secondary fw-btn-lg" style="min-width: 200px;">
-                        Sign In
-                    </a>
-                    <button id="installFinWise" type="button" class="fw-btn fw-btn-secondary fw-btn-lg" style="min-width: 200px;">
-                        Install on this computer
-                    </button>
-                </div>
-                <p id="installFinWiseStatus" role="status" aria-live="polite"></p>
 
-                <!-- Trust Badges -->
-                <div style="display: flex; gap: var(--sp-4); justify-content: center; flex-wrap: wrap; font-size: .875rem; color: var(--surface-500); margin-top: var(--sp-6); padding-top: var(--sp-6); border-top: 1px solid var(--glass-border);">
-                    <div style="display: flex; align-items: center; gap: var(--sp-2);">
-                        <span style="color: var(--success-400);"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg></span> 100% Private & Local
+                <div class="landing-preview" aria-label="Illustrative Finwise dashboard preview">
+                    <div class="landing-preview-glow" aria-hidden="true"></div>
+                    <div class="landing-preview-card">
+                        <div class="landing-preview-top">
+                            <div>
+                                <span class="landing-preview-kicker">FINWISE OVERVIEW</span>
+                                <h2>Your finances, at a glance</h2>
+                            </div>
+                            <span class="landing-preview-avatar" aria-hidden="true">F</span>
+                        </div>
+                        <div class="landing-balance-card">
+                            <span>Available balance</span>
+                            <strong>$12,840<span>.50</span></strong>
+                            <div class="landing-balance-meta"><span class="landing-trend">↗ 8.2%</span><span>this month</span></div>
+                            <div class="landing-chart" aria-hidden="true">
+                                <svg viewBox="0 0 520 112" preserveAspectRatio="none">
+                                    <defs><linearGradient id="landing-chart-fill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#70e1c1" stop-opacity=".32"/><stop offset="1" stop-color="#70e1c1" stop-opacity="0"/></linearGradient></defs>
+                                    <path class="landing-chart-area" d="M0 85 C35 82 44 58 76 66 S125 82 158 53 202 65 235 43 278 52 310 32 357 49 391 25 439 34 470 14 500 23 520 5 V112 H0Z"/>
+                                    <path class="landing-chart-line" d="M0 85 C35 82 44 58 76 66 S125 82 158 53 202 65 235 43 278 52 310 32 357 49 391 25 439 34 470 14 500 23 520 5"/>
+                                </svg>
+                            </div>
+                            <div class="landing-chart-labels"><span>WEEK 1</span><span>WEEK 2</span><span>WEEK 3</span><span>WEEK 4</span></div>
+                        </div>
+                        <div class="landing-preview-stats">
+                            <div class="landing-preview-stat"><span class="landing-stat-icon landing-stat-icon--mint">↙</span><span><small>Income</small><b>$4,250</b></span><em>+12%</em></div>
+                            <div class="landing-preview-stat"><span class="landing-stat-icon landing-stat-icon--peach">↗</span><span><small>Expenses</small><b>$2,180</b></span><em class="landing-stat-neutral">On track</em></div>
+                        </div>
+                        <div class="landing-preview-foot"><span><i aria-hidden="true"></i> Your data stays on this device</span><span>Illustrative preview</span></div>
                     </div>
-                    <div style="display: flex; align-items: center; gap: var(--sp-2);">
-                        <span style="color: var(--success-400);"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg></span> No Data Collection
-                    </div>
-                    <div style="display: flex; align-items: center; gap: var(--sp-2);">
-                        <span style="color: var(--success-400);"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="M2 12h20"/></svg></span> Works Offline
-                    </div>
+                    <div class="landing-float-note"><span aria-hidden="true">✦</span><div><b>Progress that feels good</b><small>Small steps. Real momentum.</small></div></div>
                 </div>
             </div>
         </section>
 
         <!-- Features Section -->
         <section id="features" style="padding: var(--sp-12) var(--sp-6); background: linear-gradient(180deg, rgba(99,102,241,.05), transparent); border-bottom: 1px solid var(--glass-border);">
-            <div style="max-width: 1200px; margin: 0 auto;">
-                <h2 style="font-size: 2.5rem; text-align: center; margin-bottom: var(--sp-12);">Powerful Features</h2>
+            <div class="landing-section-wrap">
+                <div class="landing-section-heading">
+                    <span class="landing-section-kicker">Everything in one place</span>
+                    <h2>Powerful features, thoughtfully designed</h2>
+                    <p>Bring the everyday details of your finances together in one clear, private workspace.</p>
+                </div>
                 
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--sp-6);">
                     <div style="padding: var(--sp-6); background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-xl); transition: all .3s var(--ease-out);" class="feature-card">
@@ -208,7 +227,8 @@
         <!-- Security Section -->
         <section id="security" style="padding: var(--sp-12) var(--sp-6);">
             <div style="max-width: 900px; margin: 0 auto; text-align: center;">
-                <h2 style="font-size: 2.5rem; margin-bottom: var(--sp-8);">Security & Privacy First</h2>
+                <span class="landing-section-kicker">Built around your privacy</span>
+                <h2>Security &amp; privacy first</h2>
                 <p style="font-size: 1.125rem; color: var(--surface-400); line-height: 1.8; margin-bottom: var(--sp-8);">
                     Your financial data is too important to compromise. Finwise keeps everything on your device with no servers, no cloud sync, and no data collection. You have complete control and peace of mind.
                 </p>
@@ -220,8 +240,8 @@
                                 <path d="m9.5 12 1.7 1.7 3.3-3.8"/>
                             </svg>
                         </div>
-                        <h4 style="color: var(--success-400); margin-bottom: var(--sp-2);">Encrypted Locally</h4>
-                        <p style="color: var(--surface-400); font-size: .9rem;">All data encrypted on your device.</p>
+                        <h4 style="color: var(--success-400); margin-bottom: var(--sp-2);">Stored locally</h4>
+                        <p style="color: var(--surface-400); font-size: .9rem;">Your finance data stays on this computer.</p>
                     </div>
                     <div style="padding: var(--sp-6); background: rgba(16,185,129,.1); border: 1px solid rgba(16,185,129,.3); border-radius: var(--radius-lg);">
                         <div style="display:inline-flex; align-items:center; justify-content:center; width:2.5rem; height:2.5rem; margin-bottom: var(--sp-3); color: var(--success-400);">
@@ -251,9 +271,9 @@
         </section>
 
         <!-- CTA Section -->
-        <section style="padding: var(--sp-12) var(--sp-6); text-align: center; background: linear-gradient(135deg, rgba(99,102,241,.1), rgba(139,92,246,.08)); border-radius: var(--radius-xl); margin: var(--sp-8);">
+        <section class="landing-cta" style="padding: var(--sp-12) var(--sp-6); text-align: center; background: linear-gradient(135deg, rgba(99,102,241,.1), rgba(139,92,246,.08)); border-radius: var(--radius-xl); margin: var(--sp-8);">
             <h2 style="font-size: 2rem; margin-bottom: var(--sp-4);">Ready to Take Control?</h2>
-            <p style="font-size: 1.125rem; color: var(--surface-400); margin-bottom: var(--sp-6);">Join thousands managing their finances smarter.</p>
+            <p style="font-size: 1.125rem; color: var(--surface-400); margin-bottom: var(--sp-6);">Start building a clearer picture of your finances.</p>
             <a href="/register" class="fw-btn fw-btn-primary fw-btn-lg" style="min-width: 220px;">Get Started Free</a>
         </section>
     </main>

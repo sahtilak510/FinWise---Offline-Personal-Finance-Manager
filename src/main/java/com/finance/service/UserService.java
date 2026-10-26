@@ -18,6 +18,7 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
@@ -71,11 +72,13 @@ public class UserService {
         String trimmedEmail = email == null ? "" : email.trim();
         String trimmedFullName = fullName == null ? "" : fullName.trim();
         String trimmedPassword = password == null ? "" : password;
+        String normalizedUsername = normalizeUsername(trimmedUsername);
+        String normalizedEmail = normalizeEmail(trimmedEmail);
 
-        if (trimmedUsername.isEmpty()) {
+        if (normalizedUsername.isEmpty()) {
             throw new IllegalArgumentException("Username is required");
         }
-        if (trimmedEmail.isEmpty()) {
+        if (normalizedEmail.isEmpty()) {
             throw new IllegalArgumentException("Email is required");
         }
         if (trimmedPassword.isEmpty() || trimmedPassword.length() < 6) {
@@ -84,16 +87,16 @@ public class UserService {
         if (trimmedFullName.isEmpty()) {
             throw new IllegalArgumentException("Full name is required");
         }
-        if (userRepository.existsByUsername(trimmedUsername)) {
+        if (userRepository.existsByUsernameIgnoreCase(normalizedUsername)) {
             throw new IllegalArgumentException("Username already exists");
         }
-        if (userRepository.existsByEmail(trimmedEmail)) {
+        if (userRepository.existsByEmailIgnoreCase(normalizedEmail)) {
             throw new IllegalArgumentException("Email already exists");
         }
 
         User user = new User();
-        user.setUsername(trimmedUsername);
-        user.setEmail(trimmedEmail);
+        user.setUsername(normalizedUsername);
+        user.setEmail(normalizedEmail);
         user.setPassword(passwordEncoder.encode(trimmedPassword));
         user.setFullName(trimmedFullName);
         user.setIsActive(true);
@@ -108,7 +111,10 @@ public class UserService {
     }
 
     public Optional<User> getUserByUsername(String username) {
-        return userRepository.findByUsername(username);
+        if (username == null || username.trim().isEmpty()) {
+            return Optional.empty();
+        }
+        return userRepository.findByUsernameIgnoreCase(normalizeUsername(username));
     }
 
     public Optional<User> getUserById(Long id) {
@@ -145,19 +151,22 @@ public class UserService {
             throw new IllegalArgumentException("A valid email is required");
         }
 
-        Optional<User> existingByUsername = userRepository.findByUsername(normalizedUsername);
+        String canonicalUsername = normalizeUsername(normalizedUsername);
+        String canonicalEmail = normalizeEmail(normalizedEmail);
+
+        Optional<User> existingByUsername = userRepository.findByUsernameIgnoreCase(canonicalUsername);
         if (existingByUsername.isPresent() && !existingByUsername.get().getId().equals(user.getId())) {
             throw new IllegalArgumentException("Username already exists");
         }
 
-        Optional<User> existingByEmail = userRepository.findByEmail(normalizedEmail);
+        Optional<User> existingByEmail = userRepository.findByEmailIgnoreCase(canonicalEmail);
         if (existingByEmail.isPresent() && !existingByEmail.get().getId().equals(user.getId())) {
             throw new IllegalArgumentException("Email already exists");
         }
 
         user.setFullName(normalizedFullName);
-        user.setUsername(normalizedUsername);
-        user.setEmail(normalizedEmail);
+        user.setUsername(canonicalUsername);
+        user.setEmail(canonicalEmail);
         return userRepository.save(user);
     }
 
@@ -387,5 +396,13 @@ public class UserService {
 
     public boolean verifyPassword(User user, String rawPassword) {
         return passwordEncoder.matches(rawPassword, user.getPassword());
+    }
+
+    private String normalizeUsername(String username) {
+        return username == null ? "" : username.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private String normalizeEmail(String email) {
+        return email == null ? "" : email.trim().toLowerCase(Locale.ROOT);
     }
 }

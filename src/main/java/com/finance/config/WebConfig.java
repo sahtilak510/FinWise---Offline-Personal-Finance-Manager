@@ -16,7 +16,7 @@ public class WebConfig implements WebMvcConfigurer {
     }
 
     @Override
-    public void addInterceptors(org.springframework.web.servlet.config.annotation.InterceptorRegistry registry) {
+    public void addInterceptors(@NonNull org.springframework.web.servlet.config.annotation.InterceptorRegistry registry) {
         registry.addInterceptor(financePlusAccessInterceptor)
                 .addPathPatterns("/finance-plus/**")
                 .excludePathPatterns("/finance-plus/locked", "/finance-plus/unlock");

@@ -313,3 +313,29 @@
   .authx-card, .authx-safe, .authx-secure { animation: none !important; }
   .authx-feats li:hover, .authx .fw-btn-pri:hover:not(:disabled) { transform: none; }
 }
+
+/* Match the shared emerald-and-amethyst brand system. */
+.authx-brand {
+  background:
+    radial-gradient(ellipse 70% 45% at 85% 8%, rgba(90, 212, 177, .22), transparent 60%),
+    radial-gradient(ellipse 55% 40% at 8% 95%, rgba(128, 104, 220, .16), transparent 60%),
+    linear-gradient(155deg, #102a2a 0%, #0b1918 58%, #14172d 100%);
+}
+
+.authx-brand::after {
+  border-color: rgba(121, 226, 193, .16);
+  box-shadow: 0 0 0 56px rgba(121, 226, 193, .035), 0 0 0 112px rgba(128, 104, 220, .035);
+}
+
+.authx-kicker { color: #8de6c8; }
+.authx-feats li:hover { background: rgba(77, 197, 155, .10); border-color: rgba(121, 226, 193, .35); }
+.authx-feats .fi { color: #a5f0d8; background: rgba(77, 197, 155, .13); border-color: rgba(121, 226, 193, .25); }
+.authx-secure { border-color: rgba(121, 226, 193, .25); background: rgba(77, 197, 155, .07); }
+.authx-secure svg { color: #79e2c1; }
+.authx-mark {
+  color: #08251f;
+  background: linear-gradient(140deg, #79e2c1, #4a9f93 56%, #8068dc);
+  box-shadow: 0 8px 22px rgba(65, 185, 156, .24);
+}
+
+.authx-card { border-radius: 24px; }

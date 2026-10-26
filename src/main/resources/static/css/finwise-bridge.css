@@ -5,10 +5,10 @@
    inversion made light text render on light backgrounds. */
 :root, [data-theme="light"] {
   --surface-0: #ffffff;
-  --surface-50: #f8fafc; --surface-100: #f1f5f9; --surface-200: #e2e8f0;
-  --surface-300: #cbd5e1; --surface-400: #94a3b8; --surface-500: #64748b;
-  --surface-600: #475569; --surface-700: #334155; --surface-800: #1e293b;
-  --surface-900: #0f172a;
+  --surface-50: #f8fbf9; --surface-100: #eff5f2; --surface-200: #dce8e3;
+  --surface-300: #c3d5ce; --surface-400: #8da39b; --surface-500: #657e76;
+  --surface-600: #4c6263; --surface-700: #334f4c; --surface-800: #203a37;
+  --surface-900: #142b2c;
   --navy-950: var(--fw-bg); --navy-900: var(--fw-bg-2); --navy-850: var(--fw-surface);
   --navy-800: var(--fw-surface); --navy-750: var(--fw-surface-3); --navy-700: var(--fw-border-strong);
   --glass-bg: var(--fw-surface); --glass-bg-md: var(--fw-surface-2); --glass-border: var(--fw-border);
@@ -17,27 +17,27 @@
   --success-400: var(--fw-success); --warning-400: var(--fw-warning); --danger-400: var(--fw-danger);
   --accent-500: var(--fw-accent);
   /* Chatbot widget + generic text aliases — keep text visible per theme */
-  --text: #0f172a; --text-muted: #64748b;
+  --text: #142b2c; --text-muted: #526969;
   --success: var(--fw-success-text); --warning: var(--fw-warning-text);
   --danger: var(--fw-danger-text); --info: var(--fw-info-text);
   --primary: var(--fw-primary); --accent: var(--fw-accent);
 }
 [data-theme="dark"], .dark, html.dark {
-  --surface-0: #0A1120;
-  --surface-50: #eef2ff; --surface-100: #e2e8f0; --surface-200: #cbd5e1;
-  --surface-300: #b6c2d6; --surface-400: #8ea0bb; --surface-500: #7d8aa3;
-  --surface-600: #475569; --surface-700: #334155; --surface-800: #1e293b;
-  --surface-900: #070B14;
-  --navy-950: #070B14; --navy-900: #0A1120; --navy-850: #111827;
-  --navy-800: #111827; --navy-750: #1A2438; --navy-700: #2b3a5e;
-  --glass-bg: #111827; --glass-bg-md: #151D2D; --glass-border: #263247;
-  --glass-border-lg: rgba(148,163,184,.28);
-  --primary-400: #a5b4fc; --primary-500: #818cf8; --primary-600: #6366f1;
-  --success-400: #34d399; --warning-400: #fbbf24; --danger-400: #f87171;
-  --text: #e2e8f0; --text-muted: #8ea0bb;
-  --success: #34d399; --warning: #fbbf24;
+  --surface-0: #0b1916;
+  --surface-50: #eff8f3; --surface-100: #dcebe2; --surface-200: #c5d9cd;
+  --surface-300: #aac2b4; --surface-400: #91aa9c; --surface-500: #829a8d;
+  --surface-600: #61776d; --surface-700: #435b50; --surface-800: #203a32;
+  --surface-900: #081411;
+  --navy-950: #081411; --navy-900: #0b1916; --navy-850: #11211d;
+  --navy-800: #11211d; --navy-750: #1b322b; --navy-700: #29443a;
+  --glass-bg: #11211d; --glass-bg-md: #142722; --glass-border: #29443a;
+  --glass-border-lg: rgba(160,199,181,.30);
+  --primary-400: var(--fw-primary); --primary-500: var(--fw-primary); --primary-600: var(--fw-primary-600);
+  --success-400: #58d6a7; --warning-400: #fbbf24; --danger-400: #f87171;
+  --text: #e6f1e9; --text-muted: #9ab1a5;
+  --success: #58d6a7; --warning: #fbbf24;
   --danger: #f87171; --info: #38bdf8;
-  --primary: #818cf8; --accent: #34d399;
+  --primary: var(--fw-primary); --accent: #b2a0ff;
 }
 /* Old layout classes coexist with new shell: neutralize old fixed sidebar/nav
    when the new shell is present, and map old main to new content width. */

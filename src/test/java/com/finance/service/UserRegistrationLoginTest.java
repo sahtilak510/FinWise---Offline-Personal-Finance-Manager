@@ -79,6 +79,7 @@ class UserRegistrationLoginTest {
         assertEquals("Email already exists", dupEmail.getMessage());
     }
 
+    @SuppressWarnings("null")
     @Test
     void importPreviewRendersWithoutCsrfRequestAttribute() throws Exception {
         String username = "preview_user_" + System.currentTimeMillis();

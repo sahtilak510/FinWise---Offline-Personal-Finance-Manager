@@ -6,13 +6,13 @@
 :root {
   color-scheme: light dark;
   /* Brand */
-  --fw-primary: #4f46e5;
-  --fw-primary-600: #4338ca;
-  --fw-primary-700: #3730a3;
-  --fw-primary-soft: rgba(79, 70, 229, .10);
-  --fw-primary-border: rgba(79, 70, 229, .22);
-  --fw-accent: #059669;
-  --fw-accent-soft: rgba(5, 150, 105, .10);
+  --fw-primary: #0b806e;
+  --fw-primary-600: #0a6b5d;
+  --fw-primary-700: #075849;
+  --fw-primary-soft: rgba(11, 128, 110, .10);
+  --fw-primary-border: rgba(11, 128, 110, .22);
+  --fw-accent: #7459ce;
+  --fw-accent-soft: rgba(116, 89, 206, .10);
 
   /* Semantic — fill colors (keep white text readable on buttons) */
   --fw-success: #059669;
@@ -33,51 +33,51 @@
   --fw-info-text: #0369a1;
 
   /* Light theme (default) */
-  --fw-bg: #F8FAFC;
-  --fw-bg-2: #eef1f7;
+  --fw-bg: #f4f8f6;
+  --fw-bg-2: #edf3f1;
   --fw-surface: #ffffff;
   --fw-surface-2: #f8fafc;
-  --fw-surface-3: #eef2f7;
-  --fw-border: #E2E8F0;
-  --fw-border-strong: #cbd5e1;
-  --fw-text: #0f172a;
-  --fw-text-2: #475569;
-  --fw-text-3: #94a3b8;
-  --fw-topbar-bg: rgba(255, 255, 255, .86);
+  --fw-surface-3: #edf3f1;
+  --fw-border: #dce8e3;
+  --fw-border-strong: #c3d5ce;
+  --fw-text: #142b2c;
+  --fw-text-2: #4c6263;
+  --fw-text-3: #718887;
+  --fw-topbar-bg: rgba(248, 251, 249, .88);
   --fw-sidebar-bg: #ffffff;
-  --fw-sidebar-text: #475569;
+  --fw-sidebar-text: #4c6263;
   --fw-input-bg: #ffffff;
-  --fw-hover: #f1f5f9;
-  --fw-chart-grid: rgba(15, 23, 42, .08);
-  --fw-chart-tick: #64748b;
+  --fw-hover: #edf5f1;
+  --fw-chart-grid: rgba(20, 43, 44, .08);
+  --fw-chart-tick: #637a78;
 
   /* ---- Spec theme tokens (light): generic aliases used across the app ----
      Light = bright, clean premium finance UI. */
-  --bg-primary: #F8FAFC;
+  --bg-primary: #f4f8f6;
   --bg-secondary: #FFFFFF;
   --bg-card: #FFFFFF;
-  --bg-tertiary: #EEF1F7;
-  --text-primary: #0F172A;
-  --text-secondary: #64748B;
-  --text-muted: #7C8AA0;
-  --border: #E2E8F0;
-  --border-strong: #CBD5E1;
+  --bg-tertiary: #edf3f1;
+  --text-primary: #142b2c;
+  --text-secondary: #526969;
+  --text-muted: #718887;
+  --border: #dce8e3;
+  --border-strong: #c3d5ce;
   --input-bg: #FFFFFF;
   --nav-bg: #FFFFFF;
-  --accent-green: #059669;
-  --accent-green-text: #047857;
-  --btn-gradient: linear-gradient(135deg, #4f46e5, #6366f1);
-  --glow-primary: rgba(99, 102, 241, .12);
-  --glow-accent: rgba(16, 185, 129, .08);
+  --accent-green: #0b806e;
+  --accent-green-text: #086554;
+  --btn-gradient: linear-gradient(135deg, #0b806e, #20a58a);
+  --glow-primary: rgba(11, 128, 110, .12);
+  --glow-accent: rgba(116, 89, 206, .09);
 
   /* Shape + elevation (restrained, premium) */
   --fw-r-sm: 8px;
   --fw-r-md: 12px;
   --fw-r-lg: 16px;
   --fw-r-xl: 20px;
-  --fw-shadow-sm: 0 1px 2px rgba(15, 23, 42, .06);
-  --fw-shadow-md: 0 4px 14px -4px rgba(15, 23, 42, .12);
-  --fw-shadow-lg: 0 12px 32px -12px rgba(15, 23, 42, .18);
+  --fw-shadow-sm: 0 1px 2px rgba(20, 43, 44, .05);
+  --fw-shadow-md: 0 8px 22px -8px rgba(20, 43, 44, .13);
+  --fw-shadow-lg: 0 22px 54px -24px rgba(20, 43, 44, .24);
 
   /* Type */
   --fw-font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
@@ -102,54 +102,60 @@
    (spec class API). JS keeps both in sync, so either selector works. */
 [data-theme="dark"], .dark, html.dark {
   color-scheme: dark;
-  --fw-bg: #070B14;
-  --fw-bg-2: #0A1120;
-  --fw-surface: #111827;
-  --fw-surface-2: #151D2D;
-  --fw-surface-3: #1A2438;
-  --fw-border: #263247;
-  --fw-border-strong: rgba(148, 163, 184, .28);
+  --fw-bg: #081411;
+  --fw-bg-2: #0b1916;
+  --fw-surface: #11211d;
+  --fw-surface-2: #142722;
+  --fw-surface-3: #1b322b;
+  --fw-border: #29443a;
+  --fw-border-strong: rgba(160, 199, 181, .30);
   --fw-text: #F8FAFC;
-  --fw-text-2: #94A3B8;
-  --fw-text-3: #7d8aa3;
-  --fw-topbar-bg: rgba(7, 11, 20, .82);
-  --fw-sidebar-bg: #0A1120;
-  --fw-sidebar-text: #aab7cf;
-  --fw-input-bg: #0C1322;
-  --fw-hover: rgba(148, 163, 184, .10);
-  --fw-chart-grid: rgba(148, 163, 184, .14);
-  --fw-chart-tick: #8ea0bb;
+  --fw-text-2: #a5b8ae;
+  --fw-text-3: #81968b;
+  --fw-topbar-bg: rgba(8, 20, 17, .86);
+  --fw-sidebar-bg: #0b1916;
+  --fw-sidebar-text: #b1c6ba;
+  --fw-input-bg: #0d1c18;
+  --fw-hover: rgba(121, 201, 164, .09);
+  --fw-chart-grid: rgba(160, 199, 181, .14);
+  --fw-chart-tick: #9ab1a5;
   --fw-shadow-sm: 0 1px 2px rgba(0, 0, 0, .4);
   --fw-shadow-md: 0 8px 22px -8px rgba(0, 0, 0, .5);
   --fw-shadow-lg: 0 18px 44px -16px rgba(0, 0, 0, .6);
-  --fw-primary-soft: rgba(129, 140, 248, .14);
+  --fw-primary: #55d1ad;
+  --fw-primary-600: #37bd98;
+  --fw-primary-700: #239d7d;
+  --fw-primary-soft: rgba(85, 209, 173, .14);
+  --fw-primary-border: rgba(85, 209, 173, .25);
+  --fw-accent: #b2a0ff;
+  --fw-accent-soft: rgba(178, 160, 255, .14);
   /* Brightened text variants — verified ≥ 4.5:1 on #121a30 surfaces */
-  --fw-success-text: #34d399;
+  --fw-success-text: #58d6a7;
   --fw-warning-text: #fbbf24;
   --fw-danger-text: #f87171;
   --fw-info-text: #38bdf8;
-  --fw-success-soft: rgba(52, 211, 153, .14);
+  --fw-success-soft: rgba(88, 214, 167, .14);
   --fw-warning-soft: rgba(251, 191, 36, .14);
   --fw-danger-soft: rgba(248, 113, 113, .14);
   --fw-info-soft: rgba(56, 189, 248, .14);
 
   /* ---- Spec theme tokens (dark): genuinely dark premium finance UI ---- */
-  --bg-primary: #070B14;
-  --bg-secondary: #111827;
-  --bg-card: #111827;
-  --bg-tertiary: #151D2D;
+  --bg-primary: #081411;
+  --bg-secondary: #11211d;
+  --bg-card: #11211d;
+  --bg-tertiary: #142722;
   --text-primary: #F8FAFC;
-  --text-secondary: #94A3B8;
-  --text-muted: #94A3B8;
-  --border: #263247;
-  --border-strong: rgba(148, 163, 184, .28);
-  --input-bg: #0C1322;
-  --nav-bg: #0B1220;
-  --accent-green: #34d399;
-  --accent-green-text: #34d399;
-  --btn-gradient: linear-gradient(135deg, #4f46e5, #6366f1);
-  --glow-primary: rgba(99, 102, 241, .22);
-  --glow-accent: rgba(16, 185, 129, .14);
+  --text-secondary: #a5b8ae;
+  --text-muted: #9ab1a5;
+  --border: #29443a;
+  --border-strong: rgba(160, 199, 181, .30);
+  --input-bg: #0d1c18;
+  --nav-bg: #0b1916;
+  --accent-green: #55d1ad;
+  --accent-green-text: #72e4ba;
+  --btn-gradient: linear-gradient(135deg, #118b73, #20a987);
+  --glow-primary: rgba(85, 209, 173, .20);
+  --glow-accent: rgba(178, 160, 255, .12);
 }
 
 /* Explicit light theme — also the no-JS / fallback default.
@@ -161,21 +167,21 @@
 /* Re-affirm light token values when light is selected via class API
    (covers class-only toggling for the fw-* variable consumers). */
 [data-theme="light"], html.light {
-  --bg-primary: #F8FAFC;
+  --bg-primary: #f4f8f6;
   --bg-secondary: #FFFFFF;
   --bg-card: #FFFFFF;
-  --bg-tertiary: #EEF1F7;
-  --text-primary: #0F172A;
-  --text-secondary: #64748B;
-  --text-muted: #7C8AA0;
-  --border: #E2E8F0;
-  --border-strong: #CBD5E1;
+  --bg-tertiary: #edf3f1;
+  --text-primary: #142b2c;
+  --text-secondary: #526969;
+  --text-muted: #718887;
+  --border: #dce8e3;
+  --border-strong: #c3d5ce;
   --input-bg: #FFFFFF;
   --nav-bg: #FFFFFF;
-  --accent-green: #059669;
-  --accent-green-text: #047857;
-  --glow-primary: rgba(99, 102, 241, .12);
-  --glow-accent: rgba(16, 185, 129, .08);
+  --accent-green: #0b806e;
+  --accent-green-text: #086554;
+  --glow-primary: rgba(11, 128, 110, .12);
+  --glow-accent: rgba(116, 89, 206, .09);
 }
 
 * { box-sizing: border-box; }

@@ -46,10 +46,16 @@ class FinancialPlanningIntegrationTest {
     @Test
     void planningWorkspaceRendersForAuthenticatedUser() throws Exception {
         User owner = register("planning-page");
+        planningService.addDocument(owner, "statement.pdf", "application/pdf",
+                new byte[]{'%', 'P', 'D', 'F', '-', '2'});
         mockMvc.perform(get("/planning").with(user(owner.getUsername())))
                 .andExpect(status().isOk())
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Debt and loan payoff planner")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Private financial document vault")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("name=\"file\"")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Delete file")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("name=\"confirmation\"")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Upload document")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("name=\"_csrf\"")));
     }
 
@@ -146,13 +152,37 @@ class FinancialPlanningIntegrationTest {
                 .andExpect(redirectedUrl("/planning#documents"));
 
         var document = planningService.documents(owner).get(0);
+        var otherDocument = planningService.addDocument(owner, "other.pdf", "application/pdf",
+                new byte[]{'%', 'P', 'D', 'F', '-', '2'});
         assertEquals("__statement.pdf", document.getFilename());
+        mockMvc.perform(get("/planning").with(user(owner.getUsername())))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("name=\"confirmation\"")));
         mockMvc.perform(get("/planning/documents/{id}", document.getId()).with(user(owner.getUsername())))
                 .andExpect(status().isOk())
                 .andExpect(header().string("X-Content-Type-Options", "nosniff"))
                 .andExpect(content().contentType("application/pdf"));
         mockMvc.perform(get("/planning/documents/{id}", document.getId()).with(user(other.getUsername())))
                 .andExpect(status().isBadRequest());
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                        .post("/planning/documents/{id}/delete", document.getId())
+                        .with(user(owner.getUsername())).with(csrf()))
+                .andExpect(status().isFound())
+                .andExpect(redirectedUrl("/planning#documents"))
+                .andExpect(flash().attribute("errorMessage", "Type DELETE to confirm removal of this file."));
+        assertEquals(2, planningService.documents(owner).size());
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                        .post("/planning/documents/{id}/delete", document.getId())
+                        .param("confirmation", "DELETE")
+                        .with(user(owner.getUsername())).with(csrf()))
+                .andExpect(status().isFound())
+                .andExpect(redirectedUrl("/planning#documents"))
+                .andExpect(flash().attribute("successMessage", "Vault file deleted. Your account was not changed."));
+        assertEquals(List.of(otherDocument.getId()),
+                planningService.documents(owner).stream().map(item -> item.getId()).toList());
+        assertTrue(userService.getUserByUsername(owner.getUsername()).isPresent());
 
         MockMultipartFile invalid = new MockMultipartFile("file", "fake.pdf",
                 "application/pdf", "not a pdf".getBytes(java.nio.charset.StandardCharsets.UTF_8));

@@ -356,12 +356,6 @@
 <div th:replace="~{fragments/finwise :: fwScripts}"></div>
 <script>
 (function() {
-    function reportFilename(response, fallback) {
-        const header = response.headers.get('content-disposition') || '';
-        const match = /filename\s*=\s*(?:"([^"]+)"|([^;]+))/i.exec(header);
-        return match ? (match[1] || match[2] || fallback) : fallback;
-    }
-
     function reportToast(title, message, kind) {
         if (typeof window.fwToast === 'function') {
             window.fwToast(title, message, kind);
@@ -375,7 +369,15 @@
         const originalText = button.textContent;
         button.disabled = true;
         button.textContent = 'Generating...';
+        const format = form.querySelector('[name="format"]').value.toUpperCase();
+        const formatOptions = {
+            CSV: { extension: 'csv', contentType: 'text/csv' },
+            XLSX: { extension: 'xlsx', contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' },
+            PDF: { extension: 'pdf', contentType: 'application/pdf' }
+        };
+        const selectedFormat = formatOptions[format];
         const formData = new FormData(form);
+        formData.set('format', format);
 
         fetch(form.action, {
             method: 'POST',
@@ -387,9 +389,13 @@
                     const message = (await response.text()).trim();
                     throw new Error(message || 'The report could not be generated.');
                 }
+                const responseType = (response.headers.get('content-type') || '').split(';')[0].trim().toLowerCase();
+                if (!selectedFormat || responseType !== selectedFormat.contentType) {
+                    throw new Error('The downloaded report format did not match your selection. Refresh the page and try again.');
+                }
                 return {
                     blob: await response.blob(),
-                    filename: reportFilename(response, 'FinWise-Financial-Report.' + formData.get('format').toLowerCase())
+                    filename: 'FinWise-Financial-Report.' + selectedFormat.extension
                 };
             })
             .then(({ blob, filename }) => {

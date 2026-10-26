@@ -17,6 +17,8 @@ LANGUAGES AND MAIN TECHNOLOGIES
 - Thymeleaf, HTML: builds the web pages on the server.
 - CSS: page appearance and responsive layouts.
 - JavaScript: browser interactions, charts, and import/scan helpers.
+- A web app manifest and service worker enable optional installation as a
+  standalone browser app. The worker does not cache pages for offline use.
 - JSON: language translation files and some application data.
 - SQLite: local database for application records.
 - JPA/Hibernate: maps Java objects to database tables and reads/writes records.
@@ -94,6 +96,13 @@ the file. Depending on the file type, the app uses libraries such as Apache
 POI for spreadsheets, PDFBox for PDFs, and OpenCV/Tess4J for image
 preprocessing and OCR. The app can then show extracted transaction details for
 review before saving them.
+
+REPORTS
+-------
+The Reports page provides financial summary, income, expense, category,
+budget, trend, forecast, health-score, and insight reports. The user selects a
+period and downloads a PDF, CSV, or XLSX file. Generated report files are
+stored locally under data/reports/.
 
 BUILD, START, AND TEST
 ----------------------

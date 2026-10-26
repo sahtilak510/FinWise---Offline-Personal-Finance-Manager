@@ -1,5 +1,7 @@
 package com.finance.service;
 
+import com.finance.financeplus.model.FinancePlusSettings;
+import com.finance.financeplus.repository.FinancePlusSettingsRepository;
 import com.finance.model.entity.Expense;
 import com.finance.model.entity.ImportedTransaction;
 import com.finance.model.entity.Income;
@@ -67,6 +69,9 @@ class FinanceFeatureIntegrationTest {
 
     @Autowired
     ImportedTransactionRepository importRepository;
+
+    @Autowired
+    FinancePlusSettingsRepository financePlusSettingsRepository;
 
     @Autowired
     MockMvc mockMvc;
@@ -270,6 +275,21 @@ class FinanceFeatureIntegrationTest {
     }
 
     @Test
+    void deletingAccountAlsoRemovesFinancePlusSettings() throws Exception {
+        User user = register("delete-account-user");
+        FinancePlusSettings settings = new FinancePlusSettings();
+        settings.setUser(user);
+        financePlusSettingsRepository.save(settings);
+
+        mockMvc.perform(post("/account/delete-account")
+                        .with(user(user.getUsername())).with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
+
+        assertFalse(financePlusSettingsRepository.findByUser(user).isPresent());
+    }
+
+    @Test
     void clearingChatHistoryRequiresCsrfAndOnlyDeletesCurrentUsersMessages() throws Exception {
         User owner = register("chat-history-owner");
         User other = register("chat-history-other");
@@ -369,6 +389,74 @@ class FinanceFeatureIntegrationTest {
 
         assertEquals('P', response[0]);
         assertEquals('K', response[1]);
+    }
+
+    @Test
+    void reportsDefaultToPdfForPageAndDownload() throws Exception {
+        User user = register("report-pdf-user");
+
+        mockMvc.perform(get("/reports").with(user(user.getUsername())))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("selectedFormat", "PDF"));
+
+        byte[] response = mockMvc.perform(get("/reports/download-current").with(user(user.getUsername())))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/pdf"))
+                .andExpect(header().string("Content-Disposition", containsString(".pdf")))
+                .andExpect(header().string("Content-Disposition", not(containsString("UTF-8"))))
+                .andReturn().getResponse().getContentAsByteArray();
+
+        assertEquals("%PDF-", new String(response, 0, 5, java.nio.charset.StandardCharsets.US_ASCII));
+        try (org.apache.pdfbox.pdmodel.PDDocument document =
+                     org.apache.pdfbox.pdmodel.PDDocument.load(response)) {
+            assertEquals(1, document.getNumberOfPages());
+            String text = new org.apache.pdfbox.text.PDFTextStripper().getText(document);
+            assertTrue(text.contains("Financial Summary"));
+            assertTrue(text.contains("Total Income"));
+
+            java.awt.image.BufferedImage image =
+                    new org.apache.pdfbox.rendering.PDFRenderer(document).renderImage(0);
+            long lightHeaderPixels = 0;
+            for (int y = 12; y < 75; y++) {
+                for (int x = 38; x < 574; x++) {
+                    int pixel = image.getRGB(x, y);
+                    if (((pixel >> 16) & 0xff) > 220 && ((pixel >> 8) & 0xff) > 220
+                            && (pixel & 0xff) > 220) {
+                        lightHeaderPixels++;
+                    }
+                }
+            }
+            assertTrue(lightHeaderPixels > 50, "PDF report heading should contrast against its dark background");
+        }
+    }
+
+    @Test
+    void generateReportReturnsTheSelectedFormat() throws Exception {
+        User user = register("report-selected-format-user");
+        String[][] formats = {
+                {"CSV", "text/csv", "\uFEFF"},
+                {"XLSX", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "PK"},
+                {"PDF", "application/pdf", "%PDF-"}
+        };
+
+        for (String[] format : formats) {
+            byte[] response = mockMvc.perform(post("/reports/generate")
+                            .with(user(user.getUsername())).with(csrf())
+                            .param("reportType", "summary")
+                            .param("period", "this-month")
+                            .param("format", format[0]))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentTypeCompatibleWith(format[1]))
+                    .andExpect(header().string("Content-Disposition", not(containsString("UTF-8"))))
+                    .andReturn().getResponse().getContentAsByteArray();
+
+            String actualPrefix = switch (format[0]) {
+                case "CSV" -> new String(response, 0, 3, java.nio.charset.StandardCharsets.UTF_8);
+                case "XLSX" -> new String(response, 0, 2, java.nio.charset.StandardCharsets.US_ASCII);
+                default -> new String(response, 0, 5, java.nio.charset.StandardCharsets.US_ASCII);
+            };
+            assertEquals(format[2], actualPrefix, format[0]);
+        }
     }
 
     @Test

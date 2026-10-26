@@ -87,7 +87,17 @@ body.fp-body { background: var(--fp-bg); color: var(--fp-text); }
 .fp-form .btn-outline-light { color: var(--fp-text); border-color: var(--fp-border); }
 .btn { border-radius: 12px; padding: .65rem 1rem; font-weight: 750; }
 .btn-primary { background: linear-gradient(135deg, var(--fp-primary), #5b8cff); border: 0; }
-.fp-table { color: var(--fp-text); border-color: var(--fp-border); }
+.fp-table {
+  --bs-table-bg: transparent;
+  --bs-table-color: var(--fp-text);
+  --bs-table-border-color: var(--fp-border);
+  --bs-table-striped-bg: var(--fp-card-soft);
+  --bs-table-striped-color: var(--fp-text);
+  --bs-table-hover-bg: var(--fp-card-soft);
+  --bs-table-hover-color: var(--fp-text);
+  color: var(--fp-text);
+  border-color: var(--fp-border);
+}
 .fp-table thead th { color: var(--fp-muted); font-size: .68rem; letter-spacing: .08em; text-transform: uppercase; border-bottom-width: 1px; padding: 12px; }
 .fp-table tbody td { padding: 14px 12px; border-color: var(--fp-border); }
 .fp-restore-form { display: flex; gap: 8px; align-items: center; }

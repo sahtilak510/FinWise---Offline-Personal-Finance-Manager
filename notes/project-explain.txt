@@ -74,7 +74,8 @@ data\
     Images uploaded during document imports. Database records refer to them.
 
   tessdata\
-    Local OCR language data used to recognize text in documents.
+    Local OCR language data used to recognize text in documents. The bundled
+    English model is copied here automatically when OCR is first used.
 
   uploads\
     User-uploaded files stored outside the public web pages.
@@ -86,7 +87,11 @@ data\
     Main SQLite database containing core application records.
 
   finance-e2e.db
-    Database used for end-to-end testing, not ordinary user data.
+    A leftover local test database. Current automated tests use the isolated
+    target\finance-test.db path configured by application-e2e.properties.
+
+  reports\
+    Generated financial reports in PDF, CSV, or Excel format.
 
   Financial Planning records and uploaded documents are stored in finance.db.
   Documents are private to their account in the application, but the live
@@ -401,8 +406,15 @@ src\
           chatbot-widget.js chatbot interactions.
           finance-plus.js Finance Plus interactions.
           finwise-ui.js shared layout and interface behavior.
+          pwa-install.js optional browser-app installation prompt.
           scan-fill.js scan-and-fill interactions.
           script.js shared browser and profile interactions.
+
+        manifest.webmanifest
+          App name, launch path, display mode, and icons for supported browsers.
+        service-worker.js
+          Browser app worker; it forwards requests to the local server and does
+          not cache pages for offline use.
 
         locales\
           Translation JSON files for the interface:
@@ -480,7 +492,8 @@ src\
           settings.html settings page.
 
       tessdata\
-        eng.traineddata is the English OCR language model for reading scans.
+        eng.traineddata is the bundled English OCR language model. It is copied
+        to data\tessdata\ on first OCR use.
 
       application-e2e.properties
         Isolated test settings and file paths, separate from normal user data.
@@ -510,6 +523,7 @@ src\
           FeatureRegressionTest.java checks previously fixed behaviors.
           FinanceFeatureIntegrationTest.java tests connected finance features.
           OfflineFeatureTest.java tests local/offline features.
+          LocalTess4JOcrServiceTest.java tests the local OCR service.
           UserRegistrationLoginTest.java tests registration and login.
 
     resources\

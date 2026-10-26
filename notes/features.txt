@@ -12,7 +12,8 @@ CORE MONEY MANAGEMENT
 - Category budgets, savings goals, and recurring income or expenses.
 - Transaction import from CSV, Excel, PDF, and image files.
 - Receipt scanning and OCR-assisted transaction entry.
-- Reports, analytics, cash-flow estimates, and local notifications.
+- Reports for selected periods, downloadable as PDF, CSV, or Excel, plus
+  analytics, cash-flow estimates, and local notifications.
 
 FINANCIAL PLANNING
 ------------------
@@ -27,8 +28,9 @@ Open /planning to track:
 
 Planning values are based on user-entered records. Payoff, tax, and other
 financial summaries are estimates or organization tools, not financial, tax,
-or investment advice. All displayed amounts use ₹; keep entries in one
-currency for meaningful totals.
+or investment advice. The interface displays amounts with a dollar symbol and
+does not convert currencies; keep entries in one currency for meaningful
+totals.
 
 OTHER TOOLS
 -----------
@@ -44,9 +46,11 @@ sizes. The landing, sign-in, and authenticated pages adapt their layouts for
 small screens. The authenticated sidebar becomes a drawer; grids and forms
 stack, and wide tables can be scrolled horizontally.
 
-No separate mobile application is required. FinWise continues to run on the
-computer where it is started; responsive styling does not provide remote
-access, cloud synchronization, or a mobile installation.
+FinWise can also be installed as a standalone browser app on supported
+browsers. The local server must still be running to use the application; the
+PWA service worker does not cache finance pages for use while the server is
+stopped. No native mobile app, remote access, or cloud synchronization is
+provided.
 
 DATA AND PRIVACY NOTES
 ---------------------
@@ -54,6 +58,7 @@ DATA AND PRIVACY NOTES
   encrypted; protect the device and keep backups safe.
 - Financial-planning documents are private to the uploader in the app and
   stored in the local database.
+- Generated reports are saved under data/reports/.
 - Household sharing is limited to explicitly added FinWise users and shared
   household records; it does not share all personal account data.
 - Backups may be encrypted; protect the required backup key or passphrase.

@@ -26,10 +26,13 @@ public class OfflineFinanceApplication {
     }
 
     @Bean
-    public CommandLineRunner seedDefaultAdmin(UserService userService) {
+    public CommandLineRunner seedDefaultAccounts(UserService userService) {
         return args -> {
             if (userService.getUserByUsername("admin").isEmpty()) {
                 userService.registerUser("admin", "admin@finwise.local", "admin123", "System Administrator");
+            }
+            if (userService.getUserByUsername("admin1").isEmpty()) {
+                userService.registerUser("admin1", "admin1@finwise.local", "admin1234", "Default User");
             }
         };
     }

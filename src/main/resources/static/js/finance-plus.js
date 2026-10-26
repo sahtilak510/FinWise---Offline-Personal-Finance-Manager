@@ -1,22 +1,27 @@
 (function () {
   'use strict';
 
-  var hash = window.location.hash.replace('#', '');
-  var target = hash ? document.getElementById(hash) : document.getElementById('overview');
-  if (target) {
-    var button = document.querySelector('[data-bs-target="#' + target.id + '"]');
-    if (button && window.bootstrap) {
-      var tab = new bootstrap.Tab(button);
-      tab.show();
-    }
+  function paneForTarget(target) {
+    if (!target) return null;
+    return target.classList.contains('tab-pane') ? target : target.closest('.tab-pane');
+  }
+
+  function showPane(pane) {
+    if (!pane || !window.bootstrap) return;
+    var button = document.querySelector('[data-bs-target="#' + pane.id + '"]');
+    if (button) new bootstrap.Tab(button).show();
   }
 
   function showHash() {
     var id = window.location.hash.replace('#', '');
-    var target = id && document.getElementById(id);
-    if (!target || !target.classList.contains('tab-pane')) return;
-    var button = document.querySelector('[data-bs-target="#' + target.id + '"]');
-    if (button && window.bootstrap) new bootstrap.Tab(button).show();
+    showPane(paneForTarget(id && document.getElementById(id)));
+  }
+
+  var searchRequested = new URLSearchParams(window.location.search).get('search') === 'true';
+  if (searchRequested) {
+    showPane(document.getElementById('search'));
+  } else {
+    showHash();
   }
 
   document.querySelectorAll('[data-bs-toggle="pill"]').forEach(function (button) {

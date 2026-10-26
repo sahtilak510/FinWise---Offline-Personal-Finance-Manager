@@ -43,7 +43,7 @@
 <div class="fw-scrim" onclick="fwCloseSidebar()"></div>
 
     <div th:replace="~{fragments/finwise :: fwSidebar('chatbot', ${user})}"></div>
-    <div class="fw-sidebar__backdrop" onclick="document.getElementById('sidebar').classList.remove('fw-sidebar--open'); this.classList.remove('fw-sidebar__backdrop--visible')"></div>
+    <div class="fw-sidebar__backdrop" onclick="fwCloseSidebar()"></div>
 
     <div class="fw-content"><main class="fw-wrap" id="main">
         <div class="fw-pagehead">
@@ -118,7 +118,7 @@
     <div th:replace="~{fragments/finwise :: fwFooter}"></div>
 
     <script src="/vendor/chart.js/chart.umd.min.js"></script>
-    <script src="/js/chatbot-widget.js?v=2"></script>
+    <script src="/js/chatbot-widget.js?v=3"></script>
     <div th:replace="~{fragments/finwise :: fwScripts}"></div>
     <style>
       /* Fix standalone chat layout: own scroll area, no page jump, no double scrollbar */
@@ -142,7 +142,7 @@
             empty=document.getElementById('standaloneEmpty'), charEl=document.getElementById('standaloneChar'),
             clearBtn=document.getElementById('clearStandalone');
         if(!msgs||!input||!send) return;
-        var processing=false, lastUserMsg='';
+        var processing=false, lastUserMsg='', chartVersion=0;
         var analyzingEl=null;
 
         function fmt(iso){ try{ var d=iso?new Date(iso):new Date(); return d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}catch(e){return'';} }
@@ -257,6 +257,7 @@
           }
           if(text.length>MAX){ addErr('Message too long ('+text.length+'/'+MAX+'). Please shorten it.'); return; }
           lastUserMsg=text;
+          var requestChartVersion=chartVersion;
           add(text,'USER',new Date().toISOString());
           input.value=''; input.style.height='auto'; updateChar();
           setLoading(true); showLoading();
@@ -299,7 +300,7 @@
                   }
                 }
                 // chart if present
-                if(data && data.chart && window.Chart){
+                if(data && data.chart && window.Chart && requestChartVersion===chartVersion){
                   // try render into hidden canvas if available
                   var cc=document.getElementById('fwChatChartContainer'); var cv=document.getElementById('fwChatCanvas');
                   if(cc && cv){
@@ -330,6 +331,8 @@
           if(window.FW_CSRF_TOKEN) requestOptions.headers={'X-XSRF-TOKEN':window.FW_CSRF_TOKEN};
           fetch(API_HISTORY,requestOptions).then(function(r){
             if(!r.ok) throw 0;
+            chartVersion++;
+            if(typeof window.fwClearChatChart==='function') window.fwClearChatChart();
             msgs.querySelectorAll('.fw-chatbot-msg-row').forEach(function(e){e.remove();});
             if(empty) empty.style.display='';
             add('Chat cleared. How can I help with your finances?','BOT',new Date().toISOString());

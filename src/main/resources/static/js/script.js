@@ -2369,6 +2369,9 @@
         clearBrowserDataOnDelete = clearBrowserData === true;
         const modal = document.createElement('div');
         modal.id = 'delete-modal';
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-modal', 'true');
+        modal.setAttribute('aria-labelledby', 'delete-modal-title');
         modal.style.cssText = `
             position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000;
             display: flex; align-items: center; justify-content: center;
@@ -2387,26 +2390,38 @@
         
         modalContent.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--sp-6);">
-                <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--danger-400);">Delete Account</h2>
-                <button onclick="document.getElementById('delete-modal').remove()" style="background:none; border:none; cursor:pointer; font-size:1.5rem; color:var(--surface-500);">✕</button>
+                <h2 id="delete-modal-title" style="font-size: 1.5rem; font-weight: 700; color: var(--danger-400);">Delete Account</h2>
+                <button type="button" aria-label="Close delete account dialog" onclick="document.getElementById('delete-modal').remove()" style="background:none; border:none; cursor:pointer; font-size:1.5rem; color:var(--surface-500);">✕</button>
             </div>
             <div style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); padding: var(--sp-4); border-radius: var(--radius-lg); margin-bottom: var(--sp-6);">
                 <p style="margin: 0; font-size: 0.9rem; color: var(--surface-200);">⚠️ This action is permanent and cannot be undone. All your financial data will be permanently deleted.</p>
             </div>
-            <div style="margin-bottom: var(--sp-6);">
-                <label style="display: block; font-size: 0.85rem; color: var(--surface-400); margin-bottom: var(--sp-2); font-weight: 600;">Type "DELETE" to confirm</label>
-                <input type="text" id="delete-confirm" placeholder="Type DELETE to confirm" 
+            <form id="delete-account-form">
+                <div style="margin-bottom: var(--sp-6);">
+                    <label for="delete-confirm" style="display: block; font-size: 0.85rem; color: var(--surface-400); margin-bottom: var(--sp-2); font-weight: 600;">Type "DELETE" to confirm</label>
+                    <input type="text" id="delete-confirm" placeholder="Type DELETE to confirm" autocomplete="off" spellcheck="false"
                     style="width: 100%; padding: var(--sp-3); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); background: rgba(0,0,0,0.2); color: inherit; font-size: .95rem;">
-            </div>
-            <div style="display: flex; gap: var(--sp-3);">
-                <button onclick="document.getElementById('delete-modal').remove()" class="fw-btn fw-btn-secondary" style="flex:1;">Cancel</button>
-                <button onclick="confirmDeleteAccount()" class="fw-btn fw-btn-danger" style="flex:1;">Delete Account</button>
-            </div>
+                </div>
+                <div style="display: flex; gap: var(--sp-3);">
+                    <button type="button" onclick="document.getElementById('delete-modal').remove()" class="fw-btn fw-btn-secondary" style="flex:1;">Cancel</button>
+                    <button type="submit" id="delete-account-submit" class="fw-btn fw-btn-danger" style="flex:1;" disabled>Delete Account</button>
+                </div>
+            </form>
         `;
         
         modal.appendChild(modalContent);
         document.body.appendChild(modal);
-        document.getElementById('delete-confirm').focus();
+        const confirmInput = document.getElementById('delete-confirm');
+        const deleteButton = document.getElementById('delete-account-submit');
+        const deleteForm = document.getElementById('delete-account-form');
+        confirmInput.addEventListener('input', () => {
+            deleteButton.disabled = confirmInput.value.trim() !== 'DELETE';
+        });
+        deleteForm.addEventListener('submit', event => {
+            event.preventDefault();
+            confirmDeleteAccount();
+        });
+        confirmInput.focus();
     };
     
     window.confirmDeleteAccount = function() {

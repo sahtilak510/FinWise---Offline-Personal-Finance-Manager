@@ -1,6 +1,6 @@
 # FinWise — Offline Personal Finance Manager
 
-FinWise is a complete, offline-first personal finance management system for Windows. It runs entirely on your own machine: a Java 17 / Spring Boot server, a local SQLite database, and a Thymeleaf web UI served from `http://localhost:8080`. No cloud service, no external API, no internet connection is required — financial records never leave the computer.
+FinWise is a complete, offline-first personal finance management system for Windows. It runs on your own machine: a Java 17 / Spring Boot server, a local SQLite database, and a Thymeleaf web UI served from `http://localhost:8080`. The first build may need internet access to download Maven dependencies. Afterward, the application runs locally without a cloud service or external API; financial records are stored on the computer.
 
 - **Artifact:** `com.finance:offline-finance-manager:1.0.0`
 - **Stack:** Java 17, Spring Boot 3.1, Spring MVC / Data JPA / Security / Thymeleaf, SQLite, Apache POI, PDFBox, OpenCV, Tess4J
@@ -61,6 +61,8 @@ FinWise is a complete, offline-first personal finance management system for Wind
 - **Cash-flow forecasting** from recent monthly history
 - **Upcoming bills** calculation with due-date reminders
 - **Smart insights** and report generation
+- Configurable financial reports for selected periods, downloadable as PDF,
+  CSV, or Excel (`.xlsx`)
 - Large-expense alerts, bill reminders, weekly and monthly summaries
 - Local in-app **notifications** center
 
@@ -91,6 +93,8 @@ A separately passcode-locked workspace inside the app:
 - **Audit log** of user activity
 - Light/dark and accent **themes**, token-based design system
 - Responsive browser UI for desktop, tablet, and mobile screens; no separate mobile app is required
+- Optional installable browser app (PWA) on supported browsers; the local
+  FinWise server must still be running to use it
 - **Localization** for 25 languages via local JSON files: English, Spanish, French, German, Italian, Portuguese, Russian, Turkish, Arabic, Persian, Hebrew, Urdu, Hindi, Marathi, Bengali, Nepali, Punjabi, Gujarati, Tamil, Telugu, Kannada, Malayalam, Japanese, Korean, Chinese (no CDN)
 - Local app lock passcode after authentication
 - CSV and multi-sheet Excel export
@@ -106,9 +110,11 @@ as a navigation drawer, and wide data tables can be scrolled horizontally
 without widening the page. The landing and sign-in pages also have their own
 small-screen layouts.
 
-No native phone app or separate mobile installation is required. FinWise still
-runs on the computer where it is installed and stores data locally; the
-responsive layout does not enable remote access or cloud synchronization.
+No native phone app is required. On supported browsers, FinWise can optionally
+be installed as a standalone browser app on the computer. The local FinWise
+server must still be running; the service worker does not make finance pages
+available while the server is stopped. Responsive layout and browser
+installation do not enable remote access or cloud synchronization.
 
 ---
 
@@ -118,7 +124,7 @@ responsive layout does not enable remote access or cloud synchronization.
 | --- | --- |
 | Java (JDK) | 17 or newer |
 | Maven | 3.8 or newer |
-| OCR language data | `data/tessdata/eng.traineddata` (already bundled) |
+| OCR language data | Bundled at `src/main/resources/tessdata/eng.traineddata`; copied to `data/tessdata/` automatically when needed |
 | OpenCV native runtime | required only when processing images |
 | OS | Windows (primary); `run.sh` provided for Linux/macOS |
 
@@ -155,7 +161,7 @@ responsive layout does not enable remote access or cloud synchronization.
 
    The first build needs an internet connection so Maven can download dependencies. The launcher builds the app, starts it, and opens your browser at <http://localhost:8080>. Keep the terminal window open while using FinWise; press **Ctrl+C** to stop it.
 
-6. Sign in with the default admin credentials: `admin` / `admin123`. Change the default password before storing personal financial data.
+6. Sign in with either default account: admin `admin` / `admin123`, or user `admin1` / `admin1234`. Change the default passwords before storing personal financial data.
 
 For the project overview and a short explanation of where FinWise stores data, see [notes/setup.txt](notes/setup.txt). For detailed setup, backup, security, and troubleshooting information, see [SETUP.md](SETUP.md). For a feature summary, see [notes/features.txt](notes/features.txt).
 
@@ -169,12 +175,12 @@ From the project folder, you can also run `mvn spring-boot:run` to start from so
 
 ## Default credentials
 
-- Username: `admin`
-- Password: `admin123`
+- Admin console: username `admin`, password `admin123`
+- Default user: username `admin1`, password `admin1234`
 
-The admin account can open the admin console at `/admin` after sign-in. The console shows record counts for supported core and FinancePlus tables, manages users, and provides per-user Excel and ZIP exports. ZIP exports include the workbook plus available user files and attachments. An admin can issue a single-use password-reset link that expires after 30 minutes and share it with the user, who chooses a new password. Existing passwords are one-way hashed and cannot be viewed. Password hashes and reset tokens are excluded from exports.
+Both accounts are created automatically when the application starts if their usernames are not already present. The admin account can open the admin console at `/admin` after sign-in. The console shows record counts for supported core and FinancePlus tables, manages users, and provides per-user Excel and ZIP exports. ZIP exports include the workbook plus available user files and attachments. An admin can issue a single-use password-reset link that expires after 30 minutes and share it with the user, who chooses a new password. Existing passwords are one-way hashed and cannot be viewed. Password hashes and reset tokens are excluded from exports.
 
-Change the default password before storing real financial data. You can override the admin credentials using `SPRING_SECURITY_USER_NAME` and `SPRING_SECURITY_USER_PASSWORD` environment variables before starting FinWise.
+Change both default passwords before storing real financial data. You can override the admin console credentials using `SPRING_SECURITY_USER_NAME` and `SPRING_SECURITY_USER_PASSWORD` environment variables before starting FinWise.
 
 ---
 
@@ -215,7 +221,7 @@ Everything lives under the project directory:
 data/
 ├── finance.db              SQLite database (created automatically)
 ├── Finwise_Data.xlsx       Excel workbook mirror
-├── finance-e2e.db          Test database (e2e profile)
+├── reports/                Generated PDF, CSV, and XLSX reports
 ├── import-images/          Scan & Fill / import uploads
 ├── uploads/profile/        Profile pictures
 ├── finance-plus/           FinancePlus workspace data and backups
@@ -242,6 +248,7 @@ app.workbook-path=data/Finwise_Data.xlsx
 app.import-image-dir=data/import-images
 app.tessdata-dir=data/tessdata
 app.data-dir=data/
+server.address=127.0.0.1
 
 app.backup.enabled=true
 app.backup.cron=0 0 2 * * *
@@ -277,6 +284,7 @@ Language/theme preferences are stored per user in the database, not in propertie
 - Backup filenames and archive entries are validated to prevent path traversal.
 - Passwords and the app-lock passcode are BCrypt-hashed.
 - Uploaded images are stored outside the web root and served only through authorized endpoints.
+- The web server binds to `127.0.0.1` and is intended for access from the same computer, not over a network.
 - Financial-planning records are user-scoped; shared household information is visible only to the owner and explicitly added members. Uploaded planning documents are private to the uploader.
 - The live SQLite database is not encrypted. Financial document access is controlled by the authenticated application; use device-level encryption and protect encrypted backups.
 - Fingerprint and face unlock are delegated to the OS or browser profile; FinWise stores no biometric data.
@@ -310,7 +318,6 @@ src/main/resources/
 └── static/         CSS, JS, local Chart.js, 25 locale JSON files
 
 src/test/java/com/finance/   Unit and Spring integration tests
-archive/                      Legacy notes, logs, and historical documents
 img/                          Sample import fixtures
 ```
 
@@ -332,11 +339,16 @@ Existing suites:
 | Test | Focus |
 | --- | --- |
 | `UserRegistrationLoginTest` | Registration, login, authentication |
+| `AdminControllerIntegrationTest` | Admin console and user management |
+| `HomeControllerDashboardTest` | Dashboard calculations |
 | `FinanceFeatureIntegrationTest` | CRUD and integration flows |
 | `FeatureRegressionTest` | Regression coverage for shipped features |
 | `OfflineFeatureTest` | Offline/import/OCR/export behaviour |
+| `LocalTess4JOcrServiceTest` | Local OCR service |
+| `FinancialPlanningIntegrationTest` | Financial Planning feature flows |
 | `FinancePlusRecurringServiceTest` | Recurring rules engine |
 | `FinancePlusControllerTest` | FinancePlus web layer |
+| `AdminAuthenticationProviderTest` | Admin authentication |
 
 Coverage includes authentication, CRUD, user isolation, CSRF, import validation and fixtures, duplicate detection, OCR/PDF fallback, category authorization, recurring transactions, forecasting, receipt access, encrypted restore, and exports.
 
@@ -350,7 +362,7 @@ Coverage includes authentication, CRUD, user isolation, CSRF, import validation 
 
 **Build fails to replace the JAR** — close the running FinWise process (or run `run.bat`, which stops it for you).
 
-**OCR returns nothing** — check `data/tessdata/eng.traineddata` exists; very poor scan quality or handwriting reduces accuracy.
+**OCR returns nothing** — FinWise copies its bundled English model to `data/tessdata/` automatically. If OCR still fails, check the application log; very poor scan quality or handwriting can reduce accuracy.
 
 **Database looks corrupted** — stop the app, delete `data/finance.db`, and restart; the schema is recreated automatically. Restore from `data/backups/` if you have one.
 

@@ -12,7 +12,7 @@
     <header class="fw-pagehead">
         <div>
             <h1>Financial Planning</h1>
-            <p>Offline tools for debts, net worth, investing, tax records, subscriptions, households, savings and documents. Amounts are shown in ₹; keep entries in the same currency.</p>
+            <p>Offline tools for debts, net worth, investing, tax records, subscriptions, savings and documents. Amounts are shown in ₹; keep entries in the same currency.</p>
         </div>
     </header>
     <div th:if="${successMessage}" class="fw-alert fw-alert-success" th:text="${successMessage}"></div>
@@ -23,9 +23,8 @@
         <a class="fw-btn fw-btn-secondary" href="#investments">Investments</a>
         <a class="fw-btn fw-btn-secondary" href="#tax">Tax records</a>
         <a class="fw-btn fw-btn-secondary" href="#subscriptions">Subscriptions</a>
-        <a class="fw-btn fw-btn-secondary" href="#households">Household</a>
         <a class="fw-btn fw-btn-secondary" href="#challenges">Savings challenges</a>
-        <a class="fw-btn fw-btn-secondary" href="#documents">Document vault</a>
+        <a class="fw-btn fw-btn-secondary" th:href="@{/planning/documents}">Document vault</a>
     </nav>
 
     <section class="fw-card fw-card-pad" id="debts" style="margin-top:16px">
@@ -219,74 +218,6 @@
         <p class="fw-hint">Renewal dates are displayed as reminders; the app does not send email or cancel subscriptions.</p>
     </section>
 
-    <section class="fw-card fw-card-pad" id="households" style="margin-top:16px">
-        <div class="fw-card-h"><div><h2>Shared household budgets and expense splitting</h2><p>Household owners explicitly add existing FinWise usernames. Expenses are split equally.</p></div></div>
-        <form method="post" th:action="@{/planning/households}" class="fw-inline-form">
-            <label class="fw-label" for="householdName">New household</label>
-            <input class="fw-input" id="householdName" name="name" maxlength="100" required>
-            <button class="fw-btn fw-btn-primary" type="submit">Create household</button>
-        </form>
-        <div th:if="${#lists.isEmpty(households)}" class="fw-empty" style="margin-top:12px"><p>Create a household to start sharing a budget.</p></div>
-        <div th:if="${not #lists.isEmpty(households)}" style="margin-top:12px">
-            <form method="get" action="/planning#households" class="fw-inline-form">
-                <label class="fw-label" for="householdId">Select household</label>
-                <select class="fw-input" id="householdId" name="householdId">
-                    <option th:each="household : ${households}" th:value="${household.id}" th:text="${household.name}"
-                            th:selected="${household.id == selectedHouseholdId}">Household</option>
-                </select>
-                <button class="fw-btn fw-btn-secondary" type="submit">Open</button>
-            </form>
-        </div>
-        <div th:if="${selectedHouseholdId != null}" class="fw-grid2" style="margin-top:14px">
-            <div>
-                <h3>Members</h3>
-                <p th:each="member : ${householdMembers}" class="fw-pill" th:text="${member.username}">Member</p>
-                <form th:if="${households.?[id == selectedHouseholdId and owner.id == user.id].size() > 0}"
-                      method="post" th:action="@{/planning/households/{id}/members(id=${selectedHouseholdId})}" class="fw-inline-form">
-                    <label class="fw-label" for="memberUsername">Add existing username</label>
-                    <input class="fw-input" id="memberUsername" name="username" maxlength="100" required>
-                    <button class="fw-btn fw-btn-secondary" type="submit">Add member</button>
-                </form>
-                <form th:each="membership : ${householdMemberships}" method="post"
-                      th:action="@{/planning/household-members/{id}/delete(id=${membership.id})}" class="fw-inline-form">
-                    <input type="hidden" name="householdId" th:value="${selectedHouseholdId}">
-                    <span th:text="${membership.user.username}">Member</span>
-                    <button class="fw-btn fw-btn-danger" type="submit">Remove</button>
-                </form>
-                <form method="post" th:action="@{/planning/shared-budgets}" class="fw-form" style="margin-top:12px">
-                    <input type="hidden" name="householdId" th:value="${selectedHouseholdId}">
-                    <h3>Shared budget</h3>
-                    <label class="fw-label">Name<input class="fw-input" name="name" maxlength="100" required></label>
-                    <label class="fw-label">Limit<input class="fw-input" type="number" name="limitAmount" min="0.01" step="0.01" required></label>
-                    <button class="fw-btn fw-btn-primary" type="submit">Add budget</button>
-                </form>
-                <div th:each="budget : ${sharedBudgets}" class="fw-filters">
-                    <span th:text="${budget.name} + ': ₹' + ${#numbers.formatDecimal(budget.spentAmount, 1, 2)} + ' / ₹' + ${#numbers.formatDecimal(budget.limitAmount, 1, 2)}">Budget</span>
-                </div>
-            </div>
-            <div>
-                <form method="post" th:action="@{/planning/household-expenses}" class="fw-form">
-                    <h3>Record and split an expense</h3>
-                    <input type="hidden" name="householdId" th:value="${selectedHouseholdId}">
-                    <label class="fw-label">Description<input class="fw-input" name="description" maxlength="120" required></label>
-                    <label class="fw-label">Total amount<input class="fw-input" type="number" name="amount" min="0.01" step="0.01" required></label>
-                    <label class="fw-label">Date<input class="fw-input" type="date" name="expenseDate" required></label>
-                    <label class="fw-label">Budget (optional)<select class="fw-input" name="budgetId"><option value="">No budget</option>
-                        <option th:each="budget : ${sharedBudgets}" th:value="${budget.id}" th:text="${budget.name}">Budget</option></select></label>
-                    <button class="fw-btn fw-btn-primary" type="submit">Record equal split</button>
-                </form>
-                <div th:each="row : ${householdExpenses}" class="fw-card" style="padding:12px;margin:8px 0">
-                    <b th:text="${row.expense.description}">Expense</b>
-                    <span th:text="' · ₹' + ${#numbers.formatDecimal(row.expense.amount, 1, 2)} + ' paid by ' + ${row.expense.paidBy != null ? row.expense.paidBy.username : 'Former member'}">amount</span>
-                    <div class="fw-hint" th:text="${row.expense.expenseDate}">date</div>
-                    <div th:each="share : ${row.shares}" class="fw-hint"
-                         th:text="${share.user.username} + ': ₹' + ${#numbers.formatDecimal(share.amount, 1, 2)}">Share</div>
-                </div>
-            </div>
-        </div>
-        <p class="fw-hint">Each shared expense is split evenly between the household owner and current members. This page does not access anyone's private transactions.</p>
-    </section>
-
     <section class="fw-card fw-card-pad" id="challenges" style="margin-top:16px">
         <div class="fw-card-h"><div><h2>Savings challenges</h2><p>Set a target, track your contributions and see your progress.</p></div></div>
         <form method="post" th:action="@{/planning/challenges}" class="fw-form">
@@ -317,7 +248,7 @@
     </section>
 
     <section class="fw-card fw-card-pad" id="documents" style="margin-top:16px">
-        <div class="fw-card-h"><div><h2>Private financial document vault</h2><p>PDF and common image files, up to 5 MB each.</p></div></div>
+        <div class="fw-card-h"><div><h2>Private financial document vault</h2><p>PDF and common image files, up to 5 MB each. Deleting a vault file does not delete your account.</p></div></div>
         <form method="post" th:action="@{/planning/documents}" enctype="multipart/form-data" class="fw-inline-form">
             <input class="fw-input" type="file" name="file" accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,application/pdf,image/png,image/jpeg,image/gif,image/webp" required>
             <button class="fw-btn fw-btn-primary" type="submit">Upload document</button>
@@ -329,8 +260,11 @@
                     <td th:text="${#numbers.formatDecimal(document.contentLength / 1024.0, 1, 1)} + ' KB'">size</td>
                     <td th:text="${document.createdAt}">date</td><td>
                         <a class="fw-btn fw-btn-secondary" th:href="@{/planning/documents/{id}(id=${document.id})}">Download</a>
-                        <form method="post" th:action="@{/planning/documents/{id}/delete(id=${document.id})}" style="display:inline">
-                            <button class="fw-btn fw-btn-danger" type="submit">Delete</button>
+                        <form method="post" th:action="@{/planning/documents/{id}/delete(id=${document.id})}" class="fw-inline-form">
+                            <label class="fw-label">Type DELETE to confirm this file
+                                <input class="fw-input" type="text" name="confirmation" pattern="DELETE" required autocomplete="off" aria-label="Type DELETE to confirm document deletion">
+                            </label>
+                            <button class="fw-btn fw-btn-danger" type="submit">Delete file</button>
                         </form>
                     </td>
                 </tr></tbody>

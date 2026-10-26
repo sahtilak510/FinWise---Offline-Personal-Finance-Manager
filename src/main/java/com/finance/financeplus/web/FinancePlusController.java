@@ -176,7 +176,7 @@ public class FinancePlusController {
         settingsService.updatePreferences(user, billRemindersEnabled, billReminderDays,
                 largeExpenseAlertsEnabled, largeExpenseThreshold, weeklySummaryEnabled, monthlySummaryEnabled);
         redirectAttributes.addFlashAttribute("successMessage", "Finance Plus preferences saved.");
-        return "redirect:/finance-plus#preferences";
+        return "redirect:/finance-plus#settings";
     }
 
     @PostMapping("/backup-preferences")

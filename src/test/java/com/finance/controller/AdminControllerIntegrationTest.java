@@ -64,7 +64,8 @@ class AdminControllerIntegrationTest {
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Database tables")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Registered users")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("ZIP + files")))
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Reset password")));
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Reset password")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("name=\"_csrf\"")));
     }
 
     @Test

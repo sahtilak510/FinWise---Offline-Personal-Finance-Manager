@@ -90,7 +90,7 @@ public class ReportController {
     public String reports(Authentication authentication, Model model,
                           @RequestParam(value = "type", required = false, defaultValue = "summary") String type,
                           @RequestParam(value = "period", required = false, defaultValue = "this-month") String period,
-                          @RequestParam(value = "format", required = false, defaultValue = "CSV") String format) {
+                          @RequestParam(value = "format", required = false, defaultValue = "PDF") String format) {
         User user = getUser(authentication);
         String selectedType = normalizeReportType(type);
         String selectedPeriod = normalizePeriod(period);
@@ -120,7 +120,7 @@ public class ReportController {
     public ResponseEntity<byte[]> downloadCurrentReport(Authentication authentication,
                                                          @RequestParam(value = "type", required = false, defaultValue = "summary") String type,
                                                          @RequestParam(value = "period", required = false, defaultValue = "this-month") String period,
-                                                         @RequestParam(value = "format", required = false, defaultValue = "CSV") String format) {
+                                                         @RequestParam(value = "format", required = false, defaultValue = "PDF") String format) {
         return currentReportResponse(authentication, type, period, format);
     }
 
@@ -153,7 +153,7 @@ public class ReportController {
             headers.setContentType(contentTypeFor(format));
             headers.setContentLength(Files.size(reportPath));
             headers.setContentDisposition(ContentDisposition.attachment()
-                    .filename("finwise-" + reportId.toLowerCase(Locale.ROOT) + "." + extensionFor(format), StandardCharsets.UTF_8)
+                    .filename("finwise-" + reportId.toLowerCase(Locale.ROOT) + "." + extensionFor(format))
                     .build());
             headers.setCacheControl("no-store");
             return ResponseEntity.ok().headers(headers).body(new FileSystemResource(reportPath));
@@ -176,7 +176,7 @@ public class ReportController {
     }
 
     private String normalizeFormat(String value) {
-        return value == null ? "CSV" : value.trim().toUpperCase(Locale.ROOT);
+        return value == null ? "PDF" : value.trim().toUpperCase(Locale.ROOT);
     }
 
     private ResponseEntity<byte[]> currentReportResponse(Authentication authentication, String type,
@@ -200,8 +200,7 @@ public class ReportController {
             headers.setContentType(contentTypeFor(selectedFormat));
             headers.setContentLength(content.length);
             headers.setContentDisposition(ContentDisposition.attachment()
-                    .filename("FinWise-Financial-Report-" + generatedDate + "." + extensionFor(selectedFormat),
-                            StandardCharsets.UTF_8)
+                    .filename("FinWise-Financial-Report-" + generatedDate + "." + extensionFor(selectedFormat))
                     .build());
             headers.setCacheControl("no-store");
             return ResponseEntity.ok().headers(headers).body(content);
@@ -1011,38 +1010,55 @@ public class ReportController {
 
     private byte[] renderPdf(ReportDefinition definition) throws IOException {
         try (PDDocument document = new PDDocument(); ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+            int pageNumber = 0;
             for (ReportTable table : definition.tables()) {
+                if ("Report Details".equals(table.title())) {
+                    continue;
+                }
+
                 int rowIndex = 0;
                 do {
                     PDPage page = new PDPage(PDRectangle.LETTER);
                     document.addPage(page);
                     try (PDPageContentStream content = new PDPageContentStream(document, page)) {
-                        float y = 740;
-                        y = writePdfLine(content, "FinWise Financial Report", PDType1Font.HELVETICA_BOLD, 18, 42, y, 528);
-                        y = writePdfLine(content, definition.title() + " - " + table.title(), PDType1Font.HELVETICA_BOLD, 12, 42, y, 528);
-                        y = writePdfLine(content, "Report Type: " + definition.title(), PDType1Font.HELVETICA, 9, 42, y, 528);
-                        y = writePdfLine(content, "Report Period: " + definition.startDate() + " to " + definition.endDate(),
-                                PDType1Font.HELVETICA, 9, 42, y, 528);
-                        y = writePdfLine(content, "Generated Date: " + definition.generatedDate(),
-                                PDType1Font.HELVETICA, 9, 42, y, 528);
-                        y = writePdfLine(content, "User: " + definition.username(), PDType1Font.HELVETICA, 9, 42, y, 528);
-                        y -= 8;
-                        y = writePdfLine(content, String.join(" | ", table.headers()), PDType1Font.HELVETICA_BOLD, 9, 42, y, 528);
-                        y -= 4;
+                        pageNumber++;
+                        float y = drawPdfPageHeader(content, definition, table.title());
+                        float[] columnWidths = pdfColumnWidths(table, 528);
+                        y = drawPdfTableHeader(content, table.headers(), columnWidths, y);
 
-                        int rowsOnPage = 0;
-                        while (rowIndex < table.rows().size() && rowsOnPage < 35) {
-                            List<Object> row = table.rows().get(rowIndex++);
-                            List<String> values = row.stream().map(this::pdfValue).toList();
-                            y = writePdfLine(content, String.join(" | ", values), PDType1Font.HELVETICA, 8, 42, y, 528);
-                            y -= 2;
-                            rowsOnPage++;
-                        }
                         if (table.rows().isEmpty()) {
-                            y = writePdfLine(content, "No records found for this period.", PDType1Font.HELVETICA, 9, 42, y, 528);
+                            drawPdfEmptyState(content, y);
+                        } else {
+                            while (rowIndex < table.rows().size()) {
+                                List<String> values = table.rows().get(rowIndex).stream()
+                                        .map(this::pdfValue).toList();
+                                List<List<String>> wrappedValues = new ArrayList<>();
+                                float rowHeight = 22;
+                                for (int column = 0; column < values.size(); column++) {
+                                    List<String> lines = wrapPdfText(values.get(column), columnWidths[column] - 12, 8);
+                                    wrappedValues.add(lines);
+                                    rowHeight = Math.max(rowHeight, lines.size() * 10 + 10);
+                                }
+                                if (y - rowHeight < 54) {
+                                    break;
+                                }
+                                drawPdfTableRow(content, wrappedValues, columnWidths, y, rowHeight, rowIndex);
+                                y -= rowHeight;
+                                rowIndex++;
+                            }
                         }
+                        drawPdfFooter(content, pageNumber);
                     }
                 } while (rowIndex < table.rows().size());
+            }
+            if (document.getNumberOfPages() == 0) {
+                PDPage page = new PDPage(PDRectangle.LETTER);
+                document.addPage(page);
+                try (PDPageContentStream content = new PDPageContentStream(document, page)) {
+                    drawPdfPageHeader(content, definition, "Financial Summary");
+                    drawPdfEmptyState(content, 630);
+                    drawPdfFooter(content, 1);
+                }
             }
             document.save(output);
             return output.toByteArray();
@@ -1056,22 +1072,154 @@ public class ReportController {
         if (value instanceof BigDecimal amount) {
             return amount.setScale(2, RoundingMode.HALF_UP).toPlainString();
         }
-        String text = String.valueOf(value).replaceAll("[^\\x20-\\x7E]", "?").replace('\n', ' ').replace('\r', ' ');
-        return text.length() > 80 ? text.substring(0, 77) + "..." : text;
+        return String.valueOf(value).replaceAll("[^\\x20-\\x7E]", "?")
+                .replace('\n', ' ').replace('\r', ' ').trim();
     }
 
-    private float writePdfLine(PDPageContentStream content, String text, PDType1Font font, float size,
-                               float x, float y, float maxWidth) throws IOException {
-        String safeText = text.replaceAll("[^\\x20-\\x7E]", "?");
-        while (font.getStringWidth(safeText) / 1000 * size > maxWidth && safeText.length() > 1) {
-            safeText = safeText.substring(0, safeText.length() - 1);
+    private float drawPdfPageHeader(PDPageContentStream content, ReportDefinition definition,
+                                    String tableTitle) throws IOException {
+        content.setNonStrokingColor(31, 41, 75);
+        content.addRect(0, 704, 612, 88);
+        content.fill();
+        content.setNonStrokingColor(255, 255, 255);
+        drawPdfText(content, "FINWISE  |  PERSONAL FINANCE", PDType1Font.HELVETICA_BOLD, 9, 42, 765, 528);
+        drawPdfText(content, definition.title(), PDType1Font.HELVETICA_BOLD, 19, 42, 735, 528);
+
+        content.setNonStrokingColor(243, 245, 250);
+        content.addRect(42, 659, 528, 32);
+        content.fill();
+        content.setNonStrokingColor(50, 60, 82);
+        drawPdfText(content, "PERIOD  " + definition.startDate() + " to " + definition.endDate(),
+                PDType1Font.HELVETICA_BOLD, 8, 52, 678, 508);
+        drawPdfText(content, "GENERATED  " + definition.generatedDate() + "     USER  " + definition.username(),
+                PDType1Font.HELVETICA, 8, 52, 666, 508);
+
+        content.setNonStrokingColor(91, 79, 220);
+        content.addRect(42, 634, 4, 16);
+        content.fill();
+        drawPdfText(content, tableTitle, PDType1Font.HELVETICA_BOLD, 12, 54, 637, 516);
+        return 615;
+    }
+
+    private float[] pdfColumnWidths(ReportTable table, float totalWidth) {
+        int columnCount = table.headers().size();
+        float[] weights = new float[columnCount];
+        float totalWeight = 0;
+        for (int column = 0; column < columnCount; column++) {
+            int maxLength = table.headers().get(column).length();
+            for (List<Object> row : table.rows()) {
+                if (column < row.size()) {
+                    maxLength = Math.max(maxLength, pdfValue(row.get(column)).length());
+                }
+            }
+            weights[column] = Math.min(32, Math.max(8, maxLength));
+            totalWeight += weights[column];
         }
+        float[] widths = new float[columnCount];
+        for (int column = 0; column < columnCount; column++) {
+            widths[column] = totalWidth * weights[column] / totalWeight;
+        }
+        return widths;
+    }
+
+    private float drawPdfTableHeader(PDPageContentStream content, List<String> headers,
+                                     float[] columnWidths, float y) throws IOException {
+        float height = 28;
+        float x = 42;
+        content.setNonStrokingColor(91, 79, 220);
+        content.addRect(x, y - height, 528, height);
+        content.fill();
+        for (int column = 0; column < headers.size(); column++) {
+            content.setNonStrokingColor(255, 255, 255);
+            drawPdfText(content, headers.get(column), PDType1Font.HELVETICA_BOLD, 8,
+                    x + 6, y - 17, columnWidths[column] - 12);
+            x += columnWidths[column];
+        }
+        return y - height;
+    }
+
+    private void drawPdfTableRow(PDPageContentStream content, List<List<String>> values,
+                                 float[] columnWidths, float y, float height, int rowIndex) throws IOException {
+        content.setNonStrokingColor(rowIndex % 2 == 0 ? 248 : 255, rowIndex % 2 == 0 ? 249 : 255,
+                rowIndex % 2 == 0 ? 252 : 255);
+        content.addRect(42, y - height, 528, height);
+        content.fill();
+        content.setStrokingColor(224, 228, 237);
+        content.moveTo(42, y - height);
+        content.lineTo(570, y - height);
+        content.stroke();
+
+        float x = 42;
+        for (int column = 0; column < columnWidths.length; column++) {
+            content.setNonStrokingColor(45, 52, 70);
+            List<String> lines = column < values.size() ? values.get(column) : List.of("");
+            float baseline = y - 14;
+            for (String line : lines) {
+                drawPdfText(content, line, PDType1Font.HELVETICA, 8, x + 6, baseline, columnWidths[column] - 12);
+                baseline -= 10;
+            }
+            x += columnWidths[column];
+        }
+    }
+
+    private void drawPdfEmptyState(PDPageContentStream content, float y) throws IOException {
+        content.setNonStrokingColor(100, 108, 126);
+        drawPdfText(content, "No records found for this period.", PDType1Font.HELVETICA, 9, 52, y - 20, 508);
+    }
+
+    private void drawPdfFooter(PDPageContentStream content, int pageNumber) throws IOException {
+        content.setStrokingColor(224, 228, 237);
+        content.moveTo(42, 42);
+        content.lineTo(570, 42);
+        content.stroke();
+        content.setNonStrokingColor(112, 120, 138);
+        drawPdfText(content, "FinWise  |  Generated locally", PDType1Font.HELVETICA, 8, 42, 28, 420);
+        drawPdfText(content, "Page " + pageNumber, PDType1Font.HELVETICA, 8, 520, 28, 50);
+    }
+
+    private List<String> wrapPdfText(String text, float maxWidth, float size) throws IOException {
+        String safeText = text.replaceAll("[^\\x20-\\x7E]", "?").trim();
+        List<String> lines = new ArrayList<>();
+        StringBuilder line = new StringBuilder();
+        for (String word : safeText.split("\\s+")) {
+            String candidate = line.isEmpty() ? word : line + " " + word;
+            if (PDType1Font.HELVETICA.getStringWidth(candidate) / 1000 * size <= maxWidth) {
+                line.setLength(0);
+                line.append(candidate);
+            } else {
+                if (!line.isEmpty()) {
+                    lines.add(line.toString());
+                    line.setLength(0);
+                }
+                line.append(truncatePdfText(word, PDType1Font.HELVETICA, size, maxWidth));
+            }
+        }
+        if (!line.isEmpty()) {
+            lines.add(line.toString());
+        }
+        if (lines.size() > 5) {
+            lines.subList(5, lines.size()).clear();
+            lines.set(4, truncatePdfText(lines.get(4) + "...", PDType1Font.HELVETICA, size, maxWidth));
+        }
+        return lines.isEmpty() ? List.of("") : lines;
+    }
+
+    private String truncatePdfText(String text, PDType1Font font, float size, float maxWidth) throws IOException {
+        StringBuilder result = new StringBuilder(text);
+        while (!result.isEmpty() && font.getStringWidth(result.toString()) / 1000 * size > maxWidth) {
+            result.setLength(result.length() - 1);
+        }
+        return result.toString();
+    }
+
+    private void drawPdfText(PDPageContentStream content, String text, PDType1Font font, float size,
+                             float x, float y, float maxWidth) throws IOException {
+        String safeText = truncatePdfText(text.replaceAll("[^\\x20-\\x7E]", "?"), font, size, maxWidth);
         content.beginText();
         content.setFont(font, size);
         content.newLineAtOffset(x, y);
         content.showText(safeText);
         content.endText();
-        return y - size - 4;
     }
 
     private MediaType contentTypeFor(String format) {

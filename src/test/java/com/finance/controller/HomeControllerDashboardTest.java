@@ -5,6 +5,7 @@ import com.finance.model.entity.Income;
 import com.finance.model.entity.User;
 import com.finance.repository.UserRepository;
 import com.finance.service.AccountService;
+import com.finance.service.AdminUserDeletionService;
 import com.finance.service.BudgetService;
 import com.finance.service.ExpenseService;
 import com.finance.service.FinancialGoalService;
@@ -59,7 +60,7 @@ class HomeControllerDashboardTest {
         HomeController controller = new HomeController(userRepository, mock(UserService.class),
                 mock(AccountService.class), expenseService, incomeService, budgetService,
                 financialGoalService, importFileService, mock(UserDataExportService.class),
-                healthScoreService);
+                healthScoreService, mock(AdminUserDeletionService.class));
         Authentication authentication = mock(Authentication.class);
         when(authentication.getName()).thenReturn("dashboard-user");
         Model model = mock(Model.class);

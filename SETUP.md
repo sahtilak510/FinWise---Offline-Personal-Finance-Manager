@@ -53,6 +53,10 @@ To add FinWise to your computer's apps, select **Install on this computer** on
 the landing page, or use your browser's **Install FinWise** option. The
 installed app opens the local web interface; FinWise must still be running on
 your computer, so start it with `run.bat` before opening the installed app.
+If the install button is unavailable, use Chrome or Edge's browser menu and
+choose **Install FinWise** or **Install this site as an app**. Installation
+does not expose FinWise to other devices or allow finance pages to work while
+the local server is stopped.
 
 ### 1. Install Java
 
@@ -113,14 +117,18 @@ such as `pom.xml`, `run.bat`, and `src` in that folder. Then run:
 
 The script builds the application, starts it, and opens the browser when ready.
 Keep the terminal window open while using FinWise. Press **Ctrl+C** to stop it.
+FinWise listens only on this computer (`127.0.0.1`); the launcher does not make
+the application available to other devices on your network.
 
 Open <http://localhost:8080> if the browser does not open automatically. The
-default admin login is:
+default logins are:
 
-- Username: `admin`
-- Password: `admin123`
+- Admin console — username: `admin`, password: `admin123`
+- Default user — username: `admin1`, password: `admin1234`
 
-Change the default password before storing real financial information.
+Both accounts are created automatically when FinWise starts if their usernames
+are not already present. Change both default passwords before storing real
+financial information.
 
 ## Windows: run commands yourself
 
@@ -236,6 +244,7 @@ FinWise creates its local data and log folders in the project directory:
 
 - `data/finance.db` — main SQLite database
 - `data/Finwise_Data.xlsx` — workbook used by some application features
+- `data/reports/` — generated reports in PDF, CSV, or Excel format
 - `data/import-images/` and `data/uploads/profile/` — uploaded images
 - `data/backups/` and `data/finance-plus/backups/` — backup files
 - `logs/finance.log` — application log
@@ -244,6 +253,8 @@ Some files, such as receipts and Finance Plus attachments, are stored inside the
 database. Stop FinWise before manually copying its data. Keep the database,
 workbook, uploads, backups, and any required backup keys/passphrases safe
 together.
+The English OCR language model is bundled with the application and copied to
+`data/tessdata/` automatically when OCR is first used.
 
 ## Troubleshooting
 

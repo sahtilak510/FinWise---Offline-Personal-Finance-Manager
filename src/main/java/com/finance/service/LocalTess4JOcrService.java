@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -128,11 +129,11 @@ public class LocalTess4JOcrService implements Tess4JOcrService {
         }
     }
 
-    private String resolveTessDataPath() {
+    String resolveTessDataPath() {
         String tessdataPrefix = System.getenv("TESSDATA_PREFIX");
         if (tessdataPrefix != null && !tessdataPrefix.isBlank()) {
             Path trainedData = Path.of(tessdataPrefix, TRAINED_DATA);
-            if (Files.exists(trainedData)) {
+            if (Files.isRegularFile(trainedData)) {
                 return tessdataPrefix;
             }
         }
@@ -141,7 +142,7 @@ public class LocalTess4JOcrService implements Tess4JOcrService {
                 ? "data/tessdata"
                 : tessdataDirectory;
         Path localTessdata = Path.of(configuredDirectory, TRAINED_DATA);
-        if (Files.exists(localTessdata)) {
+        if (Files.isRegularFile(localTessdata)) {
             return localTessdata.getParent().toString();
         }
 
@@ -150,28 +151,47 @@ public class LocalTess4JOcrService implements Tess4JOcrService {
             String programFiles = System.getenv("ProgramFiles");
             if (programFiles != null) {
                 Path tesseractPath = Path.of(programFiles, "Tesseract-OCR", "tessdata", TRAINED_DATA);
-                if (Files.exists(tesseractPath)) {
+                if (Files.isRegularFile(tesseractPath)) {
                     return tesseractPath.getParent().toString();
                 }
             }
             String programFilesX86 = System.getenv("ProgramFiles(x86)");
             if (programFilesX86 != null) {
                 Path tesseractPath = Path.of(programFilesX86, "Tesseract-OCR", "tessdata", TRAINED_DATA);
-                if (Files.exists(tesseractPath)) {
+                if (Files.isRegularFile(tesseractPath)) {
                     return tesseractPath.getParent().toString();
                 }
             }
         } else {
             Path tesseractPath = Path.of("/usr/share/tesseract-ocr", "4.00", "tessdata", TRAINED_DATA);
-            if (Files.exists(tesseractPath)) {
+            if (Files.isRegularFile(tesseractPath)) {
                 return tesseractPath.getParent().toString();
             }
             Path tesseractPath5 = Path.of("/usr/share/tesseract-ocr", "5", "tessdata", TRAINED_DATA);
-            if (Files.exists(tesseractPath5)) {
+            if (Files.isRegularFile(tesseractPath5)) {
                 return tesseractPath5.getParent().toString();
             }
         }
 
-        return null;
+        try {
+            return copyBundledTessData(Path.of(configuredDirectory));
+        } catch (IOException error) {
+            log.error("Could not install bundled OCR language data into {}", configuredDirectory, error);
+            return null;
+        }
+    }
+
+    synchronized String copyBundledTessData(Path destinationDirectory) throws IOException {
+        Path target = destinationDirectory.resolve(TRAINED_DATA);
+        if (!Files.isRegularFile(target)) {
+            Files.createDirectories(destinationDirectory);
+            try (InputStream bundledData = getClass().getResourceAsStream("/tessdata/" + TRAINED_DATA)) {
+                if (bundledData == null) {
+                    throw new IOException("Bundled OCR language data is missing from the application");
+                }
+                Files.copy(bundledData, target);
+            }
+        }
+        return destinationDirectory.toString();
     }
 }

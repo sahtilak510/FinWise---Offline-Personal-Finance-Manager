@@ -10,9 +10,9 @@ expenses, accounts, budgets, and savings goals.
 FinWise is a responsive web app: the same browser pages adapt to desktop,
 tablet, and phone-sized screens. On a small screen, navigation opens as a
 drawer, page sections and forms stack vertically, and wide tables can scroll
-horizontally. No separate phone app is needed. FinWise still runs on the
-computer where you start it; responsive styling does not turn on remote access
-or cloud storage.
+horizontally. Supported browsers can optionally install FinWise as a standalone
+browser app. It still needs the local server to be running; neither responsive
+styling nor browser installation provides remote access or cloud storage.
 
 Open Financial Planning at http://localhost:8080/planning for local tools to
 track debts, net worth, investments, tax records, subscriptions, shared
@@ -93,11 +93,13 @@ INSTALL ON WINDOWS - SIMPLE STEPS
      http://localhost:8080
    If the browser does not open automatically, type the address yourself.
 
-The default admin sign-in is:
+The default sign-ins are:
   Username: admin
   Password: admin123
+  Username: admin1
+  Password: admin1234
 
-Change the default password before entering real financial information.
+Change both default passwords before entering real financial information.
 
 OTHER WAYS TO START
 -------------------
@@ -121,6 +123,7 @@ WHERE FINWISE KEEPS INFORMATION
 The app creates a data folder beside the project:
   data\finance.db                 Main database of finance records
   data\Finwise_Data.xlsx          Workbook used by some features
+  data\reports\                   Generated PDF, CSV, and Excel reports
   data\import-images\             Imported images
   data\uploads\profile\           Profile pictures
   data\backups\                   Application backup files

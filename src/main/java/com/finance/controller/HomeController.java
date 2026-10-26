@@ -55,6 +55,7 @@ public class HomeController {
     private final ImportFileService importFileService;
     private final UserDataExportService userDataExportService;
     private final FinancialHealthScoreService financialHealthScoreService;
+    private final AdminUserDeletionService adminUserDeletionService;
 
     @GetMapping
     public String home() {
@@ -298,7 +299,7 @@ public class HomeController {
         User user = userRepository.findByUsername(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        userService.deleteAccountAndData(user);
+        adminUserDeletionService.deleteUserAndData(user);
         new SecurityContextLogoutHandler().logout(request, response, authentication);
         return ResponseEntity.ok(Map.of("success", true, "message", "Account deleted successfully."));
     }

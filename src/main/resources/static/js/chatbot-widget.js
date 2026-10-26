@@ -14,6 +14,20 @@
   var isMinimized = false;
   var isProcessing = false;
   var lastUserMessage = '';
+  var chartVersion = 0;
+
+  function clearChatChart() {
+    chartVersion += 1;
+    var container = document.getElementById('fwChatChartContainer');
+    var canvas = document.getElementById('fwChatCanvas');
+    if (canvas && canvas._chartInstance) {
+      canvas._chartInstance.destroy();
+      canvas._chartInstance = null;
+    }
+    if (container) container.style.display = 'none';
+  }
+
+  window.fwClearChatChart = clearChatChart;
 
   function formatTimestamp(ts) {
     if (!ts) return getTimestamp();
@@ -244,7 +258,8 @@
     return row;
   }
 
-  function renderChart(data) {
+  function renderChart(data, expectedVersion) {
+    if (typeof expectedVersion === 'number' && expectedVersion !== chartVersion) return;
     var container = document.getElementById('fwChatChartContainer');
     if (!container) return;
     container.style.display = 'block';
@@ -288,7 +303,7 @@
     });
   }
 
-  function fetchChartData(query) {
+  function fetchChartData(query, expectedVersion) {
     fetch(API_DATA, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
@@ -296,7 +311,7 @@
     })
     .then(function(r){ return r.ok ? r.json() : null; })
     .then(function(data){
-      if (data && data.chart) renderChart(data.chart);
+      if (data && data.chart) renderChart(data.chart, expectedVersion);
     })
     .catch(function(){});
   }
@@ -430,6 +445,7 @@
     fetch(API_HISTORY, requestOptions)
       .then(function (r) {
         if (!r.ok) throw new Error('clear');
+        clearChatChart();
         messagesEl.querySelectorAll('.fw-chatbot-msg-row, .fw-chatbot-msg-suggestions').forEach(function (e) { e.remove(); });
         showEmptyState();
         addMessage(t('chatCleared', 'Chat cleared. How can I help with your finances?'), 'BOT', getTimestamp());
@@ -448,6 +464,7 @@
     }
 
     lastUserMessage = text;
+    var requestChartVersion = chartVersion;
     addMessage(escapeHtml(text), 'USER', getTimestamp());
     inputEl.value = '';
     inputEl.style.height = 'auto';
@@ -495,8 +512,8 @@
       .then(function (data) {
         var reply = data && data.message ? data.message : 'I could not generate a response. Please try again.';
         addMessage(reply, 'BOT', data && data.timestamp ? data.timestamp : getTimestamp(), data && typeof data.confidence === 'number' ? data.confidence : undefined, data && Array.isArray(data.suggestions) ? data.suggestions : undefined);
-        if (data && data.chart) renderChart(data.chart);
-        else if (lastUserMessage) fetchChartData(lastUserMessage);
+        if (data && data.chart) renderChart(data.chart, requestChartVersion);
+        else if (lastUserMessage) fetchChartData(lastUserMessage, requestChartVersion);
       })
       .catch(function (err) {
         hideTyping();

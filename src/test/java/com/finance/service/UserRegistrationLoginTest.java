@@ -39,6 +39,14 @@ class UserRegistrationLoginTest {
     ImportedTransactionRepository importedTransactionRepository;
 
     @Test
+    void defaultUserIsSeededWithExpectedCredentials() {
+        User defaultUser = userService.getUserByUsername("admin1").orElseThrow();
+
+        assertTrue(defaultUser.getIsActive());
+        assertTrue(userService.verifyPassword(defaultUser, "admin1234"));
+    }
+
+    @Test
     void newUserCanRegisterAndLogin() {
         String uname = "testuser_" + System.currentTimeMillis();
         String email = uname + "@local.test";

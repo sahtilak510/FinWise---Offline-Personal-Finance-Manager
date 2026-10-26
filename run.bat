@@ -79,8 +79,8 @@ echo Starting the application...
 echo Access the application at: http://localhost:8080
 echo.
 echo Default credentials:
-echo   Username: admin
-echo   Password: admin123
+echo   Admin: admin / admin123
+echo   User:  admin1 / admin1234
 echo.
 echo Press Ctrl+C to stop the application
 echo.
@@ -104,7 +104,7 @@ goto wait_for_jar
 
 REM Start Java in the background, then open the browser only after port 8080
 REM accepts connections. This avoids an intermittent connection-refused page.
-start "Offline Finance Manager" /b java -jar "%JAR_PATH%" --server.address=0.0.0.0 --server.port=8080
+start "Offline Finance Manager" /b java -jar "%JAR_PATH%" --server.port=8080
 
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
     "$deadline = (Get-Date).AddSeconds(30); while ((Get-Date) -lt $deadline) { try { $client = New-Object Net.Sockets.TcpClient('localhost', 8080); $client.Close(); Start-Process 'http://localhost:8080'; exit 0 } catch { Start-Sleep -Milliseconds 500 } }; Write-Host 'Error: The application did not start on port 8080 within 30 seconds.'; exit 1"

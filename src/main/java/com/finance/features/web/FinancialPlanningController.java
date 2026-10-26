@@ -37,17 +37,12 @@ public class FinancialPlanningController {
 
     @GetMapping
     public String page(Authentication authentication, Model model,
-                       @RequestParam(required = false) Long householdId,
                        @RequestParam(required = false) Integer taxYearParam) {
         User user = currentUser(authentication);
         int taxYear = taxYearParam == null ? Year.now().getValue() : taxYearParam;
         if (taxYear < 1900 || taxYear > Year.now().getValue() + 1) {
             throw new IllegalArgumentException("Tax year must be between 1900 and next year");
         }
-        List<Household> households = planningService.households(user);
-        Long selectedHouseholdId = households.stream().anyMatch(h -> h.getId().equals(householdId))
-                ? householdId : households.stream().findFirst().map(Household::getId).orElse(null);
-
         List<TaxEntry> taxEntries = planningService.taxEntries(user).stream()
                 .filter(entry -> entry.getEntryDate().getYear() == taxYear).toList();
         BigDecimal taxableIncome = taxEntries.stream().filter(entry -> "INCOME".equals(entry.getEntryType()))
@@ -91,25 +86,10 @@ public class FinancialPlanningController {
         model.addAttribute("estimatedTaxableAmount", taxableIncome.subtract(deductions).max(BigDecimal.ZERO));
         model.addAttribute("subscriptions", planningService.subscriptions(user));
         model.addAttribute("subscriptionAnnualTotal", subscriptionAnnualTotal);
-        model.addAttribute("households", households);
-        model.addAttribute("selectedHouseholdId", selectedHouseholdId);
         model.addAttribute("challenges", planningService.challenges(user));
         model.addAttribute("documents", planningService.documents(user));
         model.addAttribute("accountBalance", planningService.accountBalance(user));
         model.addAttribute("netWorth", planningService.netWorth(user));
-        if (selectedHouseholdId != null) {
-            model.addAttribute("householdMembers", planningService.householdMembers(user, selectedHouseholdId));
-            model.addAttribute("householdMemberships", planningService.householdMemberships(user, selectedHouseholdId));
-            model.addAttribute("sharedBudgets", planningService.sharedBudgets(user, selectedHouseholdId));
-            List<Map<String, Object>> expenses = new ArrayList<>();
-            for (HouseholdExpense expense : planningService.householdExpenses(user, selectedHouseholdId)) {
-                Map<String, Object> row = new HashMap<>();
-                row.put("expense", expense);
-                row.put("shares", planningService.expenseShares(user, selectedHouseholdId, expense.getId()));
-                expenses.add(row);
-            }
-            model.addAttribute("householdExpenses", expenses);
-        }
         return "financial-planning";
     }
 
@@ -303,8 +283,19 @@ public class FinancialPlanningController {
     }
 
     @PostMapping("/documents/{id}/delete")
-    public String deleteDocument(Authentication auth, RedirectAttributes flash, @PathVariable Long id) {
-        return action(auth, flash, "documents", () -> planningService.deleteDocument(currentUser(auth), id));
+    public String deleteDocument(Authentication auth, RedirectAttributes flash, @PathVariable Long id,
+                                 @RequestParam(required = false) String confirmation) {
+        if (!"DELETE".equals(confirmation)) {
+            flash.addFlashAttribute("errorMessage", "Type DELETE to confirm removal of this file.");
+            return "redirect:/planning#documents";
+        }
+        try {
+            planningService.deleteDocument(currentUser(auth), id);
+            flash.addFlashAttribute("successMessage", "Vault file deleted. Your account was not changed.");
+        } catch (IllegalArgumentException exception) {
+            flash.addFlashAttribute("errorMessage", exception.getMessage());
+        }
+        return "redirect:/planning#documents";
     }
 
     private String detectDocumentType(MultipartFile file) throws IOException {

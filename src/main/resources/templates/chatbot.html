@@ -118,7 +118,7 @@
     <div th:replace="~{fragments/finwise :: fwFooter}"></div>
 
     <script src="/vendor/chart.js/chart.umd.min.js"></script>
-    <script src="/js/chatbot-widget.js"></script>
+    <script src="/js/chatbot-widget.js?v=2"></script>
     <div th:replace="~{fragments/finwise :: fwScripts}"></div>
     <style>
       /* Fix standalone chat layout: own scroll area, no page jump, no double scrollbar */
@@ -326,7 +326,9 @@
         function clearChat(){
           if(!confirm('Clear your chat history? Only your messages will be deleted.')) return;
           setLoading(true); showLoading();
-          fetch(API_HISTORY,{method:'DELETE'}).then(function(r){
+          var requestOptions={method:'DELETE',credentials:'same-origin'};
+          if(window.FW_CSRF_TOKEN) requestOptions.headers={'X-XSRF-TOKEN':window.FW_CSRF_TOKEN};
+          fetch(API_HISTORY,requestOptions).then(function(r){
             if(!r.ok) throw 0;
             msgs.querySelectorAll('.fw-chatbot-msg-row').forEach(function(e){e.remove();});
             if(empty) empty.style.display='';

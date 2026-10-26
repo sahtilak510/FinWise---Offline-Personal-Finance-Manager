@@ -49,6 +49,11 @@ run.bat
 When the app is ready, open <http://localhost:8080>. Keep Command Prompt open
 while using FinWise; press **Ctrl+C** there to stop the app.
 
+To add FinWise to your computer's apps, select **Install on this computer** on
+the landing page, or use your browser's **Install FinWise** option. The
+installed app opens the local web interface; FinWise must still be running on
+your computer, so start it with `run.bat` before opening the installed app.
+
 ### 1. Install Java
 
 Open PowerShell or Windows Terminal and run:

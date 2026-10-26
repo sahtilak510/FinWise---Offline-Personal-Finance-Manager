@@ -60,6 +60,9 @@ class FinanceFeatureIntegrationTest {
     ImportFileService importFileService;
 
     @Autowired
+    ChatHistoryService chatHistoryService;
+
+    @Autowired
     ExpenseRepository expenseRepository;
 
     @Autowired
@@ -264,6 +267,29 @@ class FinanceFeatureIntegrationTest {
         mockMvc.perform(post("/settings/reset").with(user(user.getUsername())).with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
+    }
+
+    @Test
+    void clearingChatHistoryRequiresCsrfAndOnlyDeletesCurrentUsersMessages() throws Exception {
+        User owner = register("chat-history-owner");
+        User other = register("chat-history-other");
+        chatHistoryService.saveMessage(owner, "USER", "Owner message");
+        chatHistoryService.saveMessage(other, "USER", "Other user's message");
+
+        mockMvc.perform(delete("/api/chatbot/history").with(user(owner.getUsername())))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(delete("/api/chatbot/history")
+                        .with(user(owner.getUsername())).with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("cleared"));
+
+        mockMvc.perform(get("/api/chatbot/history").with(user(owner.getUsername())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isEmpty());
+        mockMvc.perform(get("/api/chatbot/history").with(user(other.getUsername())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].content").value("Other user's message"));
     }
 
     @Test

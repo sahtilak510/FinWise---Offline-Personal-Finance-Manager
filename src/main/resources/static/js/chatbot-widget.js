@@ -423,7 +423,11 @@
 
   function clearChat() {
     if (!confirm(t('chatClearConfirm', 'Clear your chat history? This will delete all messages.'))) return;
-    fetch(API_HISTORY, { method: 'DELETE' })
+    var requestOptions = { method: 'DELETE', credentials: 'same-origin' };
+    if (window.FW_CSRF_TOKEN) {
+      requestOptions.headers = { 'X-XSRF-TOKEN': window.FW_CSRF_TOKEN };
+    }
+    fetch(API_HISTORY, requestOptions)
       .then(function (r) {
         if (!r.ok) throw new Error('clear');
         messagesEl.querySelectorAll('.fw-chatbot-msg-row, .fw-chatbot-msg-suggestions').forEach(function (e) { e.remove(); });

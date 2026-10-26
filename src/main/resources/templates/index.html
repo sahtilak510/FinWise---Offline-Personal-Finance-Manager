@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#4338ca">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/icons/finwise.svg" type="image/svg+xml">
   <script>
     /* Early theme paint (no-FOUC). Server pref arrives later via fwScripts;
        until then follow saved choice, else Light. data-theme is Light|Dark. */
@@ -99,7 +102,11 @@
                     <a href="/login" class="fw-btn fw-btn-secondary fw-btn-lg" style="min-width: 200px;">
                         Sign In
                     </a>
+                    <button id="installFinWise" type="button" class="fw-btn fw-btn-secondary fw-btn-lg" style="min-width: 200px;">
+                        Install on this computer
+                    </button>
                 </div>
+                <p id="installFinWiseStatus" role="status" aria-live="polite"></p>
 
                 <!-- Trust Badges -->
                 <div style="display: flex; gap: var(--sp-4); justify-content: center; flex-wrap: wrap; font-size: .875rem; color: var(--surface-500); margin-top: var(--sp-6); padding-top: var(--sp-6); border-top: 1px solid var(--glass-border);">
@@ -374,5 +381,6 @@
 
     <script src="/js/finwise-ui.js"></script>
     <script src="/js/script.js"></script>
+    <script src="/js/pwa-install.js"></script>
 </body>
 </html>

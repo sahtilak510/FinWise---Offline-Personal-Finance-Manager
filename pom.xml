@@ -184,9 +184,11 @@
                     <include>**/*.properties</include>
                     <include>**/*.yml</include>
                     <include>**/*.json</include>
+                    <include>**/*.webmanifest</include>
                     <include>**/*.html</include>
                     <include>**/*.css</include>
                     <include>**/*.js</include>
+                    <include>**/*.svg</include>
                     <include>**/*.traineddata</include>
                     <include>**/*.png</include>
                     <include>**/*.jpg</include>

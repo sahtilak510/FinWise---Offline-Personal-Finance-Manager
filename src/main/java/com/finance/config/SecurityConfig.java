@@ -40,7 +40,7 @@ public class SecurityConfig {
                 .authenticationProvider(authenticationProvider)
                 .authorizeHttpRequests(authorize ->
                         authorize
-                                 .requestMatchers("/", "/register", "/auth/register", "/login", "/reset-password", "/css/**", "/js/**", "/static/**", "/vendor/**", "/webjars/**", "/locales/**", "/uploads/**").permitAll()
+                                 .requestMatchers("/", "/register", "/auth/register", "/login", "/reset-password", "/service-worker.js", "/manifest.webmanifest", "/icons/**", "/css/**", "/js/**", "/static/**", "/vendor/**", "/webjars/**", "/locales/**", "/uploads/**").permitAll()
                                  .requestMatchers("/admin/**").hasRole("ADMIN")
                                  .requestMatchers("/api/chatbot/help").permitAll()
                                  .requestMatchers("/api/chatbot/**", "/chatbot").authenticated()

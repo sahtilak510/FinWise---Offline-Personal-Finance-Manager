@@ -1,0 +1,108 @@
+FINWISE PROJECT ARCHITECTURE
+============================
+
+WHAT THE PROJECT IS
+-------------------
+FinWise is a personal finance web application that runs on the computer where
+it is started. A browser displays the pages, while a Java server handles the
+application logic and saves information in local files and a SQLite database.
+It does not need a remote server or cloud account to use the app. The first
+Maven build may need internet access to download project libraries.
+
+LANGUAGES AND MAIN TECHNOLOGIES
+-------------------------------
+- Java 17: server-side application and finance logic.
+- Spring Boot 3.1: starts and connects the application components.
+- Spring MVC: handles browser page requests and application endpoints.
+- Thymeleaf, HTML: builds the web pages on the server.
+- CSS: page appearance and responsive layouts.
+- JavaScript: browser interactions, charts, and import/scan helpers.
+- JSON: language translation files and some application data.
+- SQLite: local database for application records.
+- JPA/Hibernate: maps Java objects to database tables and reads/writes records.
+- Maven (pom.xml): downloads libraries, runs tests, and builds the app.
+- Windows run.bat / Unix run.sh: launcher scripts for building and starting.
+
+HOW THE PARTS FIT TOGETHER
+--------------------------
+
+  User's browser
+       | HTTP request / HTML form / JavaScript request
+       v
+  Spring Boot application (Java)
+       |
+       +-- Controllers: receive requests and choose the next action
+       +-- Services: apply finance rules and perform application work
+       +-- Repositories: read and write database records
+       +-- Security/configuration: sign-in, access checks, and web settings
+       |
+       +-- Thymeleaf templates -> HTML pages returned to the browser
+       +-- Static files -> CSS, JavaScript, charts, and translations
+       |
+       v
+  Local SQLite database and local data folders
+
+TYPICAL REQUEST FLOW
+--------------------
+1. The user opens a page or submits a form in the browser.
+2. Spring MVC routes the request to a controller in
+   src/main/java/com/finance/controller (or a feature-specific web package).
+3. The controller calls a service. Services validate and process the request.
+4. A repository uses JPA/Hibernate to read or update the local SQLite database.
+5. The controller returns a Thymeleaf page or a response for JavaScript.
+6. The browser displays the result.
+
+For example, when a user records an expense, the expense page submits the
+details to an expense controller. Its service processes the entry, a repository
+saves it in SQLite, and the app returns the updated page.
+
+MAIN SOURCE FOLDERS
+-------------------
+- src/main/java/com/finance/app: application entry point and startup.
+- src/main/java/com/finance/controller: main browser and application endpoints.
+- src/main/java/com/finance/service: finance, import, OCR, reporting, and other
+  application operations.
+- src/main/java/com/finance/model: database entities and request/response data.
+- src/main/java/com/finance/repository: database access interfaces.
+- src/main/java/com/finance/config and security: web configuration,
+  authentication, and access controls.
+- src/main/java/com/finance/features: financial planning features.
+- src/main/java/com/finance/financeplus: FinancePlus workspace.
+- src/main/java/com/finance/chatbot and habits: offline chatbot and spending
+  habit features.
+- src/main/resources/templates: Thymeleaf HTML pages.
+- src/main/resources/static: CSS, JavaScript, images, charts, and translations.
+- src/test/java: automated tests.
+- pom.xml: Java version, dependencies, and Maven build configuration.
+
+DATA AND OFFLINE OPERATION
+--------------------------
+The main database is data/finance.db. Other application files, such as
+uploaded images, exports, workbooks, and backups, are kept under data/.
+Application logs are written under logs/.
+
+The app normally serves its web pages at http://localhost:8080. The browser
+connects to the app running on the same computer. Finance data is stored
+locally, not synchronized to a cloud service. The live SQLite database is not
+encrypted, so protect the computer and keep backups safe. Some backup files
+can be encrypted.
+
+IMPORT AND RECEIPT SCANNING
+---------------------------
+When a user imports a supported file or scans a receipt, Java services read
+the file. Depending on the file type, the app uses libraries such as Apache
+POI for spreadsheets, PDFBox for PDFs, and OpenCV/Tess4J for image
+preprocessing and OCR. The app can then show extracted transaction details for
+review before saving them.
+
+BUILD, START, AND TEST
+----------------------
+- Windows: run run.bat from the project folder.
+- macOS/Linux: run ./run.sh from the project folder.
+- Direct start: mvn spring-boot:run
+- Run automated tests: mvn test
+
+The launch scripts use Maven to build the Java application and then start it.
+The application entry point is
+com.finance.app.OfflineFinanceApplication. After startup, open
+http://localhost:8080 in a browser.

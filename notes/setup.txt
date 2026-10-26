@@ -7,6 +7,24 @@ FinWise is a personal finance program. You enter it through a web browser,
 but the program runs on your own computer. It can keep track of income,
 expenses, accounts, budgets, and savings goals.
 
+FinWise is a responsive web app: the same browser pages adapt to desktop,
+tablet, and phone-sized screens. On a small screen, navigation opens as a
+drawer, page sections and forms stack vertically, and wide tables can scroll
+horizontally. No separate phone app is needed. FinWise still runs on the
+computer where you start it; responsive styling does not turn on remote access
+or cloud storage.
+
+Open Financial Planning at http://localhost:8080/planning for local tools to
+track debts, net worth, investments, tax records, subscriptions, shared
+household expenses, savings challenges, and financial documents. The tools use
+manual entries and do not connect to banks or markets. Tax summaries are for
+organization only, not tax advice.
+
+Household owners can add existing FinWise usernames. The owner's household
+members can view shared budgets and equally split expenses; other account data
+stays private. Financial documents are private to the uploader and stored in
+the local database. The live database is not encrypted.
+
 WHAT DO JAVA AND MAVEN DO?
 --------------------------
 Java is the language/runtime needed to run FinWise. Think of Java as the
@@ -113,6 +131,8 @@ Some items, including expense receipts and Finance Plus attachments, are kept
 inside the database. Stop the app before manually copying its data. Keep the
 database, workbook, image folders, backups, and any backup keys/passphrases
 together in a safe place.
+Financial Planning documents are also kept in data\finance.db. Protect the
+computer with device encryption and keep encrypted backups safe.
 
 MAC AND LINUX
 -------------
@@ -125,3 +145,5 @@ Or start with Maven:
 Open http://localhost:8080 in your browser.
 
 For complete setup, download, and troubleshooting instructions, read SETUP.md.
+For a feature summary, read notes\features.txt. For the full project overview,
+routes, and architecture, read README.md.

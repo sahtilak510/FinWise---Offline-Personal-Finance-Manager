@@ -11,6 +11,7 @@ FinWise is a complete, offline-first personal finance management system for Wind
 ## Table of contents
 
 - [Features](#features)
+- [Responsive web UI](#responsive-web-ui)
 - [Requirements](#requirements)
 - [Build and run](#build-and-run)
 - [Default credentials](#default-credentials)
@@ -63,6 +64,18 @@ FinWise is a complete, offline-first personal finance management system for Wind
 - Large-expense alerts, bill reminders, weekly and monthly summaries
 - Local in-app **notifications** center
 
+### Financial Planning (`/planning`)
+- Debt and loan balance tracking with minimum-payment payoff estimates
+- Net worth summary from account balances, manually tracked assets, investment values, and tracked debts
+- Manual investment holdings and portfolio value tracking (no brokerage or market-price connection)
+- Calendar-year tax income and deduction organizer
+- Subscription renewal dates and annualized spending estimates
+- Shared household budgets and equal expense splits for explicitly added FinWise users
+- Savings challenges with target dates and progress
+- Private per-user document vault for PDF and image files
+
+These planning tools use manually entered local data. Tax totals are organizational estimates, not tax advice. Documents are stored in the local SQLite database, which is not encrypted; encrypted backups do not encrypt the live database.
+
 ### FinancePlus workspace (`/finance-plus`)
 A separately passcode-locked workspace inside the app:
 - Recurring rules engine with scheduled automation
@@ -77,9 +90,25 @@ A separately passcode-locked workspace inside the app:
 - **Spending habit rules** (need vs. want, hostel food, streak detection) with results
 - **Audit log** of user activity
 - Light/dark and accent **themes**, token-based design system
+- Responsive browser UI for desktop, tablet, and mobile screens; no separate mobile app is required
 - **Localization** for 25 languages via local JSON files: English, Spanish, French, German, Italian, Portuguese, Russian, Turkish, Arabic, Persian, Hebrew, Urdu, Hindi, Marathi, Bengali, Nepali, Punjabi, Gujarati, Tamil, Telugu, Kannada, Malayalam, Japanese, Korean, Chinese (no CDN)
 - Local app lock passcode after authentication
 - CSV and multi-sheet Excel export
+
+---
+
+## Responsive web UI
+
+FinWise uses the same browser-based application on desktop, tablet, and mobile
+screens. The shared interface adapts its navigation, page grids, forms, cards,
+charts, and dialogs to narrower viewports. On small screens, the sidebar opens
+as a navigation drawer, and wide data tables can be scrolled horizontally
+without widening the page. The landing and sign-in pages also have their own
+small-screen layouts.
+
+No native phone app or separate mobile installation is required. FinWise still
+runs on the computer where it is installed and stores data locally; the
+responsive layout does not enable remote access or cloud synchronization.
 
 ---
 
@@ -128,7 +157,7 @@ A separately passcode-locked workspace inside the app:
 
 6. Sign in with the default admin credentials: `admin` / `admin123`. Change the default password before storing personal financial data.
 
-For the project overview and a short explanation of where FinWise stores data, see [notes/setup.txt](notes/setup.txt). For detailed setup, backup, security, and troubleshooting information, see [SETUP.md](SETUP.md).
+For the project overview and a short explanation of where FinWise stores data, see [notes/setup.txt](notes/setup.txt). For detailed setup, backup, security, and troubleshooting information, see [SETUP.md](SETUP.md). For a feature summary, see [notes/features.txt](notes/features.txt).
 
 ### Other start options
 
@@ -161,6 +190,7 @@ Change the default password before storing real financial data. You can override
 | Expenses | `/expenses` | Expense records, filters, receipts |
 | Budgets | `/budgets` | Per-category limits and progress |
 | Goals | `/goals` | Savings goals and status |
+| Financial Planning | `/planning` | Debt, net worth, investments, tax records, subscriptions, household splits, savings challenges, and documents |
 | Categories | `/categories` | Manage custom categories |
 | Analytics | `/analytics` | Trends, forecast, health score |
 | Reports | `/reports` | Report generation |
@@ -247,6 +277,8 @@ Language/theme preferences are stored per user in the database, not in propertie
 - Backup filenames and archive entries are validated to prevent path traversal.
 - Passwords and the app-lock passcode are BCrypt-hashed.
 - Uploaded images are stored outside the web root and served only through authorized endpoints.
+- Financial-planning records are user-scoped; shared household information is visible only to the owner and explicitly added members. Uploaded planning documents are private to the uploader.
+- The live SQLite database is not encrypted. Financial document access is controlled by the authenticated application; use device-level encryption and protect encrypted backups.
 - Fingerprint and face unlock are delegated to the OS or browser profile; FinWise stores no biometric data.
 
 ---
@@ -268,6 +300,7 @@ src/main/java/com/finance/
 ├── chatbot/        Offline assistant (controller, service, DTOs)
 ├── habits/         Spending habit rules
 ├── financeplus/    FinancePlus models, repositories, services, web
+├── features/       Offline financial-planning records, services, and web
 └── util/           Validation helpers
 
 src/main/resources/

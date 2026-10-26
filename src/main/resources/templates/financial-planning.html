@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/finwise :: fwHead('Financial Planning')}">
+    <meta charset="UTF-8">
+</head>
+<body class="fw-body fw-shell">
+<div th:replace="~{fragments/finwise :: fwSidebar('planning-features', ${user})}"></div>
+<div th:replace="~{fragments/finwise :: fwTopbar('Financial Planning', 'Local planning tools', ${user}, ${unreadCount})}"></div>
+<div class="fw-scrim" onclick="fwCloseSidebar()"></div>
+<div class="fw-content">
+<main class="fw-wrap" id="main">
+    <header class="fw-pagehead">
+        <div>
+            <h1>Financial Planning</h1>
+            <p>Offline tools for debts, net worth, investing, tax records, subscriptions, households, savings and documents. Amounts are shown in ₹; keep entries in the same currency.</p>
+        </div>
+    </header>
+    <div th:if="${successMessage}" class="fw-alert fw-alert-success" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="fw-alert fw-alert-danger" th:text="${errorMessage}"></div>
+    <nav class="fw-filters" aria-label="Financial planning sections">
+        <a class="fw-btn fw-btn-secondary" href="#debts">Debt planner</a>
+        <a class="fw-btn fw-btn-secondary" href="#net-worth">Net worth</a>
+        <a class="fw-btn fw-btn-secondary" href="#investments">Investments</a>
+        <a class="fw-btn fw-btn-secondary" href="#tax">Tax records</a>
+        <a class="fw-btn fw-btn-secondary" href="#subscriptions">Subscriptions</a>
+        <a class="fw-btn fw-btn-secondary" href="#households">Household</a>
+        <a class="fw-btn fw-btn-secondary" href="#challenges">Savings challenges</a>
+        <a class="fw-btn fw-btn-secondary" href="#documents">Document vault</a>
+    </nav>
+
+    <section class="fw-card fw-card-pad" id="debts" style="margin-top:16px">
+        <div class="fw-card-h"><div><h2>Debt and loan payoff planner</h2><p>Track balances and estimate payoff using minimum payments only.</p></div></div>
+        <div class="fw-grid2">
+            <form method="post" th:action="@{/planning/debts}" class="fw-form">
+                <label class="fw-label">Debt or loan name<input class="fw-input" name="name" maxlength="120" required></label>
+                <label class="fw-label">Starting balance<input class="fw-input" type="number" name="startingBalance" min="0" step="0.01" required></label>
+                <label class="fw-label">Current balance<input class="fw-input" type="number" name="currentBalance" min="0" step="0.01" required></label>
+                <label class="fw-label">Annual interest rate (%)<input class="fw-input" type="number" name="annualInterestRate" min="0" step="0.001" required></label>
+                <label class="fw-label">Minimum monthly payment<input class="fw-input" type="number" name="minimumPayment" min="0" step="0.01" required></label>
+                <label class="fw-label">Next due date<input class="fw-input" type="date" name="dueDate"></label>
+                <button class="fw-btn fw-btn-primary" type="submit">Add debt</button>
+            </form>
+            <div>
+                <h3>Payoff estimates</h3>
+                <p class="fw-hint">These estimates assume a fixed rate and unchanged minimum payment; fees and future borrowing are excluded.</p>
+                <div class="fw-grid2" th:if="${not #lists.isEmpty(debts)}">
+                    <div><b>Avalanche order</b><p class="fw-hint">Highest interest rate first</p>
+                        <ol><li th:each="debt : ${avalancheOrder}" th:text="${debt.name} + ' (' + ${debt.annualInterestRate} + '%)'">Debt</li></ol>
+                    </div>
+                    <div><b>Snowball order</b><p class="fw-hint">Smallest balance first</p>
+                        <ol><li th:each="debt : ${snowballOrder}" th:text="${debt.name} + ' (' + ${#numbers.formatDecimal(debt.currentBalance, 1, 2)} + ')'">Debt</li></ol>
+                    </div>
+                </div>
+                <div th:if="${#lists.isEmpty(debtEstimates)}" class="fw-empty"><p>No debts tracked yet.</p></div>
+                <div th:each="estimate : ${debtEstimates}" class="fw-card" style="padding:12px;margin:8px 0">
+                    <b th:text="${estimate.debt.name}">Debt</b>
+                    <span th:if="${estimate.months == 0}"> · paid off</span>
+                    <span th:if="${estimate.months > 0}" th:text="' · about ' + ${estimate.months} + ' months; estimated interest ' + ${#numbers.formatDecimal(estimate.estimatedInterest, 1, 2)}"> estimate</span>
+                    <span th:if="${estimate.months < 0}"> · minimum payment does not cover interest or payoff exceeds estimate limit</span>
+                    <div class="fw-hint" th:text="'Balance ' + ${#numbers.formatDecimal(estimate.debt.currentBalance, 1, 2)} + ' · APR ' + ${estimate.debt.annualInterestRate} + '%'">Balance</div>
+                </div>
+            </div>
+        </div>
+        <div class="fw-table-wrap" th:if="${not #lists.isEmpty(debts)}">
+            <table class="fw-table"><thead><tr><th>Debt</th><th>Balance</th><th>Minimum payment</th><th>Due date</th><th>Update balance</th><th></th></tr></thead>
+                <tbody><tr th:each="debt : ${debts}">
+                    <td th:text="${debt.name}">Debt</td>                    <td th:text="${#numbers.formatDecimal(debt.currentBalance, 1, 2)}">0.00</td>
+                    <td th:text="${#numbers.formatDecimal(debt.minimumPayment, 1, 2)}">0.00</td><td th:text="${debt.dueDate}">date</td>
+                    <td><form method="post" th:action="@{/planning/debts/{id}/balance(id=${debt.id})}" class="fw-inline-form">
+                        <input class="fw-input" type="number" name="currentBalance" min="0" step="0.01" required aria-label="Current balance">
+                        <button class="fw-btn fw-btn-secondary" type="submit">Update</button>
+                    </form></td>
+                    <td><form method="post" th:action="@{/planning/debts/{id}/delete(id=${debt.id})}"><button class="fw-btn fw-btn-danger" type="submit">Delete</button></form></td>
+                </tr></tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="fw-card fw-card-pad" id="net-worth" style="margin-top:16px">
+        <div class="fw-card-h"><div><h2>Net worth tracker</h2><p>Uses account balances, tracked assets, investment values and debt balances.</p></div>
+            <span class="fw-badge info" th:text="'Net worth ' + ${#numbers.formatDecimal(netWorth, 1, 2)}">Net worth</span></div>
+        <div class="fw-filters">
+            <span class="fw-pill">Accounts: <b th:text="${#numbers.formatDecimal(accountBalance, 1, 2)}">0</b></span>
+            <span class="fw-pill">Other assets: <b th:text="${#numbers.formatDecimal(trackedAssets, 1, 2)}">0</b></span>
+            <span class="fw-pill">Investments: <b th:text="${#numbers.formatDecimal(investmentValue, 1, 2)}">0</b></span>
+            <span class="fw-pill">Tracked debts: <b th:text="${#numbers.formatDecimal(debtBalance, 1, 2)}">0</b></span>
+        </div>
+        <div class="fw-grid2" style="margin-top:14px">
+            <form method="post" th:action="@{/planning/assets}" class="fw-form">
+                <h3>Add an asset</h3>
+                <label class="fw-label">Name<input class="fw-input" name="name" maxlength="120" required></label>
+                <label class="fw-label">Type<input class="fw-input" name="assetType" maxlength="40" placeholder="Property, vehicle, cash…" required></label>
+                <label class="fw-label">Current value<input class="fw-input" type="number" name="value" min="0" step="0.01" required></label>
+                <button class="fw-btn fw-btn-primary" type="submit">Add asset</button>
+            </form>
+            <div><h3>Tracked assets</h3>
+                <p th:if="${#lists.isEmpty(assets)}" class="fw-hint">No additional assets tracked.</p>
+                <div th:each="asset : ${assets}" class="fw-filters">
+                    <span th:text="${asset.name} + ' (' + ${asset.assetType} + ') — ₹' + ${#numbers.formatDecimal(asset.value, 1, 2)}">Asset</span>
+                    <form method="post" th:action="@{/planning/assets/{id}/value(id=${asset.id})}" class="fw-inline-form">
+                        <input class="fw-input" type="number" name="value" th:value="${asset.value}" min="0" step="0.01" required aria-label="Asset value">
+                        <button class="fw-btn fw-btn-secondary" type="submit">Update value</button>
+                    </form>
+                    <form method="post" th:action="@{/planning/assets/{id}/delete(id=${asset.id})}"><button class="fw-btn fw-btn-danger" type="submit">Delete</button></form>
+                </div>
+            </div>
+        </div>
+        <p class="fw-hint">Only values entered here are counted; add assets and debts manually. Investment holdings are counted separately from other assets.</p>
+    </section>
+
+    <section class="fw-card fw-card-pad" id="investments" style="margin-top:16px">
+        <div class="fw-card-h"><div><h2>Investment portfolio tracker</h2><p>Enter valuations manually; no brokerage or market-price connection is used.</p></div></div>
+        <div class="fw-filters">
+            <span class="fw-pill">Cost basis <b th:text="'₹' + ${#numbers.formatDecimal(investmentCost, 1, 2)}">₹0</b></span>
+            <span class="fw-pill">Current value <b th:text="'₹' + ${#numbers.formatDecimal(investmentValue, 1, 2)}">₹0</b></span>
+            <span class="fw-pill">Unrealized change <b th:text="'₹' + ${#numbers.formatDecimal(investmentGain, 1, 2)}">₹0</b></span>
+        </div>
+        <form method="post" th:action="@{/planning/investments}" class="fw-form" style="margin-top:14px">
+            <label class="fw-label">Name<input class="fw-input" name="name" maxlength="120" required></label>
+            <label class="fw-label">Ticker (optional)<input class="fw-input" name="ticker" maxlength="20"></label>
+            <label class="fw-label">Type<input class="fw-input" name="investmentType" maxlength="40" placeholder="Stock, fund, bond…" required></label>
+            <label class="fw-label">Units<input class="fw-input" type="number" name="units" min="0" step="0.000001" required></label>
+            <label class="fw-label">Total cost basis<input class="fw-input" type="number" name="costBasis" min="0" step="0.01" required></label>
+            <label class="fw-label">Current total value<input class="fw-input" type="number" name="currentValue" min="0" step="0.01" required></label>
+            <button class="fw-btn fw-btn-primary" type="submit">Add holding</button>
+        </form>
+        <div class="fw-table-wrap" th:if="${not #lists.isEmpty(investments)}">
+            <table class="fw-table"><thead><tr><th>Holding</th><th>Type</th><th>Units</th><th>Cost</th><th>Value</th><th>Change</th><th></th></tr></thead>
+                <tbody><tr th:each="holding : ${investments}">
+                    <td th:text="${holding.name} + (${holding.ticker != null ? ' (' + holding.ticker + ')' : ''})">Holding</td>
+                    <td th:text="${holding.investmentType}">Type</td><td th:text="${holding.units}">0</td>
+                    <td th:text="'₹' + ${#numbers.formatDecimal(holding.costBasis, 1, 2)}">₹0</td>
+                    <td th:text="'₹' + ${#numbers.formatDecimal(holding.currentValue, 1, 2)}">₹0</td>
+                    <td th:text="'₹' + ${#numbers.formatDecimal(holding.currentValue - holding.costBasis, 1, 2)}">₹0</td>
+                    <td>
+                        <form method="post" th:action="@{/planning/investments/{id}/value(id=${holding.id})}" class="fw-inline-form">
+                            <input type="hidden" name="units" th:value="${holding.units}">
+                            <input type="hidden" name="costBasis" th:value="${holding.costBasis}">
+                            <label class="fw-label">Refresh value
+                                <input class="fw-input" type="number" name="currentValue" th:value="${holding.currentValue}" min="0" step="0.01" required>
+                            </label>
+                            <button class="fw-btn fw-btn-secondary" type="submit">Update</button>
+                        </form>
+                        <form method="post" th:action="@{/planning/investments/{id}/delete(id=${holding.id})}"><button class="fw-btn fw-btn-danger" type="submit">Delete</button></form>
+                    </td>
+                </tr></tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="fw-card fw-card-pad" id="tax" style="margin-top:16px">
+        <div class="fw-card-h"><div><h2>Tax summary and deduction organizer</h2><p>Calendar-year totals for your manually recorded income and deductions.</p></div></div>
+        <form method="get" action="/planning#tax" class="fw-inline-form">
+            <label class="fw-label" for="taxYear">Tax year</label>
+            <input class="fw-input" id="taxYear" type="number" name="taxYearParam" min="1900" th:max="${currentTaxYear + 1}" th:value="${taxYear}" required>
+            <button class="fw-btn fw-btn-secondary" type="submit">Show year</button>
+        </form>
+        <div class="fw-filters" style="margin-top:12px">
+            <span class="fw-pill">Recorded income <b th:text="'₹' + ${#numbers.formatDecimal(taxableIncome, 1, 2)}">₹0</b></span>
+            <span class="fw-pill">Recorded deductions <b th:text="'₹' + ${#numbers.formatDecimal(deductions, 1, 2)}">₹0</b></span>
+            <span class="fw-pill">Income less deductions <b th:text="'₹' + ${#numbers.formatDecimal(estimatedTaxableAmount, 1, 2)}">₹0</b></span>
+        </div>
+        <form method="post" th:action="@{/planning/tax}" class="fw-form" style="margin-top:14px">
+            <label class="fw-label">Description<input class="fw-input" name="description" maxlength="120" required></label>
+            <label class="fw-label">Category<input class="fw-input" name="category" maxlength="40" placeholder="Wages, charitable giving…" required></label>
+            <label class="fw-label">Record type<select class="fw-input" name="entryType"><option value="INCOME">Income</option><option value="DEDUCTION">Deduction</option></select></label>
+            <label class="fw-label">Amount<input class="fw-input" type="number" name="amount" min="0" step="0.01" required></label>
+            <label class="fw-label">Date<input class="fw-input" type="date" name="entryDate" required></label>
+            <button class="fw-btn fw-btn-primary" type="submit">Add tax record</button>
+        </form>
+        <div class="fw-table-wrap" th:if="${not #lists.isEmpty(taxEntries)}">
+            <table class="fw-table"><thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Type</th><th>Amount</th><th></th></tr></thead>
+                <tbody><tr th:each="entry : ${taxEntries}">
+                    <td th:text="${entry.entryDate}">date</td><td th:text="${entry.description}">Description</td>
+                    <td th:text="${entry.category}">Category</td><td th:text="${entry.entryType}">Type</td>
+                    <td th:text="'₹' + ${#numbers.formatDecimal(entry.amount, 1, 2)}">₹0</td>
+                    <td><form method="post" th:action="@{/planning/tax/{id}/delete(id=${entry.id})}">
+                        <input type="hidden" name="taxYear" th:value="${taxYear}">
+                        <button class="fw-btn fw-btn-danger" type="submit">Delete</button>
+                    </form></td>
+                </tr></tbody>
+            </table>
+        </div>
+        <p class="fw-hint">General record organizer only, not a tax calculation or tax advice. Tax rules differ by jurisdiction; confirm eligibility and totals with a qualified professional.</p>
+    </section>
+
+    <section class="fw-card fw-card-pad" id="subscriptions" style="margin-top:16px">
+        <div class="fw-card-h"><div><h2>Subscription management</h2><p th:text="'Estimated active annual cost: ₹' + ${#numbers.formatDecimal(subscriptionAnnualTotal, 1, 2)}">Annual cost</p></div></div>
+        <form method="post" th:action="@{/planning/subscriptions}" class="fw-form">
+            <label class="fw-label">Subscription<input class="fw-input" name="name" maxlength="120" required></label>
+            <label class="fw-label">Amount per billing period<input class="fw-input" type="number" name="amount" min="0.01" step="0.01" required></label>
+            <label class="fw-label">Frequency<select class="fw-input" name="frequency"><option>MONTHLY</option><option>WEEKLY</option><option>QUARTERLY</option><option>YEARLY</option></select></label>
+            <label class="fw-label">Next renewal<input class="fw-input" type="date" name="nextRenewal" required></label>
+            <button class="fw-btn fw-btn-primary" type="submit">Add subscription</button>
+        </form>
+        <div class="fw-table-wrap" th:if="${not #lists.isEmpty(subscriptions)}">
+            <table class="fw-table"><thead><tr><th>Name</th><th>Amount</th><th>Frequency</th><th>Next renewal</th><th>Status</th><th>Actions</th></tr></thead>
+                <tbody><tr th:each="subscription : ${subscriptions}">
+                    <td th:text="${subscription.name}">Name</td><td th:text="'₹' + ${#numbers.formatDecimal(subscription.amount, 1, 2)}">₹0</td>
+                    <td th:text="${subscription.frequency}">Monthly</td><td th:text="${subscription.nextRenewal}">date</td>
+                    <td th:text="${subscription.active ? 'Active' : 'Paused'}">Status</td><td>
+                        <form method="post" th:action="@{/planning/subscriptions/{id}/update(id=${subscription.id})}" class="fw-inline-form">
+                            <input type="hidden" name="amount" th:value="${subscription.amount}">
+                            <input type="hidden" name="frequency" th:value="${subscription.frequency}">
+                            <label class="fw-label">Next renewal<input class="fw-input" type="date" name="nextRenewal" th:value="${subscription.nextRenewal}" required></label>
+                            <button class="fw-btn fw-btn-secondary" type="submit">Update date</button>
+                        </form>
+                        <form method="post" th:action="@{/planning/subscriptions/{id}/active(id=${subscription.id})}" style="display:inline">
+                            <input type="hidden" name="active" th:value="${!subscription.active}">
+                            <button class="fw-btn fw-btn-secondary" type="submit" th:text="${subscription.active ? 'Pause' : 'Resume'}">Pause</button>
+                        </form>
+                        <form method="post" th:action="@{/planning/subscriptions/{id}/delete(id=${subscription.id})}" style="display:inline">
+                            <button class="fw-btn fw-btn-danger" type="submit">Delete</button>
+                        </form>
+                    </td>
+                </tr></tbody>
+            </table>
+        </div>
+        <p class="fw-hint">Renewal dates are displayed as reminders; the app does not send email or cancel subscriptions.</p>
+    </section>
+
+    <section class="fw-card fw-card-pad" id="households" style="margin-top:16px">
+        <div class="fw-card-h"><div><h2>Shared household budgets and expense splitting</h2><p>Household owners explicitly add existing FinWise usernames. Expenses are split equally.</p></div></div>
+        <form method="post" th:action="@{/planning/households}" class="fw-inline-form">
+            <label class="fw-label" for="householdName">New household</label>
+            <input class="fw-input" id="householdName" name="name" maxlength="100" required>
+            <button class="fw-btn fw-btn-primary" type="submit">Create household</button>
+        </form>
+        <div th:if="${#lists.isEmpty(households)}" class="fw-empty" style="margin-top:12px"><p>Create a household to start sharing a budget.</p></div>
+        <div th:if="${not #lists.isEmpty(households)}" style="margin-top:12px">
+            <form method="get" action="/planning#households" class="fw-inline-form">
+                <label class="fw-label" for="householdId">Select household</label>
+                <select class="fw-input" id="householdId" name="householdId">
+                    <option th:each="household : ${households}" th:value="${household.id}" th:text="${household.name}"
+                            th:selected="${household.id == selectedHouseholdId}">Household</option>
+                </select>
+                <button class="fw-btn fw-btn-secondary" type="submit">Open</button>
+            </form>
+        </div>
+        <div th:if="${selectedHouseholdId != null}" class="fw-grid2" style="margin-top:14px">
+            <div>
+                <h3>Members</h3>
+                <p th:each="member : ${householdMembers}" class="fw-pill" th:text="${member.username}">Member</p>
+                <form th:if="${households.?[id == selectedHouseholdId and owner.id == user.id].size() > 0}"
+                      method="post" th:action="@{/planning/households/{id}/members(id=${selectedHouseholdId})}" class="fw-inline-form">
+                    <label class="fw-label" for="memberUsername">Add existing username</label>
+                    <input class="fw-input" id="memberUsername" name="username" maxlength="100" required>
+                    <button class="fw-btn fw-btn-secondary" type="submit">Add member</button>
+                </form>
+                <form th:each="membership : ${householdMemberships}" method="post"
+                      th:action="@{/planning/household-members/{id}/delete(id=${membership.id})}" class="fw-inline-form">
+                    <input type="hidden" name="householdId" th:value="${selectedHouseholdId}">
+                    <span th:text="${membership.user.username}">Member</span>
+                    <button class="fw-btn fw-btn-danger" type="submit">Remove</button>
+                </form>
+                <form method="post" th:action="@{/planning/shared-budgets}" class="fw-form" style="margin-top:12px">
+                    <input type="hidden" name="householdId" th:value="${selectedHouseholdId}">
+                    <h3>Shared budget</h3>
+                    <label class="fw-label">Name<input class="fw-input" name="name" maxlength="100" required></label>
+                    <label class="fw-label">Limit<input class="fw-input" type="number" name="limitAmount" min="0.01" step="0.01" required></label>
+                    <button class="fw-btn fw-btn-primary" type="submit">Add budget</button>
+                </form>
+                <div th:each="budget : ${sharedBudgets}" class="fw-filters">
+                    <span th:text="${budget.name} + ': ₹' + ${#numbers.formatDecimal(budget.spentAmount, 1, 2)} + ' / ₹' + ${#numbers.formatDecimal(budget.limitAmount, 1, 2)}">Budget</span>
+                </div>
+            </div>
+            <div>
+                <form method="post" th:action="@{/planning/household-expenses}" class="fw-form">
+                    <h3>Record and split an expense</h3>
+                    <input type="hidden" name="householdId" th:value="${selectedHouseholdId}">
+                    <label class="fw-label">Description<input class="fw-input" name="description" maxlength="120" required></label>
+                    <label class="fw-label">Total amount<input class="fw-input" type="number" name="amount" min="0.01" step="0.01" required></label>
+                    <label class="fw-label">Date<input class="fw-input" type="date" name="expenseDate" required></label>
+                    <label class="fw-label">Budget (optional)<select class="fw-input" name="budgetId"><option value="">No budget</option>
+                        <option th:each="budget : ${sharedBudgets}" th:value="${budget.id}" th:text="${budget.name}">Budget</option></select></label>
+                    <button class="fw-btn fw-btn-primary" type="submit">Record equal split</button>
+                </form>
+                <div th:each="row : ${householdExpenses}" class="fw-card" style="padding:12px;margin:8px 0">
+                    <b th:text="${row.expense.description}">Expense</b>
+                    <span th:text="' · ₹' + ${#numbers.formatDecimal(row.expense.amount, 1, 2)} + ' paid by ' + ${row.expense.paidBy != null ? row.expense.paidBy.username : 'Former member'}">amount</span>
+                    <div class="fw-hint" th:text="${row.expense.expenseDate}">date</div>
+                    <div th:each="share : ${row.shares}" class="fw-hint"
+                         th:text="${share.user.username} + ': ₹' + ${#numbers.formatDecimal(share.amount, 1, 2)}">Share</div>
+                </div>
+            </div>
+        </div>
+        <p class="fw-hint">Each shared expense is split evenly between the household owner and current members. This page does not access anyone's private transactions.</p>
+    </section>
+
+    <section class="fw-card fw-card-pad" id="challenges" style="margin-top:16px">
+        <div class="fw-card-h"><div><h2>Savings challenges</h2><p>Set a target, track your contributions and see your progress.</p></div></div>
+        <form method="post" th:action="@{/planning/challenges}" class="fw-form">
+            <label class="fw-label">Challenge name<input class="fw-input" name="name" maxlength="120" required></label>
+            <label class="fw-label">Target amount<input class="fw-input" type="number" name="targetAmount" min="0.01" step="0.01" required></label>
+            <label class="fw-label">Target date<input class="fw-input" type="date" name="targetDate" required></label>
+            <label class="fw-label">Reminder cadence<select class="fw-input" name="cadence"><option>WEEKLY</option><option>MONTHLY</option></select></label>
+            <button class="fw-btn fw-btn-primary" type="submit">Create challenge</button>
+        </form>
+        <div th:each="challenge : ${challenges}" class="fw-card" style="padding:14px;margin-top:10px">
+            <div class="fw-card-h">
+                <div><h3 th:text="${challenge.name}">Challenge</h3><p th:text="'Target date: ' + ${challenge.targetDate} + ' · ' + ${challenge.cadence.toLowerCase()}">Target</p></div>
+                <b th:text="'₹' + ${#numbers.formatDecimal(challenge.savedAmount, 1, 2)} + ' / ₹' + ${#numbers.formatDecimal(challenge.targetAmount, 1, 2)}">Progress</b>
+            </div>
+            <div class="fw-progress"><div class="fw-progress__track safe"
+                 th:style="'width:' + ${#numbers.formatDecimal(challenge.savedAmount * 100 / challenge.targetAmount, 1, 0)} + '%;max-width:100%;'"></div></div>
+            <form method="post" th:action="@{/planning/challenges/{id}/progress(id=${challenge.id})}" class="fw-inline-form">
+                <label class="fw-label" th:for="'saved-' + ${challenge.id}">Update saved amount</label>
+                <input class="fw-input" th:id="'saved-' + ${challenge.id}" type="number" name="savedAmount"
+                       th:value="${challenge.savedAmount}" min="0" step="0.01" required>
+                <button class="fw-btn fw-btn-secondary" type="submit">Update</button>
+            </form>
+            <form method="post" th:action="@{/planning/challenges/{id}/delete(id=${challenge.id})}">
+                <button class="fw-btn fw-btn-danger" type="submit">Delete</button>
+            </form>
+        </div>
+        <p th:if="${#lists.isEmpty(challenges)}" class="fw-hint">No challenges yet.</p>
+    </section>
+
+    <section class="fw-card fw-card-pad" id="documents" style="margin-top:16px">
+        <div class="fw-card-h"><div><h2>Private financial document vault</h2><p>PDF and common image files, up to 5 MB each.</p></div></div>
+        <form method="post" th:action="@{/planning/documents}" enctype="multipart/form-data" class="fw-inline-form">
+            <input class="fw-input" type="file" name="file" accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,application/pdf,image/png,image/jpeg,image/gif,image/webp" required>
+            <button class="fw-btn fw-btn-primary" type="submit">Upload document</button>
+        </form>
+        <div class="fw-table-wrap" th:if="${not #lists.isEmpty(documents)}">
+            <table class="fw-table"><thead><tr><th>File</th><th>Type</th><th>Size</th><th>Added</th><th>Actions</th></tr></thead>
+                <tbody><tr th:each="document : ${documents}">
+                    <td th:text="${document.filename}">File</td><td th:text="${document.contentType}">Type</td>
+                    <td th:text="${#numbers.formatDecimal(document.contentLength / 1024.0, 1, 1)} + ' KB'">size</td>
+                    <td th:text="${document.createdAt}">date</td><td>
+                        <a class="fw-btn fw-btn-secondary" th:href="@{/planning/documents/{id}(id=${document.id})}">Download</a>
+                        <form method="post" th:action="@{/planning/documents/{id}/delete(id=${document.id})}" style="display:inline">
+                            <button class="fw-btn fw-btn-danger" type="submit">Delete</button>
+                        </form>
+                    </td>
+                </tr></tbody>
+            </table>
+        </div>
+        <p th:if="${#lists.isEmpty(documents)}" class="fw-hint">No documents uploaded.</p>
+        <p class="fw-hint">Documents are private to your account and stored in the local SQLite database. The database itself is not encrypted; use device encryption and keep encrypted backups safe.</p>
+    </section>
+</main>
+</div>
+<div th:replace="~{fragments/finwise :: fwScripts}"></div>
+</body>
+</html>

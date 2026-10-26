@@ -1,48 +1,158 @@
-/* FinWise Premium — Responsive */
-@media (max-width: 1200px) {
-  .fw-stats { grid-template-columns: repeat(2, 1fr); }
-  .fw-grid3 { grid-template-columns: 1fr 1fr; }
-  .fw-qa { grid-template-columns: repeat(3, 1fr); }
+/* FinWise Premium — responsive layout */
+
+img, canvas, svg, video {
+  max-width: 100%;
 }
+
+.fw-content,
+.fw-wrap,
+.fw-stats > *,
+.fw-grid2 > *,
+.fw-grid3 > *,
+.fw-autogrid > *,
+.fw-card {
+  min-width: 0;
+}
+
+.fw-wrap {
+  width: 100%;
+}
+
+.fw-tablewrap {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+
+.fw-chartbox canvas {
+  max-width: 100%;
+}
+
+@media (max-width: 1200px) {
+  .fw-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .fw-grid3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .fw-qa { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
 @media (max-width: 1024px) {
-  .fw-grid2 { grid-template-columns: 1fr; }
-  .fw-chat { grid-template-columns: 1fr; }
+  .fw-grid2 { grid-template-columns: minmax(0, 1fr); }
+  .fw-chat { grid-template-columns: minmax(0, 1fr); }
   .fw-chat-side { display: none; }
   .fw-chat-side.open { display: block; }
 }
+
 @media (max-width: 900px) {
-  .fw-auth { grid-template-columns: 1fr; }
+  .fw-auth { grid-template-columns: minmax(0, 1fr); }
   .fw-auth-brand { display: none; }
 }
+
 @media (max-width: 860px) {
-  .fw-sb { transform: translateX(-105%); width: min(300px, 84vw); box-shadow: var(--fw-shadow-lg); }
-  .fw-sb-grip { display: none; }
+  body.fw-sb-open { overflow: hidden; }
+  .fw-sb {
+    transform: translateX(-105%);
+    width: min(300px, 84vw);
+    box-shadow: var(--fw-shadow-lg);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
   body.fw-sb-open .fw-sb { transform: none; }
   body.fw-collapsed .fw-sb { width: min(300px, 84vw); }
-  body.fw-collapsed .fw-sb-name, body.fw-collapsed .fw-sb-group > p,
-  body.fw-collapsed .fw-sb-link span.lbl, body.fw-collapsed .fw-sb-count,
-  body.fw-collapsed .fw-sb-user div, body.fw-collapsed .fw-sb-logout span { display: revert; }
+  body.fw-collapsed .fw-sb-name,
+  body.fw-collapsed .fw-sb-group > p,
+  body.fw-collapsed .fw-sb-link span.lbl,
+  body.fw-collapsed .fw-sb-count,
+  body.fw-collapsed .fw-sb-user div,
+  body.fw-collapsed .fw-sb-logout span { display: revert; }
   body.fw-collapsed .fw-sb-link { justify-content: flex-start; }
-  .fw-top, body.fw-collapsed .fw-top, .fw-content, body.fw-collapsed .fw-content,
-  .fw-foot, body.fw-collapsed .fw-foot { margin-left: 0; }
-  .fw-burger { display: inline-grid; }
-  .fw-top-search { display: none; }
-  .fw-scrim { display: block; position: fixed; inset: 0; background: rgba(2,6,23,.45); z-index: 55; opacity: 0; pointer-events: none; transition: opacity .2s; }
+  .fw-sb-grip { display: none; }
+  .fw-sb-link { min-height: 44px; }
+  .fw-btn,
+  .fw-top .fw-iconbtn { min-height: 44px; }
+  .fw-top .fw-iconbtn { width: 44px; }
+
+  .fw-top,
+  body.fw-collapsed .fw-top,
+  .fw-content,
+  body.fw-collapsed .fw-content,
+  .fw-foot,
+  body.fw-collapsed .fw-foot {
+    margin-left: 0;
+  }
+  .fw-top {
+    gap: 8px;
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+  }
+  .fw-top > .fw-iconbtn:not(.fw-burger) { display: none; }
+  .fw-burger { display: inline-grid; flex: none; }
+  .fw-top-title {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .fw-top-actions { flex: none; gap: 6px; }
+  .fw-userchip { padding-right: 5px; }
+  .fw-userchip b { display: none; }
+
+  .fw-scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(2, 6, 23, .45);
+    z-index: 55;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s;
+  }
   body.fw-sb-open .fw-scrim { opacity: 1; pointer-events: auto; }
-  .fw-wrap { padding: 18px 14px 32px; }
-  .fw-stats { grid-template-columns: 1fr 1fr; }
-  .fw-qa { grid-template-columns: 1fr 1fr; }
-  .fw-formgrid { grid-template-columns: 1fr; }
-  .fw-health { grid-template-columns: 1fr; justify-items: center; text-align: center; }
+
+  .fw-wrap {
+    padding: 20px 16px max(32px, env(safe-area-inset-bottom));
+  }
+  .fw-qa { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .fw-formgrid { grid-template-columns: minmax(0, 1fr); }
+  .fw-health { grid-template-columns: minmax(0, 1fr); justify-items: center; text-align: center; }
   .fw-health ul { width: 100%; }
   table.fw-table { min-width: 560px; }
-  .fw-kv { grid-template-columns: 120px 1fr; }
+  .fw-kv { grid-template-columns: minmax(100px, 1fr) minmax(0, 2fr); }
+  .fw-chat { min-height: min(560px, 70dvh); }
+  .fw-chat-msgs { min-height: 240px; }
 }
+
 @media (max-width: 520px) {
-  .fw-stats { grid-template-columns: 1fr; }
-  .fw-grid3 { grid-template-columns: 1fr; }
-  .fw-qa { grid-template-columns: 1fr; }
-  .fw-pagehead h1 { font-size: 1.4rem; }
-  .fw-userchip b { display: none; }
+  .fw-wrap { padding: 16px 12px 28px; }
+  .fw-stats,
+  .fw-grid3,
+  .fw-autogrid,
+  .fw-qa { grid-template-columns: minmax(0, 1fr); }
+  .fw-pagehead { align-items: stretch; gap: 12px; }
+  .fw-pagehead h1 { font-size: 1.4rem; overflow-wrap: anywhere; }
+  .fw-pagehead .fw-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .fw-pagehead .fw-actions .fw-btn { width: 100%; padding: 0 10px; white-space: normal; }
+  .fw-card-pad { padding: 16px; }
+  .fw-card-h { align-items: flex-start; flex-wrap: wrap; }
+  .fw-stat { padding: 16px; }
+  .fw-stat-val { font-size: clamp(1.2rem, 6vw, 1.55rem); overflow-wrap: anywhere; }
+  .fw-userchip { display: none; }
+  .fw-top-title small { display: none; }
   .fw-msg { max-width: 94%; }
+  .fw-chat-msgs { padding: 14px; }
+  .fw-chat-in { padding: 12px; }
+  .fw-modal-b { padding: 16px; }
+  .fw-modal-h,
+  .fw-modal-f { padding: 14px 16px; }
+  .fw-modal-f { flex-wrap: wrap; }
+  .fw-modal-f .fw-btn { flex: 1 1 auto; }
+  .fw-kv { grid-template-columns: minmax(0, 1fr); gap: 3px; }
+  .fw-kv dd { margin-bottom: 8px; overflow-wrap: anywhere; }
+  .fw-drop { padding: 28px 16px; }
+  .fw-foot div { padding: 14px 12px; }
+  #fw-toasts { right: 12px; bottom: max(12px, env(safe-area-inset-bottom)); }
+}
+
+@media (max-width: 360px) {
+  .fw-top { gap: 6px; }
+  .fw-top-actions { gap: 4px; }
+  .fw-pagehead .fw-actions { grid-template-columns: minmax(0, 1fr); }
 }

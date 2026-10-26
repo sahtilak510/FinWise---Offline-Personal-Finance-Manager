@@ -88,6 +88,10 @@ data\
   finance-e2e.db
     Database used for end-to-end testing, not ordinary user data.
 
+  Financial Planning records and uploaded documents are stored in finance.db.
+  Documents are private to their account in the application, but the live
+  SQLite database itself is not encrypted.
+
   Finwise_Data.xlsx
     Local Excel workbook used by workbook-based application features.
 
@@ -141,6 +145,8 @@ logs\
 notes\
   Human-readable project notes. The application does not need these files.
 
+  features.txt
+    Summary of finance, planning, responsive web, and local-data features.
   project-explain.txt
     This folder-by-folder project explanation.
   setup.txt
@@ -238,6 +244,24 @@ src\
             web\
               FinancePlusAccessInterceptor.java checks workspace access.
               FinancePlusController.java handles Finance Plus web requests.
+
+          features\
+            Offline Financial Planning feature packages.
+
+            model\
+              Debt, asset, investment, tax, subscription, household, savings
+              challenge, and financial document records.
+
+            repository\
+              User-scoped database access for the planning records.
+
+            service\
+              FinancialPlanningService.java validates, calculates, and saves
+              feature data and household splits.
+
+            web\
+              FinancialPlanningController.java handles /planning pages,
+              actions, and private document downloads.
 
           habits\
             Spending-habit rules and the page/service that runs them.
@@ -357,13 +381,14 @@ src\
 
         css\
           3d-dynamic.css visual effects.
-          auth.css login and registration styles.
+          auth.css login, registration, and small-screen styles.
           chatbot-widget.css chatbot widget styles.
           finance-plus.css Finance Plus styles.
           finwise-bridge.css compatibility between styles.
           finwise-components.css reusable component styles.
           finwise-layout.css page layout styles.
-          finwise-responsive.css small-screen layout styles.
+          finwise-responsive.css shared tablet and mobile layout rules for
+          navigation, grids, forms, tables, charts, and dialogs.
           finwise-theme.css theme colors/styles.
           finwise-tokens.css shared design values.
           scan-fill.css scan page styles.
@@ -412,9 +437,11 @@ src\
 
         fragments\
           chatbot-widget.html is the shared chatbot widget.
-          finwise.html contains shared page layout/navigation/scripts.
+          finwise.html contains shared page layout/navigation/scripts and
+          loads the common responsive stylesheet.
 
         Page files:
+          financial-planning.html contains the Financial Planning workspace.
           account.html user profile.
           accounts.html account list.
           add-account.html form to add an account.

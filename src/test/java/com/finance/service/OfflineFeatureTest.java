@@ -232,7 +232,8 @@ class OfflineFeatureTest {
                 mock(ImportedTransactionRepository.class),
                 mock(ChatMessageRepository.class),
                 mock(PasswordEncoder.class),
-                storageService
+                storageService,
+                mock(com.finance.features.service.FinancialPlanningDataCleaner.class)
         );
         User user = new User();
         user.setId(42L);
@@ -277,7 +278,8 @@ class OfflineFeatureTest {
                 importRepository,
                 chatRepository,
                 mock(PasswordEncoder.class),
-                storageService
+                storageService,
+                mock(com.finance.features.service.FinancialPlanningDataCleaner.class)
         );
         User user = new User();
         user.setId(42L);

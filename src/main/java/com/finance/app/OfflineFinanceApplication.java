@@ -12,8 +12,12 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @ComponentScan(basePackages = {"com.finance"})
-@EnableJpaRepositories(basePackages = {"com.finance.repository", "com.finance.financeplus.repository"})
-@EntityScan(basePackages = {"com.finance.model.entity", "com.finance.financeplus.model"})
+@EnableJpaRepositories(basePackages = {
+        "com.finance.repository", "com.finance.financeplus.repository", "com.finance.features.repository"
+})
+@EntityScan(basePackages = {
+        "com.finance.model.entity", "com.finance.financeplus.model", "com.finance.features.model"
+})
 @EnableScheduling
 public class OfflineFinanceApplication {
 

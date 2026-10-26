@@ -2,6 +2,7 @@ package com.finance.service;
 
 import com.finance.model.entity.*;
 import com.finance.repository.*;
+import com.finance.features.service.FinancialPlanningDataCleaner;
 import com.finance.service.excel.LocalExcelStorageService;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -39,6 +40,7 @@ public class UserService {
     private final ChatMessageRepository chatMessageRepository;
     private final PasswordEncoder passwordEncoder;
     private final LocalExcelStorageService localExcelStorageService;
+    private final FinancialPlanningDataCleaner financialPlanningDataCleaner;
 
     public UserService(UserRepository userRepository,
                        AccountRepository accountRepository,
@@ -49,7 +51,8 @@ public class UserService {
                        ImportedTransactionRepository importedTransactionRepository,
                        ChatMessageRepository chatMessageRepository,
                        PasswordEncoder passwordEncoder,
-                       LocalExcelStorageService localExcelStorageService) {
+                       LocalExcelStorageService localExcelStorageService,
+                       FinancialPlanningDataCleaner financialPlanningDataCleaner) {
         this.userRepository = userRepository;
         this.accountRepository = accountRepository;
         this.expenseRepository = expenseRepository;
@@ -60,6 +63,7 @@ public class UserService {
         this.chatMessageRepository = chatMessageRepository;
         this.passwordEncoder = passwordEncoder;
         this.localExcelStorageService = localExcelStorageService;
+        this.financialPlanningDataCleaner = financialPlanningDataCleaner;
     }
 
     public User registerUser(String username, String email, String password, String fullName) {
@@ -241,15 +245,16 @@ public class UserService {
     }
 
     public void deleteUser(Long id) {
-        if (id != null) {
-            userRepository.deleteById(id);
-        }
+        if (id == null) return;
+        userRepository.findById(id).ifPresent(this::deleteAccountAndData);
     }
 
     public void deleteAccountAndData(User user) {
         if (user == null) {
             return;
         }
+
+        financialPlanningDataCleaner.deleteUserData(user);
 
         List<Account> accounts = accountRepository.findByUserOrderByCreatedAtDesc(user);
         if (!accounts.isEmpty()) {

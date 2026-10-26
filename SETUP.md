@@ -143,6 +143,18 @@ To run the tests instead of skipping them during a package build:
 mvn clean verify
 ```
 
+## Using FinWise on a phone or tablet
+
+FinWise is a responsive web app, so the same pages adapt to desktop, tablet,
+and phone-sized screens. The mobile layout provides a navigation drawer and
+stacks page sections and forms vertically. Wide tables remain readable in a
+horizontal scroll area rather than stretching the entire page.
+
+There is no separate mobile app to install. FinWise runs on the computer where
+you start it and saves data there. Opening `localhost` on a phone refers to
+the phone itself, not your computer; this setup guide does not configure or
+recommend exposing your finance application to a network.
+
 ## Other ways to install
 
 ### Install Java with a downloaded installer
@@ -243,4 +255,5 @@ together.
   financial records and files. Back it up before attempting recovery.
 
 For more information about features, routes, and project structure, see
-[README.md](README.md).
+[README.md](README.md). For a concise feature summary, see
+[notes/features.txt](notes/features.txt).

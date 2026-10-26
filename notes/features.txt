@@ -1,0 +1,63 @@
+FINWISE FEATURES
+================
+
+FinWise is a browser-based personal finance application that runs locally.
+Open the application on the computer running it at:
+  http://localhost:8080
+
+CORE MONEY MANAGEMENT
+--------------------
+- Dashboard with balance, income, expenses, financial health, and charts.
+- Accounts, income, and expense records with categories and filters.
+- Category budgets, savings goals, and recurring income or expenses.
+- Transaction import from CSV, Excel, PDF, and image files.
+- Receipt scanning and OCR-assisted transaction entry.
+- Reports, analytics, cash-flow estimates, and local notifications.
+
+FINANCIAL PLANNING
+------------------
+Open /planning to track:
+- Debts and loans, with payoff estimates and avalanche/snowball order.
+- Net worth using accounts, manually tracked assets, investments, and debts.
+- Investment holdings entered manually; there is no market or broker feed.
+- Tax income and deductions by year.
+- Subscriptions and estimated annualized cost.
+- Shared household budgets and equally split shared expenses.
+- Savings challenges and private financial documents.
+
+Planning values are based on user-entered records. Payoff, tax, and other
+financial summaries are estimates or organization tools, not financial, tax,
+or investment advice. All displayed amounts use ₹; keep entries in one
+currency for meaningful totals.
+
+OTHER TOOLS
+-----------
+- FinancePlus passcode-locked workspace, exports, imports, and backups.
+- Offline chatbot, spending habits, and activity audit history.
+- Profile and account settings, app lock, themes, and language selection.
+- Administrative user management and exports for the administrator.
+
+RESPONSIVE WEB INTERFACE
+-----------------------
+The same browser application supports desktop, tablet, and mobile screen
+sizes. The landing, sign-in, and authenticated pages adapt their layouts for
+small screens. The authenticated sidebar becomes a drawer; grids and forms
+stack, and wide tables can be scrolled horizontally.
+
+No separate mobile application is required. FinWise continues to run on the
+computer where it is started; responsive styling does not provide remote
+access, cloud synchronization, or a mobile installation.
+
+DATA AND PRIVACY NOTES
+---------------------
+- The main database is data/finance.db. The live SQLite database is not
+  encrypted; protect the device and keep backups safe.
+- Financial-planning documents are private to the uploader in the app and
+  stored in the local database.
+- Household sharing is limited to explicitly added FinWise users and shared
+  household records; it does not share all personal account data.
+- Backups may be encrypted; protect the required backup key or passphrase.
+- Stop the application before manually copying its local data.
+
+For setup, launch commands, and troubleshooting, read SETUP.md. For complete
+routes, architecture, and security details, read README.md.

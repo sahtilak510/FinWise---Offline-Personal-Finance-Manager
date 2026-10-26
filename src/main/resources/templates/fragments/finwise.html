@@ -40,7 +40,7 @@
   <link rel="stylesheet" href="/css/finwise-tokens.css?v=2">
   <link rel="stylesheet" href="/css/finwise-layout.css?v=2">
   <link rel="stylesheet" href="/css/finwise-components.css?v=2">
-  <link rel="stylesheet" href="/css/finwise-responsive.css?v=2">
+  <link rel="stylesheet" href="/css/finwise-responsive.css?v=3">
   <link rel="stylesheet" href="/css/chatbot-widget.css?v=2">
   <link rel="stylesheet" href="/css/finwise-bridge.css?v=2">
   <link rel="stylesheet" href="/css/finwise-theme.css?v=2">
@@ -78,6 +78,9 @@
       <a class="fw-sb-link" data-tip="Goals" th:classappend="${active == 'goals'} ? ' active'" href="/goals">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg>
         <span class="lbl" data-i18n="goals">Goals</span></a>
+      <a class="fw-sb-link" data-tip="Financial Planning" th:classappend="${active == 'planning-features'} ? ' active'" href="/planning">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5"/><path d="M4 19h16"/><path d="m7 15 4-4 3 2 5-7"/><circle cx="7" cy="15" r="1"/><circle cx="11" cy="11" r="1"/><circle cx="14" cy="13" r="1"/><circle cx="19" cy="6" r="1"/></svg>
+        <span class="lbl">Financial Planning</span></a>
     </div>
     <div class="fw-sb-group">
       <p data-i18n="insights">Insights</p>
